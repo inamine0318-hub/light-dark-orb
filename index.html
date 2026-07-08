@@ -27,6 +27,15 @@ const H=180; // 論理高さ固定
 let W=320,GY=H-30,SC=1;
 let uRatio=1;
 
+const BTN={
+    L:{x:22,y:H-22,r:15},
+    R:{x:56,y:H-22,r:15},
+    J:{x:W-22,y:H-22,r:15},
+    A:{x:W-58,y:H-22,r:15},
+    S:{x:W-94,y:H-22,r:15}
+};
+function updateBTN(){BTN.J.x=W-22;BTN.A.x=W-58;BTN.S.x=W-94;}
+
 function resize(){
     const sw=innerWidth,sh=innerHeight;
     uRatio=devicePixelRatio||1;
@@ -310,14 +319,6 @@ let boss=null,bossActive=false,bossDefeated=false;
 const BOSS_TRIGGER=2800; // scrollがこの値を超えたらボス出現
 
 // ===== CONTROLS =====
-const BTN={
-    L:{x:22,y:H-22,r:15},
-    R:{x:56,y:H-22,r:15},
-    J:{x:W-22,y:H-22,r:15},
-    A:{x:W-58,y:H-22,r:15},
-    S:{x:W-94,y:H-22,r:15}
-};
-function updateBTN(){BTN.J.x=W-22;BTN.A.x=W-58;BTN.S.x=W-94;}
 let keys={L:false,R:false,J:false,A:false};
 let tids={L:null,R:null,J:null,A:null,S:null};
 
