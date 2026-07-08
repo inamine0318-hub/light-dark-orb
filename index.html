@@ -29,14 +29,26 @@ let uRatio=1;
 
 function resize(){
     const sw=innerWidth,sh=innerHeight;
-    SC=sh/H; // 高さ基準でスケール（画面を完全充填）
-    W=sw/SC|0; // 論理幅は画面幅に合わせて動的に変化
-    GY=H-30;
-    cv.width=sw;cv.height=sh;
-    cv.style.cssText='position:absolute;left:0;top:0;';
     uRatio=devicePixelRatio||1;
-    uic.width=sw*uRatio|0;uic.height=sh*uRatio|0;
-    uic.style.cssText='position:absolute;left:0;top:0;';
+    if(sh>sw){
+        // 縦向き：90°回転してランドスケープ表示
+        SC=sw/H;
+        W=sh/SC|0;
+        GY=H-30;
+        cv.width=sh;cv.height=sw;
+        cv.style.cssText=`position:absolute;left:${sw}px;top:0;transform:rotate(90deg);transform-origin:top left;`;
+        uic.width=sh*uRatio|0;uic.height=sw*uRatio|0;
+        uic.style.cssText=`position:absolute;left:${sw}px;top:0;transform:rotate(90deg);transform-origin:top left;`;
+    }else{
+        // 横向き：通常
+        SC=sh/H;
+        W=sw/SC|0;
+        GY=H-30;
+        cv.width=sw;cv.height=sh;
+        cv.style.cssText='position:absolute;left:0;top:0;';
+        uic.width=sw*uRatio|0;uic.height=sh*uRatio|0;
+        uic.style.cssText='position:absolute;left:0;top:0;';
+    }
 }
 window.addEventListener('resize',resize);
 resize();
@@ -306,7 +318,10 @@ let keys={L:false,R:false,J:false,A:false};
 let tids={L:null,R:null,J:null,A:null};
 
 function inBtn(cx,cy,b){return Math.hypot(cx-b.x,cy-b.y)<b.r;}
-function cvCoords(cx,cy){return[cx/SC,cy/SC];}
+function cvCoords(cx,cy){
+    if(innerHeight>innerWidth){return[cy/SC,(innerWidth-cx)/SC];}
+    return[cx/SC,cy/SC];
+}
 
 cv.addEventListener('touchstart',e=>{
     e.preventDefault();getAC();
@@ -403,7 +418,7 @@ function inp(cx,cy){
         if(cx===undefined){gs='playing';resetGame();}
         return;
     }
-    if(gs==='stageclear'){if(clearTimer>60){stage++;gs='playing';resetGame();}return;}
+    if(gs==='stageclear'){if(clearTimer>60){if(stage>=2){location.reload();}else{stage++;gs='playing';resetGame();}}return;}
     if(gs==='gameover'){location.reload();}
 }
 
