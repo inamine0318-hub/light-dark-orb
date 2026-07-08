@@ -106,8 +106,63 @@ function sfx(type){
                 g.gain.setValueAtTime(0,t0);g.gain.setValueAtTime(.08,t0+.01);g.gain.exponentialRampToValueAtTime(.001,t0+.1);
                 o.connect(g);g.connect(dst);o.start(t0);o.stop(t0+.12);
             });
+        }else if(type==='darkorb'){
+            const o=ac.createOscillator();o.type='sawtooth';
+            const g=ac.createGain();o.connect(g);g.connect(dst);
+            o.frequency.setValueAtTime(180,now);o.frequency.exponentialRampToValueAtTime(80,now+.15);
+            g.gain.setValueAtTime(.07,now);g.gain.exponentialRampToValueAtTime(.001,now+.18);
+            o.start(now);o.stop(now+.18);
         }
     }catch(e){}
+}
+
+// ===== BGM =====
+let bgmAc=null,bgmGain=null,bgmSeq=null;
+const N={
+    // 音名→周波数マップ
+    C4:262,D4:294,E4:330,F4:349,G4:392,A4:440,B4:494,
+    C5:523,D5:587,E5:659,F5:698,G5:784,A5:880,B5:988,
+    _:0 // 休符
+};
+// Stage1: 明るいファンタジー冒険
+const BGM1=[[N.E5,.15],[N._,.05],[N.G5,.15],[N.A5,.2],[N._,.1],[N.G5,.15],[N.E5,.15],[N.D5,.3],[N._,.2],
+    [N.C5,.15],[N.E5,.15],[N.G5,.15],[N.E5,.3],[N._,.2],[N.D5,.15],[N.C5,.15],[N.D5,.4],[N._,.3],
+    [N.A4,.15],[N.C5,.15],[N.E5,.15],[N.G5,.3],[N._,.15],[N.E5,.15],[N.D5,.15],[N.C5,.4],[N._,.3],
+    [N.G4,.2],[N.A4,.2],[N.C5,.2],[N.E5,.4],[N.D5,.2],[N.C5,.2],[N.D5,.6],[N._,.4]];
+// Stage2: 洞窟・ダンジョン（短調）
+const BGM2=[[N.A4,.2],[N._,.1],[N.G4,.15],[N.A4,.2],[N._,.15],[N.F4,.15],[N.G4,.3],[N._,.2],
+    [N.E4,.15],[N.F4,.15],[N.E4,.2],[N.D4,.2],[N._,.2],[N.E4,.15],[N.D4,.15],[N.C4,.4],[N._,.3],
+    [N.A4,.15],[N._,.1],[N.A4,.15],[N.B4,.15],[N.A4,.2],[N._,.15],[N.G4,.2],[N.A4,.35],[N._,.3],
+    [N.F4,.2],[N.E4,.2],[N.D4,.2],[N.E4,.4],[N.D4,.2],[N.C4,.2],[N.A4,.6],[N._,.4]];
+
+function startBgm(st){
+    stopBgm();
+    try{
+        bgmAc=new(AudioContext||webkitAudioContext)();
+        bgmGain=bgmAc.createGain();bgmGain.gain.value=0.14;bgmGain.connect(bgmAc.destination);
+        const seq=st===2?BGM2:BGM1;
+        let idx=0,time=bgmAc.currentTime+.05;
+        function sched(){
+            while(time<bgmAc.currentTime+.6){
+                const[f,d]=seq[idx%seq.length];
+                if(f>0){
+                    const o=bgmAc.createOscillator();o.type='square';o.frequency.value=f;
+                    const g=bgmAc.createGain();
+                    g.gain.setValueAtTime(0,time);g.gain.setValueAtTime(.4,time+.01);
+                    g.gain.setValueAtTime(.4,time+d*.65);g.gain.exponentialRampToValueAtTime(.001,time+d*.9);
+                    o.connect(g);g.connect(bgmGain);o.start(time);o.stop(time+d);
+                }
+                time+=d;idx++;
+            }
+            bgmSeq=setTimeout(sched,200);
+        }
+        sched();
+    }catch(e){}
+}
+function stopBgm(){
+    clearTimeout(bgmSeq);bgmSeq=null;
+    try{if(bgmAc)bgmAc.close();}catch(e){}
+    bgmAc=null;bgmGain=null;
 }
 
 // ===== HELPERS =====
@@ -138,10 +193,12 @@ function spark(x,y,col,n){
 
 // ===== STATE =====
 let gs='splash',gTick=0,t=0;
-let splashTimer=0;
+let splashTimer=0,clearTimer=0;
 let scroll=0,stage=1,score=0;
 let best=parseInt(localStorage.getItem('ldo_best')||'0');
 let shake=0,flash=0;
+let selectedChar=0; // 0=勇者 1=魔王
+let orbs=[]; // 魔王の闇オーブ弾
 
 // ===== PLAYER =====
 const GR=0.42,JMP=5.8;
@@ -170,7 +227,8 @@ cv.addEventListener('touchstart',e=>{
     e.preventDefault();getAC();
     for(const tc of e.changedTouches){
         const[x,y]=cvCoords(tc.clientX,tc.clientY);
-        if(gs!=='playing'){inp(x,y);continue;}
+        if(gs==='start'){inp(x,y);continue;}
+        if(gs==='stageclear'||gs==='gameover'){inp(x,y);continue;}
         if(inBtn(x,y,BTN.L)){keys.L=true;tids.L=tc.identifier;}
         else if(inBtn(x,y,BTN.R)){keys.R=true;tids.R=tc.identifier;}
         else if(inBtn(x,y,BTN.J)){tids.J=tc.identifier;doJump();}
@@ -206,11 +264,23 @@ function doJump(){
 }
 function doAtk(){
     if(gs!=='playing'||P.atkCd>0)return;
-    P.atk=14;P.atkCd=22;sfx('swing');
+    if(selectedChar===0){P.atk=14;P.atkCd=22;sfx('swing');}
+    else{
+        orbs.push({sx:P.x+scroll+(P.dir>0?P.w:0),sy:P.y+8,vx:P.dir*4.2,life:0,maxLife:60});
+        P.atkCd=25;sfx('darkorb');
+    }
 }
 function inp(cx,cy){
     if(gs==='splash'){splashTimer=200;return;}
-    if(gs==='start'){gs='playing';resetGame();return;}
+    if(gs==='start'){
+        // キャラ選択パネル判定
+        if(cx!==undefined){
+            if(cx>=8&&cx<=W/2-4&&cy>=70&&cy<=150){selectedChar=0;return;}
+            if(cx>=W/2+4&&cx<=W-8&&cy>=70&&cy<=150){selectedChar=1;return;}
+        }
+        gs='playing';resetGame();return;
+    }
+    if(gs==='stageclear'){if(clearTimer>60){stage++;gs='playing';resetGame();}return;}
     if(gs==='gameover'){location.reload();}
 }
 
@@ -218,9 +288,10 @@ function inp(cx,cy){
 function resetGame(){
     P.x=60;P.y=GY-P.h;P.vx=0;P.vy=0;P.onG=true;P.dj=false;
     P.hp=P.mhp;P.inv=0;P.fr=0;P.atk=0;P.atkCd=0;P.dir=1;
-    enemies=[];items=[];arrows=[];platforms=[];parts=[];
+    enemies=[];items=[];arrows=[];platforms=[];orbs=[];parts=[];
     scroll=0;score=0;shake=0;flash=0;t=0;spawnCd=60;platSpawnCd=120;
-    boss=null;bossActive=false;bossDefeated=false;
+    boss=null;bossActive=false;bossDefeated=false;clearTimer=0;
+    startBgm(stage);
 }
 
 // ===== BACKGROUNDS =====
@@ -389,6 +460,107 @@ function drawItem(it){
     }
 }
 
+// ===== DRAW DEMON LORD =====
+function drawDemonLord(x,y){
+    const inv=P.inv>0&&Math.floor(P.inv/4)%2===0;
+    if(inv)ctx.globalAlpha=0.4;
+    const dir=P.dir;
+    const hov=Math.sin(gTick*.1)*1.5|0; // 浮遊
+
+    // cape (flowing behind)
+    ctx.fillStyle='#220033';
+    if(dir>0){px(x-2,y+4+hov,4,16);}else{px(x+10,y+4+hov,4,16);}
+
+    // robe
+    ctx.fillStyle='#2a0040';px(x+1,y+7+hov,10,14);
+    ctx.fillStyle='#380055';px(x+2,y+8+hov,8,10);
+    // robe bottom
+    ctx.fillStyle='#1a0030';px(x,y+18+hov,12,4);
+
+    // arms
+    ctx.fillStyle='#2a0040';
+    px(x-1,y+8+hov,2,8);px(x+11,y+8+hov,2,8);
+    // hands glow
+    ctx.fillStyle='#8822ff';
+    if(P.atkCd>15){ctx.globalAlpha=(inv?.2:.6);px(dir>0?x+11:x-2,y+12+hov,3,3);}
+
+    // head
+    ctx.fillStyle='#f0c888';px(x+2,y+hov,8,7);
+    // crown
+    ctx.fillStyle='#2a0040';px(x+1,y-2+hov,10,3);px(x+2,y-5+hov,3,4);px(x+6,y-5+hov,3,4);
+    ctx.fillStyle='#8822ff';px(x+3,y-5+hov,1,1);px(x+7,y-5+hov,1,1);
+    // eyes (glowing red)
+    ctx.fillStyle='#ff2020';px(x+3,y+2+hov,2,2);px(x+7,y+2+hov,2,2);
+    ctx.globalAlpha=.4;ctx.fillStyle='#ff4040';
+    px(x+2,y+1+hov,3,3);px(x+7,y+1+hov,3,3);
+
+    // dark orb glow on belt
+    ctx.globalAlpha=(inv?.2:.7+Math.sin(gTick*.09)*.3);
+    ctx.fillStyle='#8822ff';px(x+5,y+13+hov,2,2);
+    ctx.globalAlpha=.15;ctx.fillStyle='#aa44ff';
+    ctx.beginPath();ctx.arc(x+6,y+14+hov,5,0,Math.PI*2);ctx.fill();
+    ctx.globalAlpha=1;
+}
+
+// ===== STAGE 2 BACKGROUND (洞窟) =====
+function drawBg2(){
+    // 暗い洞窟天井・壁
+    const bg=ctx.createLinearGradient(0,0,0,GY);
+    bg.addColorStop(0,'#06040e');bg.addColorStop(.5,'#0e0818');bg.addColorStop(1,'#180c20');
+    ctx.fillStyle=bg;ctx.fillRect(0,0,W,GY);
+
+    // 岩壁テクスチャ
+    ctx.fillStyle='#1a1228';
+    for(let i=0;i<8;i++){
+        const rx=((i*90+20-scroll*.05+3000)%3000)-60;
+        ctx.fillRect(rx,0,12,GY);
+    }
+
+    // 鍾乳石（天井から）
+    ctx.fillStyle='#2a1840';
+    for(let i=0;i<10;i++){
+        const sx=((i*120+15-scroll*.4+4000)%4000)-20;
+        const sh=12+i%3*8;
+        ctx.beginPath();ctx.moveTo(sx,0);ctx.lineTo(sx+8,sh);ctx.lineTo(sx+16,0);ctx.fill();
+        ctx.fillStyle='#1e1030';ctx.fillRect(sx+3,0,10,sh-4);
+        ctx.fillStyle='#2a1840';
+    }
+
+    // 石筍（地面から）
+    ctx.fillStyle='#281638';
+    for(let i=0;i<7;i++){
+        const sx=((i*160+80-scroll*.45+4000)%4000)-20;
+        const sh=8+i%2*5;
+        ctx.beginPath();ctx.moveTo(sx,GY);ctx.lineTo(sx+6,GY-sh);ctx.lineTo(sx+12,GY);ctx.fill();
+    }
+
+    // 松明（壁の光）
+    for(let i=0;i<5;i++){
+        const tx=((i*200+50-scroll*.5+4000)%4000)-30;
+        const flicker=.6+Math.sin(gTick*.2+i*1.3)*.4;
+        // 光の輪
+        ctx.globalAlpha=.08*flicker;ctx.fillStyle='#ff8820';
+        ctx.beginPath();ctx.arc(tx,GY-20,28,0,Math.PI*2);ctx.fill();
+        ctx.globalAlpha=.15*flicker;ctx.fillStyle='#ffaa40';
+        ctx.beginPath();ctx.arc(tx,GY-20,16,0,Math.PI*2);ctx.fill();
+        ctx.globalAlpha=1;
+        // 松明本体
+        ctx.fillStyle='#5a3010';ctx.fillRect(tx-2,GY-26,4,10);
+        ctx.fillStyle=`rgba(255,${120+flicker*80|0},20,${.8+flicker*.2})`;
+        ctx.beginPath();ctx.arc(tx,GY-26,3,0,Math.PI*2);ctx.fill();
+    }
+
+    // 地面（石畳）
+    ctx.fillStyle='#383048';px(0,GY,W,5);
+    ctx.fillStyle='#2a2438';px(0,GY+2,W,2);
+    ctx.fillStyle='#1e1830';px(0,GY+5,W,H-GY-5);
+    ctx.fillStyle='#302848';
+    for(let i=0;i<14;i++){
+        const tx=((i*30-scroll*.5+2000)%2000);
+        ctx.fillRect(tx,GY+6,28,1);ctx.fillRect(tx+15,GY+12,20,1);
+    }
+}
+
 // ===== DRAW SKELETON =====
 function drawSkeleton(en){
     const x=Math.floor(en.sx-scroll),y=Math.floor(en.sy);
@@ -474,6 +646,7 @@ function drawPlatforms(){
 function update(){
     gTick++;
     if(gs==='splash'){splashTimer++;if(splashTimer>=180)gs='start';return;}
+    if(gs==='stageclear'){clearTimer++;return;}
     if(gs!=='playing')return;
     t++;
 
@@ -629,8 +802,9 @@ function update(){
                 if(boss.hp<=0){
                     bossDefeated=true;boss=null;
                     score+=1000;spark(scroll+W/2,GY-40,'#ffe840',30);spark(scroll+W/2,GY-40,'#8822ff',30);
-                    sfx('kill');snd(880,.5);
+                    sfx('kill');snd(880,.5);stopBgm();
                     items.push({sx:scroll+W/2,y:GY-20,w:10,h:10,type:'orbfrag',life:600});
+                    gs='stageclear';clearTimer=0;
                 }
             }
         }
@@ -664,6 +838,35 @@ function update(){
         }
     }
 
+    // 魔王の闇オーブ弾
+    orbs.forEach(ob=>{
+        ob.sx+=ob.vx;ob.life++;
+        enemies.forEach(en=>{
+            if(en.dead||en.inv>0)return;
+            const ex=en.sx-scroll,ox=ob.sx-scroll;
+            if(ox<ex+en.w&&ox+6>ex&&ob.sy<en.sy+en.h&&ob.sy+6>en.sy){
+                en.hp--;en.inv=20;ob.life=999;
+                spark(ex+en.w/2,en.sy+en.h/2,'#8822ff',8);snd(180,.08,.6);
+                if(en.hp<=0){en.dead=true;sfx('kill');score+=100;spark(ex+5,en.sy+4,'#6600cc',16);}
+            }
+        });
+        if(boss&&!bossDefeated&&boss.inv<=0){
+            const bx=boss.sx-scroll,ox=ob.sx-scroll;
+            if(ox<bx+boss.w&&ox+6>bx&&ob.sy<boss.sy+boss.h&&ob.sy+6>boss.sy){
+                boss.hp--;boss.inv=16;ob.life=999;
+                spark(bx+11,boss.sy+10,'#8822ff',10);snd(180,.08,.7);
+                if(boss.hp<=0){
+                    bossDefeated=true;boss=null;score+=1000;
+                    spark(scroll+W/2,GY-40,'#ffe840',30);spark(scroll+W/2,GY-40,'#8822ff',30);
+                    sfx('kill');snd(880,.5);stopBgm();
+                    items.push({sx:scroll+W/2,y:GY-20,w:10,h:10,type:'orbfrag',life:600});
+                    gs='stageclear';clearTimer=0;
+                }
+            }
+        }
+    });
+    orbs=orbs.filter(ob=>ob.life<ob.maxLife&&ob.sx>scroll-20&&ob.sx<scroll+W+20);
+
     // Particles
     parts.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.vy+=.08;p.life++;});
     parts=parts.filter(p=>p.life<p.maxLife);
@@ -678,6 +881,21 @@ function draw(){
     const sx=Math.round((Math.random()-.5)*shake),sy=Math.round((Math.random()-.5)*shake);
     ctx.save();ctx.translate(sx,sy);
     ctx.fillStyle='#000';ctx.fillRect(0,0,W,H);
+
+    // Stage Clear
+    if(gs==='stageclear'){
+        for(let i=0;i<50;i++){ctx.fillStyle=`rgba(255,255,255,${.3+Math.sin(gTick*.04+i)*.2})`;ctx.fillRect((i*73)%W,(i*47)%H,1,1);}
+        const cp=Math.min(1,clearTimer/30);
+        ctx.globalAlpha=cp;
+        ctx.fillStyle='#ffe840';ctx.beginPath();ctx.arc(W/2-20,H/2-10,8+Math.sin(clearTimer*.08)*2,0,Math.PI*2);ctx.fill();
+        ctx.fillStyle='#8822ff';ctx.beginPath();ctx.arc(W/2+20,H/2-10,8+Math.sin(clearTimer*.08+1)*2,0,Math.PI*2);ctx.fill();
+        ctx.globalAlpha=1;
+        txo('STAGE '+stage+' CLEAR!',W/2,H/2-26,'#ffe840',11,undefined,cp);
+        txo('SCORE '+score,W/2,H/2,'#ffff44',8,undefined,cp);
+        if(clearTimer>60&&Math.floor(clearTimer/25)%2===0)
+            txo(stage<2?'タップで次のステージへ':'全ステージ制覇！',W/2,H/2+22,'#44ff88',7);
+        ctx.restore();return;
+    }
 
     // Splash
     if(gs==='splash'){
@@ -696,7 +914,7 @@ function draw(){
         ctx.restore();return;
     }
 
-    drawBg();
+    if(stage===1)drawBg();else drawBg2();
 
     // Platforms
     drawPlatforms();
@@ -726,8 +944,17 @@ function draw(){
         const bx=boss.sx-scroll;if(bx>-30&&bx<W+30)drawBoss(boss);
     }
 
+    // 闇オーブ弾
+    orbs.forEach(ob=>{
+        const ox=Math.floor(ob.sx-scroll);
+        ctx.globalAlpha=.85+Math.sin(gTick*.15)*.15;
+        ctx.fillStyle='#8822ff';ctx.beginPath();ctx.arc(ox+3,Math.floor(ob.sy+3),4,0,Math.PI*2);ctx.fill();
+        ctx.globalAlpha=.3;ctx.fillStyle='#cc88ff';ctx.beginPath();ctx.arc(ox+3,Math.floor(ob.sy+3),7,0,Math.PI*2);ctx.fill();
+        ctx.globalAlpha=1;
+    });
+
     // Player
-    drawHero(P.x,P.y);
+    if(selectedChar===0)drawHero(P.x,P.y);else drawDemonLord(P.x,P.y);
 
     // Particles
     parts.forEach(p=>{
@@ -793,8 +1020,38 @@ function draw(){
         txo('DARK',W/2+28,H/2-8+4,'#cc88ff',8);
         txo('&',W/2,H/2-8+4,'#ffffff',7);
         txo('ORB',W/2,H/2+14,'#ffffff',14);
-        if(Math.floor(gTick/28)%2===0)txo('タップでスタート',W/2,H/2+40,'#44ff88',7);
-        if(best>0)txo('ベスト: '+best+' pt',W/2,H/2+54,'#ffaa44',6);
+        // キャラ選択パネル
+    const panels=[{x:8,col:'#ffe840',name:'勇者',desc:'剣・二段ジャンプ'},{x:W/2+4,col:'#8822ff',name:'魔王',desc:'闇魔法・浮遊'}];
+    panels.forEach((p,i)=>{
+        const sel=selectedChar===i;
+        ctx.fillStyle=sel?'rgba(255,255,255,.12)':'rgba(255,255,255,.05)';
+        ctx.fillRect(p.x,70,W/2-12,80);
+        ctx.strokeStyle=sel?p.col:'rgba(255,255,255,.3)';ctx.lineWidth=sel?1.5:1;
+        ctx.strokeRect(p.x,70,W/2-12,80);
+        // キャラプレビュー
+        const cx=p.x+(W/2-12)/2,cy=86;
+        if(i===0){
+            ctx.fillStyle='#e0c030';px(cx-4,cy,8,3);
+            ctx.fillStyle='#f0c888';px(cx-3,cy+3,7,5);
+            ctx.fillStyle='#4868c8';px(cx-4,cy+8,9,7);
+            ctx.fillStyle='#cc2020';px(cx-1,cy+9,2,3);px(cx-2,cy+11,4,2);
+            ctx.fillStyle='#c8d0e0';px(cx+5,cy+10,8,2);
+        }else{
+            ctx.fillStyle='#2a0040';px(cx-4,cy+7,10,12);
+            ctx.fillStyle='#f0c888';px(cx-3,cy,8,6);
+            ctx.fillStyle='#2a0040';px(cx-4,cy-2,10,3);
+            ctx.fillStyle='#ff2020';px(cx-2,cy+2,2,2);px(cx+2,cy+2,2,2);
+            ctx.fillStyle='#8822ff';ctx.globalAlpha=.6;
+            ctx.beginPath();ctx.arc(cx+7,cy+12,3,0,Math.PI*2);ctx.fill();
+            ctx.globalAlpha=1;
+        }
+        txo(p.name,p.x+(W/2-12)/2,124,p.col,7);
+        txo(p.desc,p.x+(W/2-12)/2,136,'#aaaaaa',5.5);
+        if(sel)txo('▶ 選択中',p.x+(W/2-12)/2,146,p.col,5.5);
+    });
+
+    if(Math.floor(gTick/28)%2===0)txo('タップでスタート',W/2,H-18,'#44ff88',7);
+    if(best>0)txo('ベスト: '+best+' pt',W/2,H-6,'#ffaa44',6);
     }
 
     // Gameover screen
