@@ -1930,6 +1930,7 @@ function draw(){
 
     // Start screen
     if(gs==='start'){
+        ctx.save();ctx.scale(SC,SC);
         ctx.fillStyle='rgba(0,0,5,.9)';ctx.fillRect(0,0,W,H);
         // Stars
         for(let i=0;i<40;i++){
@@ -1952,10 +1953,12 @@ function draw(){
         // ===== カルーセル式キャラ選択 =====
         drawCarousel();
         if(best>0)txo('ベスト: '+best+' pt',W/2,H-4,'#ffaa44',5.5);
+        ctx.restore();
     }
 
     // Gameover screen
     if(gs==='gameover'){
+        ctx.save();ctx.scale(SC,SC);
         ctx.fillStyle='rgba(0,0,0,.92)';ctx.fillRect(0,0,W,H);
         ctx.strokeStyle='#ff3333';ctx.lineWidth=3;
         ctx.beginPath();ctx.moveTo(W/2-14,H/2-55);ctx.lineTo(W/2+14,H/2-35);ctx.stroke();
@@ -1964,6 +1967,7 @@ function draw(){
         txo('スコア: '+score,W/2,H/2+6,'#ffff44',8);
         txo('ベスト: '+best,W/2,H/2+22,'#ffaa44',7);
         if(Math.floor(gTick/28)%2===0)txo('タップでリトライ',W/2,H/2+44,'#44ff44',7);
+        ctx.restore();
     }
 }
 
