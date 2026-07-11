@@ -556,6 +556,7 @@ function drawHero(bx,by){
 function drawGoblin(en){
     const x=Math.floor(en.sx-scroll),y=Math.floor(en.sy);
     if(x<-30||x>W+30)return;
+    if(en.inv>0&&Math.floor(en.inv/4)%2===0)return;
     const pal={'G':'#308020','g':'#50c040','O':'#70e060','s':'#204010','S':'#306010','K':'#111111','Y':'#f0d000','b':'#5a3020','B':'#3a2010','L':'#204010','l':'#408020'};
     const body=['..GgggggG...','.GgsYYsgGG..','.GgssssgG...','..GGGGGGG...','.GbbbbbbbG..','.GBGbbbBGB..','.GBGBbbBGB..','..GBGBBBGB..','..GGgGGgg...','..GGGGGgg...'];
     const lgA=['..gg.gg.....','..gg.gg.....','.gGg.gGg....','.gGg.gGg....','..Gg.gG.....','..Gg.gG.....','..GG.GG.....','..GG.GG.....'];
@@ -748,6 +749,7 @@ function drawBg2(){
 function drawSkeleton(en){
     const x=Math.floor(en.sx-scroll),y=Math.floor(en.sy);
     if(x<-30||x>W+30)return;
+    if(en.inv>0&&Math.floor(en.inv/4)%2===0)return;
     const pal={'W':'#e0e0d0','w':'#c0c0b0','G':'#808070','g':'#606050','K':'#111111','Y':'#e0e000','R':'#cc2020','s':'#404030','L':'#404040','l':'#606060'};
     const body=['...WWWWWW...','..WwwwwwW...','..WwYKKYwW..','..WwwwwwwW..','..WWwWWWwW..','...WWwwWW...','....WWWW....','..WwwwwwwW..','.WwGgggGwW..','.WwGgRgGwW..','.WwwwwwwwW..','..WWWWWWWW..','.WwwwwwwwW..','..WwwwwwW...'];
     const lgA=['..wW.Ww.....','..wW.Ww.....','.wWw.wWw....','.wWw.wWw....','..Ww.wW.....','..Ww.wW.....','..WW.WW.....','..WW.WW.....'];
