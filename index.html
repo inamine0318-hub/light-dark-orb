@@ -166,7 +166,7 @@ function drawCharPreview(idx,cx,cy,scale){
     const si=P.inv,sa=P.atk,sc=P.atkCd,sd=P.dir,sf=P.fr,sg=P.onG,svx=P.vx;
     P.inv=0;P.atk=0;P.atkCd=0;P.dir=1;P.fr=8;P.onG=true;P.vx=0;
     const drawFnsP=[drawHero,drawDemonLord,drawMage,drawElf,drawDragon,drawGoblinPC,drawGolem,drawSlime];
-    drawFnsP[idx](-7,-11);
+    drawFnsP[idx](-7,-5);
     P.inv=si;P.atk=sa;P.atkCd=sc;P.dir=sd;P.fr=sf;P.onG=sg;P.vx=svx;
     ctx.restore();
 }
@@ -532,12 +532,13 @@ function drawBg(){
 }
 
 // ===== PIXEL ART SPRITE HELPER =====
-function sprDraw(bx,by,rows,pal,flip){
+function sprDraw(bx,by,rows,pal,flip,ps){
+    ps=ps||1;
     const w=rows[0].length,h=rows.length;
     for(let r=0;r<h;r++){
         for(let c=0;c<w;c++){
             const col=pal[rows[r][flip?w-1-c:c]];
-            if(col){ctx.fillStyle=col;ctx.fillRect(bx+c,by+r,1,1);}
+            if(col){ctx.fillStyle=col;ctx.fillRect(bx+c*ps,by+r*ps,ps,ps);}
         }
     }
 }
@@ -550,7 +551,7 @@ function drawHero(bx,by){
     const lgA=['..LLl.lLL.....','..LLl.lLL.....','.lLLl.lLLl....','.lLLl.lLLl....','..lLL.LLl.....','..lLL.LLl.....','..lll.lll.....','...ll..ll.....'];
     const lgB=['..lLL.LLl.....','..lLL.LLl.....','.LLLl.lLLL....','.LLLl.lLLL....','..LLl.lLL.....','..LLl.lLL.....','..lll.lll.....','...ll..ll.....'];
     const lg=Math.floor(P.fr/8)%2===0?lgA:lgB;
-    sprDraw(bx,by,body.concat(lg),pal,P.dir<0);
+    sprDraw(bx-3,by-11,body.concat(lg),pal,P.dir<0,1.5);
 }
 
 function drawGoblin(en){
@@ -562,7 +563,7 @@ function drawGoblin(en){
     const lgA=['..gg.gg.....','..gg.gg.....','.gGg.gGg....','.gGg.gGg....','..Gg.gG.....','..Gg.gG.....','..GG.GG.....','..GG.GG.....'];
     const lgB=['..gG.Gg.....','..gG.Gg.....','.GGg.gGG....','.GGg.gGG....','..gg.gg.....','..gg.gg.....','..GG.GG.....','..GG.GG.....'];
     const lg=Math.floor(en.fr/8)%2===0?lgA:lgB;
-    sprDraw(x,y,body.concat(lg),pal,en.dir<0);
+    sprDraw(x,y,body.concat(lg),pal,en.dir<0,1.5);
 }
 
 function drawItem(it){
@@ -624,7 +625,7 @@ function drawDemonLord(bx,by){
     const lgA=['..LLl.lLL.....','..LLl.lLL.....','.lLLl.lLLl....','.lLLl.lLLl....','..lLL.LLl.....','..lLL.LLl.....','..lll.lll.....','...ll..ll.....'];
     const lgB=['..lLL.LLl.....','..lLL.LLl.....','.LLLl.lLLL....','.LLLl.lLLL....','..LLl.lLL.....','..LLl.lLL.....','..lll.lll.....','...ll..ll.....'];
     const lg=Math.floor(P.fr/8)%2===0?lgA:lgB;
-    sprDraw(bx,by,body.concat(lg),pal,P.dir<0);
+    sprDraw(bx-3,by-11,body.concat(lg),pal,P.dir<0,1.5);
 }
 
 function drawMage(bx,by){
@@ -634,7 +635,7 @@ function drawMage(bx,by){
     const lgA=['..LLl.lLL.....','..LLl.lLL.....','.lLLl.lLLl....','.lLLl.lLLl....','..lLL.LLl.....','..lLL.LLl.....','..lll.lll.....','...ll..ll.....'];
     const lgB=['..lLL.LLl.....','..lLL.LLl.....','.LLLl.lLLL....','.LLLl.lLLL....','..LLl.lLL.....','..LLl.lLL.....','..lll.lll.....','...ll..ll.....'];
     const lg=Math.floor(P.fr/8)%2===0?lgA:lgB;
-    sprDraw(bx,by,body.concat(lg),pal,P.dir<0);
+    sprDraw(bx-3,by-11,body.concat(lg),pal,P.dir<0,1.5);
 }
 
 function drawElf(bx,by){
@@ -644,7 +645,7 @@ function drawElf(bx,by){
     const lgA=['..LLl.lLL.....','..LLl.lLL.....','.lLLl.lLLl....','.lLLl.lLLl....','..lLL.LLl.....','..lLL.LLl.....','..lll.lll.....','...ll..ll.....'];
     const lgB=['..lLL.LLl.....','..lLL.LLl.....','.LLLl.lLLL....','.LLLl.lLLL....','..LLl.lLL.....','..LLl.lLL.....','..lll.lll.....','...ll..ll.....'];
     const lg=Math.floor(P.fr/8)%2===0?lgA:lgB;
-    sprDraw(bx,by,body.concat(lg),pal,P.dir<0);
+    sprDraw(bx-3,by-11,body.concat(lg),pal,P.dir<0,1.5);
 }
 
 function drawDragon(bx,by){
@@ -654,7 +655,7 @@ function drawDragon(bx,by){
     const lgA=['..LLl.lLL.....','..LLl.lLL.....','.lLLl.lLLl....','.lLLl.lLLl....','..lLL.LLl.....','..lLL.LLl.....','..lll.lll.....','...ll..ll.....'];
     const lgB=['..lLL.LLl.....','..lLL.LLl.....','.LLLl.lLLL....','.LLLl.lLLL....','..LLl.lLL.....','..LLl.lLL.....','..lll.lll.....','...ll..ll.....'];
     const lg=Math.floor(P.fr/8)%2===0?lgA:lgB;
-    sprDraw(bx,by,body.concat(lg),pal,P.dir<0);
+    sprDraw(bx-3,by-11,body.concat(lg),pal,P.dir<0,1.5);
 }
 
 function drawGoblinPC(bx,by){
@@ -664,7 +665,7 @@ function drawGoblinPC(bx,by){
     const lgA=['..LLl.lLL.....','..LLl.lLL.....','.lLLl.lLLl....','.lLLl.lLLl....','..lLL.LLl.....','..lLL.LLl.....','..lll.lll.....','...ll..ll.....'];
     const lgB=['..lLL.LLl.....','..lLL.LLl.....','.LLLl.lLLL....','.LLLl.lLLL....','..LLl.lLL.....','..LLl.lLL.....','..lll.lll.....','...ll..ll.....'];
     const lg=Math.floor(P.fr/8)%2===0?lgA:lgB;
-    sprDraw(bx,by,body.concat(lg),pal,P.dir<0);
+    sprDraw(bx-3,by-11,body.concat(lg),pal,P.dir<0,1.5);
 }
 
 function drawGolem(bx,by){
@@ -674,7 +675,7 @@ function drawGolem(bx,by){
     const lgA=['..LLl.lLL.....','..LLl.lLL.....','.lLLl.lLLl....','.lLLl.lLLl....','..lLL.LLl.....','..lLL.LLl.....','..lll.lll.....','...ll..ll.....'];
     const lgB=['..lLL.LLl.....','..lLL.LLl.....','.LLLl.lLLL....','.LLLl.lLLL....','..LLl.lLL.....','..LLl.lLL.....','..lll.lll.....','...ll..ll.....'];
     const lg=Math.floor(P.fr/8)%2===0?lgA:lgB;
-    sprDraw(bx,by,body.concat(lg),pal,P.dir<0);
+    sprDraw(bx-3,by-11,body.concat(lg),pal,P.dir<0,1.5);
 }
 
 function drawSlime(bx,by){
@@ -684,7 +685,7 @@ function drawSlime(bx,by){
     const lgA=['...bBbb.bBb...','...bBbb.bBb...','...BBbb.bbB...','...BBbb.bbB...','....Bbb.bbB...','....Bbb.bbB...','....bbb.bbb...','....bbb.bbb...'];
     const lgB=['..bBbb..bBb...','..bBbb..bBb...','..BBbb..bbB...','..BBbb..bbB...','...Bbb..bbB...','...Bbb..bbB...','...bbb..bbb...','...bbb..bbb...'];
     const lg=Math.floor(P.fr/8)%2===0?lgA:lgB;
-    sprDraw(bx,by,body.concat(lg),pal,P.dir<0);
+    sprDraw(bx-3,by-11,body.concat(lg),pal,P.dir<0,1.5);
 }
 
 function drawBg2(){
@@ -755,7 +756,7 @@ function drawSkeleton(en){
     const lgA=['..wW.Ww.....','..wW.Ww.....','.wWw.wWw....','.wWw.wWw....','..Ww.wW.....','..Ww.wW.....','..WW.WW.....','..WW.WW.....'];
     const lgB=['..Ww.wW.....','..Ww.wW.....','.WwW.WwW....','.WwW.WwW....','..wW.Ww.....','..wW.Ww.....','..WW.WW.....','..WW.WW.....'];
     const lg=Math.floor(en.fr/8)%2===0?lgA:lgB;
-    sprDraw(x,y,body.concat(lg),pal,en.dir<0);
+    sprDraw(x,y,body.concat(lg),pal,en.dir<0,1.5);
 }
 
 function drawBoss(b){
@@ -767,7 +768,7 @@ function drawBoss(b){
     const lgA=['...GGg..gGG.......','...GGg..gGG.......','..gGGg..gGGg......','..gGGg..gGGg......','...gGG..GGg.......','...gGG..GGg.......','...ggg..ggg.......','....gg...gg.......'];
     const lgB=['...gGG..GGg.......','...gGG..GGg.......','..GGGg..gGGG......','..GGGg..gGGG......','...GGg..gGG.......','...GGg..gGG.......','...ggg..ggg.......','....gg...gg.......'];
     const lg=Math.floor(b.fr/8)%2===0?lgA:lgB;
-    sprDraw(x,y,body.concat(lg),pal,b.dir<0);
+    sprDraw(x,y,body.concat(lg),pal,b.dir<0,1.5);
 }
 
 // ===== DRAW PLATFORMS =====
@@ -834,7 +835,7 @@ function update(){
 
     // Attack hit
     if(P.atk>6){
-        const aw=PW,ax=P.dir>0?P.x+P.w:P.x-aw;
+        const aw=21,ax=P.dir>0?P.x+P.w:P.x-aw;
         enemies.forEach(en=>{
             if(en.dead||en.inv>0)return;
             const ex=en.sx-scroll;
@@ -919,7 +920,7 @@ function update(){
     // Boss
     if(scroll>=BOSS_TRIGGER&&!bossActive&&!bossDefeated){
         bossActive=true;
-        boss={sx:scroll+W-25,sy:GY-24,w:18,h:24,hp:20,maxHp:20,vx:0,vy:0,dir:-1,fr:0,inv:0,phase:'charge',cd:80};
+        boss={sx:scroll+W-50,sy:GY-36,w:27,h:36,hp:20,maxHp:20,vx:0,vy:0,dir:-1,fr:0,inv:0,phase:'charge',cd:80};
     }
     if(boss&&!bossDefeated){
         boss.fr++;boss.inv=Math.max(0,boss.inv-1);
@@ -977,9 +978,9 @@ function update(){
             spawnCd=90+Math.floor(Math.random()*70);
             const useSkele=t>400&&Math.random()<.4;
             if(useSkele){
-                enemies.push({sx:scroll+W+10,sy:GY-22,w:12,h:22,hp:3,maxHp:3,vx:0,vy:0,dir:-1,fr:0,inv:0,dead:false,type:'skeleton',shotCd:60});
+                enemies.push({sx:scroll+W+10,sy:GY-33,w:18,h:33,hp:3,maxHp:3,vx:0,vy:0,dir:-1,fr:0,inv:0,dead:false,type:'skeleton',shotCd:60});
             }else{
-                enemies.push({sx:scroll+W+10,sy:GY-18,w:12,h:18,hp:2,maxHp:2,vx:-.5,vy:0,dir:-1,fr:0,inv:0,dead:false,type:'goblin'});
+                enemies.push({sx:scroll+W+10,sy:GY-27,w:18,h:27,hp:2,maxHp:2,vx:-.5,vy:0,dir:-1,fr:0,inv:0,dead:false,type:'goblin'});
             }
             if(t>600&&Math.random()<.3)
                 items.push({sx:scroll+W+50,y:GY-8,w:8,h:8,type:'heart',life:400});
@@ -1069,13 +1070,25 @@ function draw(){
         ctx.fillStyle='#000';ctx.fillRect(0,0,W,H);
         const fade=splashTimer<30?splashTimer/30:splashTimer>130?Math.max(0,1-(splashTimer-130)/30):1;
         if(logoImg.complete&&logoImg.naturalWidth>0){
-            const lw=200*uRatio;
+            ctx.save();
+            ctx.globalAlpha=fade;
+            ctx.imageSmoothingEnabled=true;
+            const lw=W*0.62;
             const lh=lw*(logoImg.naturalHeight/logoImg.naturalWidth);
-            utx.globalAlpha=fade;
-            utx.drawImage(logoImg,(uic.width-lw)/2,(uic.height-lh)/2,lw,lh);
-            utx.globalAlpha=1;
+            ctx.drawImage(logoImg,(W-lw)/2,(H-lh)/2,lw,lh);
+            ctx.imageSmoothingEnabled=false;
+            ctx.restore();
         }else{
-            txo('内無双GAMES',W/2,H/2,'#ffffff',12,undefined,fade);
+            ctx.save();
+            ctx.globalAlpha=fade;
+            ctx.fillStyle='#ffffff';
+            ctx.textAlign='center';ctx.textBaseline='middle';
+            ctx.font='bold 18px sans-serif';
+            ctx.fillText('内無双GAMES',W/2,H/2-10);
+            ctx.font='11px sans-serif';
+            ctx.fillStyle='#aaaacc';
+            ctx.fillText('PRESENTS',W/2,H/2+12);
+            ctx.restore();
         }
         ctx.restore();return;
     }
