@@ -373,7 +373,7 @@ function doJump(){
 }
 function doAtk(){
     if(gs!=='playing'||P.atkCd>0)return;
-    const ox=P.x+scroll+(P.dir>0?P.w:0);
+    const ox=P.x+(P.dir>0?P.w:0);
     if(selectedChar===0){P.atk=14;P.atkCd=22;sfx('swing');}
     else if(selectedChar===1){
         orbs.push({sx:ox,sy:P.y+8,vx:P.dir*4.2,vy:0,life:0,maxLife:60,type:'dark'});
@@ -412,7 +412,7 @@ function gainSkillExp(){
 function doSkill(){
     if(gs!=='playing'||skillLv<1||skillCd>0)return;
     skillCd=180;
-    const ox=P.x+scroll+(P.dir>0?P.w:0);
+    const ox=P.x+(P.dir>0?P.w:0);
     const oy=P.y+P.h/2;
     if(skillLv===1){
         orbs.push({sx:ox,sy:oy,vx:P.dir*7,vy:0,life:0,maxLife:90,type:'skill',dmg:3,lv:1});
@@ -425,7 +425,7 @@ function doSkill(){
     }else{
         for(let i=0;i<8;i++){
             const a=i*Math.PI/4;
-            orbs.push({sx:P.x+scroll+P.w/2,sy:P.y+P.h/2,vx:Math.cos(a)*5.5,vy:Math.sin(a)*5.5,life:0,maxLife:65,type:'skill',dmg:7,lv:3});
+            orbs.push({sx:P.x+P.w/2,sy:P.y+P.h/2,vx:Math.cos(a)*5.5,vy:Math.sin(a)*5.5,life:0,maxLife:65,type:'skill',dmg:7,lv:3});
         }
         flash=22;shake=14;snd(330,.45);snd(660,.35);
     }
@@ -838,7 +838,7 @@ function update(){
         const aw=21,ax=P.dir>0?P.x+P.w:P.x-aw;
         enemies.forEach(en=>{
             if(en.dead||en.inv>0)return;
-            const ex=en.sx-scroll;
+            const ex=en.sx;
             if(ax<ex+en.w&&ax+aw>ex&&P.y<en.sy+en.h&&P.y+P.h>en.sy){
                 en.hp--;en.inv=20;
                 spark(ex+en.w/2,en.sy+en.h/2,'#ffaa44',8);
@@ -853,7 +853,7 @@ function update(){
     if(P.inv<=0){
         enemies.forEach(en=>{
             if(en.dead)return;
-            const ex=en.sx-scroll;
+            const ex=en.sx;
             if(P.x<ex+en.w&&P.x+P.w>ex&&P.y<en.sy+en.h&&P.y+P.h>en.sy){
                 P.hp--;P.inv=55;shake=6;flash=14;sfx('hit');P.vy=-3;
                 if(P.hp<=0){if(score>best){best=score;localStorage.setItem('ldo_best',best);}gs='gameover';}
@@ -864,7 +864,7 @@ function update(){
     // Items
     items.forEach(it=>{
         it.life--;
-        const ix=it.sx-scroll;
+        const ix=it.sx;
         if(P.x<ix+it.w&&P.x+P.w>ix&&P.y<it.y+it.h&&P.y+P.h>it.y){
             it.life=0;
             if(it.type==='heart'){P.hp=Math.min(P.mhp,P.hp+1);spark(ix+4,it.y,'#ff4466',10);snd(660,.15);}
@@ -907,7 +907,7 @@ function update(){
     arrows.forEach(ar=>{ar.sx+=ar.vx;ar.life++;});
     if(P.inv<=0){
         arrows.forEach(ar=>{
-            const ax=ar.sx-scroll;
+            const ax=ar.sx;
             if(P.x<ax+4&&P.x+P.w>ax&&P.y<ar.sy+3&&P.y+P.h>ar.sy){
                 ar.life=999;
                 P.hp--;P.inv=50;shake=5;flash=12;sfx('hit');P.vy=-2;
@@ -936,7 +936,7 @@ function update(){
         }
         // Attack hitbox
         if(P.inv<=0){
-            const bx=boss.sx-scroll;
+            const bx=boss.sx;
             if(P.x<bx+boss.w&&P.x+P.w>bx&&P.y<boss.sy+boss.h&&P.y+P.h>boss.sy){
                 P.hp--;P.inv=60;shake=8;flash=18;sfx('hit');P.vy=-4;
                 if(P.hp<=0){if(score>best){best=score;localStorage.setItem('ldo_best',best);}gs='gameover';}
@@ -945,7 +945,7 @@ function update(){
         // Player attack on boss
         if(P.atk>6){
             const aw=PW,ax=P.dir>0?P.x+P.w:P.x-aw;
-            const bx=boss.sx-scroll;
+            const bx=boss.sx;
             if(boss.inv<=0&&ax<bx+boss.w&&ax+aw>bx&&P.y<boss.sy+boss.h&&P.y+P.h>boss.sy){
                 boss.hp--;boss.inv=16;spark(bx+11,boss.sy+10,'#ffaa44',10);snd(200,.08,.7);
                 if(boss.hp<=0){
@@ -1010,7 +1010,7 @@ function update(){
         const osz=ob.lv?12:6;
         enemies.forEach(en=>{
             if(en.dead||en.inv>0)return;
-            const ex=en.sx-scroll,ox=ob.sx-scroll;
+            const ex=en.sx,ox=ob.sx;
             if(ox<ex+en.w&&ox+osz>ex&&ob.sy<en.sy+en.h&&ob.sy+osz>en.sy){
                 en.hp-=(ob.dmg||1);en.inv=20;if(!ob.lv)ob.life=999;
                 spark(ex+en.w/2,en.sy+en.h/2,'#8822ff',8);snd(180,.08,.6);
@@ -1018,7 +1018,7 @@ function update(){
             }
         });
         if(boss&&!bossDefeated&&boss.inv<=0){
-            const bx=boss.sx-scroll,ox=ob.sx-scroll;
+            const bx=boss.sx,ox=ob.sx;
             if(ox<bx+boss.w&&ox+osz>bx&&ob.sy<boss.sy+boss.h&&ob.sy+osz>boss.sy){
                 boss.hp-=(ob.dmg||1);boss.inv=16;if(!ob.lv)ob.life=999;
                 spark(bx+11,boss.sy+10,'#8822ff',10);snd(180,.08,.7);
@@ -1179,7 +1179,7 @@ function draw(){
 
     // Player
     const drawFns=[drawHero,drawDemonLord,drawMage,drawElf,drawDragon,drawGoblinPC,drawGolem,drawSlime];
-    drawFns[selectedChar](P.x,P.y);
+    drawFns[selectedChar](P.x-scroll,P.y);
 
     // Particles
     parts.forEach(p=>{
