@@ -523,8 +523,8 @@ function sprDraw(bx,by,rows,pal,flip,ps){
 // ===== DRAW HERO (勇者) =====
 function drawHero(bx,by){
     if(P.inv>0&&Math.floor(P.inv/4)%2===0)return;
-    const pal={'H':'#e8c820','h':'#a08010','S':'#e8b888','s':'#c08060','K':'#111111','R':'#cc3030','r':'#881010','B':'#304880','b':'#4878b0','G':'#d0c020','W':'#e0e8f8','L':'#1e3050','l':'#3a6090'};
-    const body=['..HHHHHHHH....','.HhhhhhhhH....','.HSsKKsSSH....','.HSSssSSSSH...','..HSSSSSSSH...','..RRRRRRRR....','.RRSSSSSSrR...','.RRSssssrRR...','.RRSSssSSRR...','.RRSSSSSrRR...','..GGGGGGGGG...','..BBBBBBBBB...','.BBbbbbbBBB...','..BbbbbbBb....'];
+    const pal={'H':'#f0c820','h':'#806000','F':'#f4c090','f':'#a06040','K':'#111111','A':'#c8d4e8','a':'#506070','R':'#e83030','r':'#901010','B':'#1840c0','b':'#0c1860','L':'#1840c0','l':'#0c1860'};
+    const body=['....HHHHH.....','...HhHHHhH....','...HhKHhKhH...','...HhHHHHhH...','....FFFFFFFF..','....FfKKfFFF..','....AaAAAAaA..','..aARRRRRRAa..','..aARRRRRRAa..','..aARRrRrRAa..','..aaRrrrrraa..','...BBBBBBBBb..','..BBbbbbbbBB..','...BbbbbbbB...'];
     const lgA=['..LLl.lLL.....','..LLl.lLL.....','.lLLl.lLLl....','.lLLl.lLLl....','..lLL.LLl.....','..lLL.LLl.....','..lll.lll.....','...ll..ll.....'];
     const lgB=['..lLL.LLl.....','..lLL.LLl.....','.LLLl.lLLL....','.LLLl.lLLL....','..LLl.lLL.....','..LLl.lLL.....','..lll.lll.....','...ll..ll.....'];
     const lg=Math.floor(P.fr/8)%2===0?lgA:lgB;
@@ -597,8 +597,8 @@ function drawItem(it){
 // ===== DRAW DEMON LORD =====
 function drawDemonLord(bx,by){
     if(P.inv>0&&Math.floor(P.inv/4)%2===0)return;
-    const pal={'P':'#6020a0','p':'#3a1060','S':'#806060','s':'#604040','K':'#111111','Y':'#f0e000','H':'#cc2020','h':'#881010','A':'#181818','a':'#383838','G':'#c09010','L':'#100820','l':'#201040'};
-    const body=['H....PPPP....H','hH...PPPP...Hh','.hHPPSSSPPHh..','..PPSsYYsSPP..','..PPSsssssPP..','...PPSSSSPP...','..AAAAAAAAAa..','.AAasSSSSsaAA.','.AAsssssssAA..','.AASSssSSAA...','..GGGGGGGGGa..','..AAAAAAAAAA..','.AApppppppAA..','..AppppppAp...'];
+    const pal={'C':'#7020b0','c':'#3a1060','K':'#111111','R':'#ff2020','r':'#aa0000','S':'#404048','s':'#202028','P':'#6020a0','p':'#30105a','G':'#c0a010','g':'#806808','L':'#100820','l':'#0a0418'};
+    const body=['.c..cCCCc..c..','.C.cCCRCCc.C..','..CcCCCCCcC...','..CcKKKKKcC...','...SSSSSSSSS..','....SrRKRrs...','...GgggggggG..','..pPPPPPPPPp..','..pPPpGGpPPp..','..pPPPPPPPPp..','..pPGGrrrGGp..','...PPpppppPP..','..PPpppppppPP.','...PPpppppPP..'];
     const lgA=['..LLl.lLL.....','..LLl.lLL.....','.lLLl.lLLl....','.lLLl.lLLl....','..lLL.LLl.....','..lLL.LLl.....','..lll.lll.....','...ll..ll.....'];
     const lgB=['..lLL.LLl.....','..lLL.LLl.....','.LLLl.lLLL....','.LLLl.lLLL....','..LLl.lLL.....','..LLl.lLL.....','..lll.lll.....','...ll..ll.....'];
     const lg=Math.floor(P.fr/8)%2===0?lgA:lgB;
@@ -607,8 +607,8 @@ function drawDemonLord(bx,by){
 
 function drawMage(bx,by){
     if(P.inv>0&&Math.floor(P.inv/4)%2===0)return;
-    const pal={'H':'#2a1060','h':'#4020a0','Y':'#f0e000','S':'#e8b888','s':'#c08060','K':'#111111','P':'#4020a0','p':'#6040c0','m':'#8060e0','B':'#3060a0','L':'#101830','l':'#202848'};
-    const body=['.....hHh......','....hHhHh.....','...hHhhhhHh...','..YHhhhhhhhY..','..SSSSSSSss...','..SsKKSSsss...','..SSSssSSSSs..','...ppppppp....','..ppPPPPPPpp..','.ppPmmYmmPpp..','.ppPmmmmmmPp..','.pPPmmmmmPPp..','.pPmmmmmmmPp..','.pBBBBBBBBBp..'];
+    const pal={'H':'#102880','h':'#1838c0','T':'#4868f0','t':'#8090ff','F':'#f4c090','f':'#a06040','K':'#111111','Y':'#f0e000','P':'#6030a0','p':'#301060','M':'#8048c0','L':'#301060','l':'#180830'};
+    const body=['......t.......','.....tTt......','....tHhHt.....','...tHHHHHt....','..tHHHHHHHt...','..HhHHHHHhH...','....FFFFFFFF..','....FfKKfFFF..','...YpPPPPpY...','..pPPPMPPPPp..','..pPPPYPPPPp..','..pPPPPPPPPp..','..PPpppppppPP.','...PPpppppPP..'];
     const lgA=['..LLl.lLL.....','..LLl.lLL.....','.lLLl.lLLl....','.lLLl.lLLl....','..lLL.LLl.....','..lLL.LLl.....','..lll.lll.....','...ll..ll.....'];
     const lgB=['..lLL.LLl.....','..lLL.LLl.....','.LLLl.lLLL....','.LLLl.lLLL....','..LLl.lLL.....','..LLl.lLL.....','..lll.lll.....','...ll..ll.....'];
     const lg=Math.floor(P.fr/8)%2===0?lgA:lgB;
@@ -617,8 +617,8 @@ function drawMage(bx,by){
 
 function drawElf(bx,by){
     if(P.inv>0&&Math.floor(P.inv/4)%2===0)return;
-    const pal={'H':'#905020','h':'#603010','S':'#e8d0a0','s':'#c0a060','K':'#111111','E':'#306020','e':'#507040','g':'#70b050','B':'#2a4020','b':'#3a6030','L':'#604020','l':'#906030'};
-    const body=['..HHHHHHHH....','.HhhhhhhhH....','sHSSSSSSSHs...','.HSsSKKsSSSH..','..HSSSsSSSSH..','...eeeeeee....','..eeESSSSEee..','..eeEsSSsEee..','..eeEgSSgEee..','..eeESSSSEee..','..gGGgGGGGgg..','..BBBBBBBBB...','.BBbbbbbBBB...','..BbbbbbBb....'];
+    const pal={'G':'#30a040','g':'#186028','F':'#f4d0a0','f':'#a07040','K':'#111111','A':'#88c048','a':'#507030','B':'#6a3a10','b':'#3a1808','Y':'#f0d000','L':'#3a1808','l':'#1a0800'};
+    const body=['...gGGGGGGg...','fg.gGGGGGg.gf.','.f.gGGGGGGg.f.','...gGFFFFGg...','...gGFFFFGg...','...GGFfKFGG...','....GgAAAgg...','..GGgAAAAgGG..','..GGgAAAAgGG..','..GGgABBAgGG..','..GgAAAAAAgg..','..GGgaaaaGGG..','...GgaaaaGg...','...GgaaaaGg...'];
     const lgA=['..LLl.lLL.....','..LLl.lLL.....','.lLLl.lLLl....','.lLLl.lLLl....','..lLL.LLl.....','..lLL.LLl.....','..lll.lll.....','...ll..ll.....'];
     const lgB=['..lLL.LLl.....','..lLL.LLl.....','.LLLl.lLLL....','.LLLl.lLLL....','..LLl.lLL.....','..LLl.lLL.....','..lll.lll.....','...ll..ll.....'];
     const lg=Math.floor(P.fr/8)%2===0?lgA:lgB;
@@ -627,8 +627,8 @@ function drawElf(bx,by){
 
 function drawDragon(bx,by){
     if(P.inv>0&&Math.floor(P.inv/4)%2===0)return;
-    const pal={'D':'#c04010','d':'#e06020','O':'#ff8030','R':'#ff4010','S':'#d08040','s':'#a06020','K':'#111111','Y':'#f0c000','B':'#402010','b':'#603020','L':'#301008','l':'#502010'};
-    const body=['..ddddddddd...','.OdddddddDd...','.OdRRdddRdO...','..dSSSSSSSd...','..dSsKKsSsd...','..ddRRRRRdd...','.ddROOOOORdD..','.ddROsssORdD..','.ddROSSsORdd..','.ddROSSSSRdd..','..YYYYYYYYYd..','..BBBBBBBBB...','.BBbbbbbBBB...','..BbbbbbBb....'];
+    const pal={'D':'#c04010','d':'#e06020','O':'#ff8030','o':'#ff4010','Y':'#f0d000','K':'#111111','S':'#f0c080','s':'#c08040','B':'#401808','b':'#200c00','L':'#401808','l':'#200c00'};
+    const body=['..dddddddddd..','.dDDDDDDDDDDd.','.dDDYYdYYDDd..','.dDDDDDDDDDd..','.dDDSSSSSdDd..','..DDSSSSSSdD..','..dDDDdDDDd...','.OddOddddOddO.','.OddOdSSdOddO.','..OddOdddOdd..','..dddoooddd...','...dDDDDDDd...','..dDDbbbbDDd..','...dDbbbbDd...'];
     const lgA=['..LLl.lLL.....','..LLl.lLL.....','.lLLl.lLLl....','.lLLl.lLLl....','..lLL.LLl.....','..lLL.LLl.....','..lll.lll.....','...ll..ll.....'];
     const lgB=['..lLL.LLl.....','..lLL.LLl.....','.LLLl.lLLL....','.LLLl.lLLL....','..LLl.lLL.....','..LLl.lLL.....','..lll.lll.....','...ll..ll.....'];
     const lg=Math.floor(P.fr/8)%2===0?lgA:lgB;
@@ -637,8 +637,8 @@ function drawDragon(bx,by){
 
 function drawGoblinPC(bx,by){
     if(P.inv>0&&Math.floor(P.inv/4)%2===0)return;
-    const pal={'G':'#306010','g':'#509030','O':'#70c040','s':'#305010','S':'#508020','K':'#111111','Y':'#f0d000','B':'#3a2010','b':'#5a3820','T':'#604020','t':'#402010','L':'#2a1a0a','l':'#4a3010'};
-    const body=['...OOOOOO.....','..OGggggGO....','..OGsYYsgGO...','..OGsssssgO...','..OOOOOOOOO...','..bbbBBBBbb...','.bBBGggggGBb..','.bBBGgsssgBb..','.bBBGgGsgBb...','.bBBGGggGBb...','..TTTtttTTt...','..BBBBBBBBB...','.BBbbbbbBBB...','..BbbbbbBb....'];
+    const pal={'G':'#40c030','g':'#206018','O':'#70e050','K':'#111111','Y':'#f0d000','B':'#303048','b':'#181828','s':'#204010','D':'#c0c0c0','L':'#181828','l':'#0c0c18'};
+    const body=['..gGGGGGGGGg..','.gGGGGGGGGGGg.','gGGgGGGGGGgGGg','.gGGYKGGGKYGg.','.gGGGGGGGGGGg.','.gGGGgggGGGGg.','..gBBBBBBBBg..','..BBbbbbbbbB..','..BBbDbDbDbB..','..BBbbbbbbbB..','..BBbBBBBbBB..','...BbbbbbBBB..','...BbbbbbbB...','....BbbbbB....'];
     const lgA=['..LLl.lLL.....','..LLl.lLL.....','.lLLl.lLLl....','.lLLl.lLLl....','..lLL.LLl.....','..lLL.LLl.....','..lll.lll.....','...ll..ll.....'];
     const lgB=['..lLL.LLl.....','..lLL.LLl.....','.LLLl.lLLL....','.LLLl.lLLL....','..LLl.lLL.....','..LLl.lLL.....','..lll.lll.....','...ll..ll.....'];
     const lg=Math.floor(P.fr/8)%2===0?lgA:lgB;
@@ -647,8 +647,8 @@ function drawGoblinPC(bx,by){
 
 function drawGolem(bx,by){
     if(P.inv>0&&Math.floor(P.inv/4)%2===0)return;
-    const pal={'G':'#606060','g':'#808080','O':'#a0a0a0','s':'#383838','K':'#111111','Y':'#f0e080','C':'#4060a0','c':'#6080c0','L':'#303030','l':'#505050'};
-    const body=['.gGGGGGGGGGg..','GgOOOOOOOOGg..','GgOOKKOOOOGg..','GgOOYYOOOOGg..','GgOOOOOOOOGg..','GGgGGGGGGGGG..','GGgOOOOOOgGG..','GgCCCCCCCCgG..','GgCcccccccgG..','GgCCCCCCCCgG..','..GGGGGGGGgg..','..GGGGGGGGGG..','.GGggggggGG...','.GgggggggGg...'];
+    const pal={'G':'#808890','g':'#505860','O':'#a8b0b8','K':'#111111','B':'#3060e0','b':'#1838a0','Y':'#f0e060','c':'#c8d0d8','L':'#505860','l':'#303840'};
+    const body=['OGGgGGGGGGgGGO','GOGGgGGGGGgGGO','GGOGGGGGGGGgGG','GGGgGBBBBBgGGG','GGGGbBBBBBbGGG','GGGgGGGGGGgGGG','GGgGGGGGGGGgGG','GGGGGBbbBBGGGG','GGGGBBbbBBGGGG','GGGGGBBBBbGGGG','GGGgGGGGGGgGGG','GGggGGGGGGggGG','GGgGGGGGGGgGGG','GGGgGGGGGGgGGG'];
     const lgA=['..LLl.lLL.....','..LLl.lLL.....','.lLLl.lLLl....','.lLLl.lLLl....','..lLL.LLl.....','..lLL.LLl.....','..lll.lll.....','...ll..ll.....'];
     const lgB=['..lLL.LLl.....','..lLL.LLl.....','.LLLl.lLLL....','.LLLl.lLLL....','..LLl.lLL.....','..LLl.lLL.....','..lll.lll.....','...ll..ll.....'];
     const lg=Math.floor(P.fr/8)%2===0?lgA:lgB;
@@ -657,10 +657,10 @@ function drawGolem(bx,by){
 
 function drawSlime(bx,by){
     if(P.inv>0&&Math.floor(P.inv/4)%2===0)return;
-    const pal={'B':'#1a40c0','b':'#3060e0','L':'#5090f8','l':'#80b8ff','K':'#111111','W':'#c0d8ff','D':'#0a2060'};
-    const body=['..............','...bbbbbbb....','..bBBBBBBBb...','.bBLLLLLBBb...','.bBLllKKllBb..','.bBLllllllBb..','.bBBBBBBBBBb..','.bBBBBBBBBBb..','..bBBBBBBBb...','..bBBBBBBBb...','...bBBBBBb....','...bBBBBBb....','....bBBBb.....','....bBBBb.....'];
-    const lgA=['...bBbb.bBb...','...bBbb.bBb...','...BBbb.bbB...','...BBbb.bbB...','....Bbb.bbB...','....Bbb.bbB...','....bbb.bbb...','....bbb.bbb...'];
-    const lgB=['..bBbb..bBb...','..bBbb..bBb...','..BBbb..bbB...','..BBbb..bbB...','...Bbb..bbB...','...Bbb..bbB...','...bbb..bbb...','...bbb..bbb...'];
+    const pal={'B':'#2050e0','b':'#1030a0','L':'#5088f8','l':'#80b0ff','K':'#111111','W':'#c0d8ff','D':'#0a1860','w':'#e8f0ff','X':'#4070d0','x':'#6090f0'};
+    const body=['..............','....lllll.....','...lLLLLLl....','..lLwwwwwLl...','.bBlwKKwwLlBb.','.bBLlwwwwlLBb.','.bBBLLLLLLBBb.','.bBBBLLLLBBBb.','..bBBBBBBBBb..','..bBBBBBBBBb..','...bBBBBBBb...','...bBBBBBBb...','....bBBBBb....','....bbbbbb....'];
+    const lgA=['..LLl.lLL.....','..LLl.lLL.....','.lLLl.lLLl....','.lLLl.lLLl....','..lLL.LLl.....','..lLL.LLl.....','..lll.lll.....','...ll..ll.....'];
+    const lgB=['..lLL.LLl.....','..lLL.LLl.....','.LLLl.lLLL....','.LLLl.lLLL....','..LLl.lLL.....','..LLl.lLL.....','..lll.lll.....','...ll..ll.....'];
     const lg=Math.floor(P.fr/8)%2===0?lgA:lgB;
     sprDraw(bx-3,by-11,body.concat(lg),pal,P.dir<0,1.5);
 }
