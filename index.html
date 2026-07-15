@@ -171,63 +171,42 @@ function drawCharPreview(idx,cx,cy,scale){
     ctx.restore();
 }
 
-function drawCarousel(){
-    const CY=112; // カルーセル中央Y
-    // ← → ボタン
-    ['←','→'].forEach((arrow,i)=>{
-        const bx=i===0?16:W-16;
-        ctx.fillStyle='rgba(255,255,255,.12)';
-        ctx.beginPath();ctx.arc(bx,CY,14,0,Math.PI*2);ctx.fill();
-        txo(arrow,bx,CY+4,'#ffffff',9);
+function drawGrid(){
+    const GTOP=42,ROWS=4,COLS=2,GAP=6,PAD=4;
+    const rowH=(158-GTOP)/ROWS;
+    const colW=(W-PAD*2-GAP)/COLS;
+    CHARS.forEach((ch,i)=>{
+        const col=i%COLS,row=Math.floor(i/COLS);
+        const cx=PAD+col*(colW+GAP),cy=GTOP+row*rowH;
+        const sel=i===selectedChar;
+        // セル背景
+        ctx.globalAlpha=sel?0.22:0.06;
+        ctx.fillStyle=sel?ch.col:'#ffffff';
+        ctx.fillRect(cx,cy+1,colW,rowH-2);
+        ctx.globalAlpha=1;
+        if(sel){
+            ctx.strokeStyle=ch.col;ctx.lineWidth=1.5;
+            ctx.strokeRect(cx,cy+1,colW,rowH-2);
+            ctx.globalAlpha=0.1+Math.sin(gTick*.09)*.06;
+            ctx.fillStyle=ch.col;ctx.fillRect(cx,cy+1,colW,rowH-2);
+            ctx.globalAlpha=1;
+        }
+        // キャラプレビュー
+        drawCharPreview(i,cx+14,cy+rowH/2,0.62);
+        // テキスト
+        const tx=cx+29;
+        txo(ch.name,tx,cy+rowH/2-3,sel?ch.col:'#cccccc',6,'left');
+        txo(ch.desc,tx,cy+rowH/2+6,'#888888',4,'left');
+        // HPドット
+        for(let j=0;j<ch.mhp;j++){
+            ctx.fillStyle=j<4?'#44ff44':'#ffaa00';
+            ctx.globalAlpha=sel?0.85:0.3;
+            ctx.fillRect(tx+j*5,cy+rowH-7,4,3);
+        }
+        ctx.globalAlpha=1;
     });
-
-    // 左キャラ（前）
-    const prevIdx=(selectedChar-1+CHARS.length)%CHARS.length;
-    const nextIdx=(selectedChar+1)%CHARS.length;
-    const prevLocked=CHARS[prevIdx].locked;
-    const nextLocked=CHARS[nextIdx].locked;
-
-    ctx.globalAlpha=prevLocked?.25:.55;
-    drawCharPreview(prevIdx,W/2-70,CY,1.4);
-    ctx.globalAlpha=nextLocked?.25:.55;
-    drawCharPreview(nextIdx,W/2+70,CY,1.4);
-    ctx.globalAlpha=1;
-
-    // 中央（選択中）
-    const pulse=Math.sin(gTick*.07)*.05;
-    ctx.globalAlpha=1;
-    const ch=CHARS[selectedChar];
-    // 光輪
-    ctx.fillStyle=ch.col;ctx.globalAlpha=.15+pulse;
-    ctx.beginPath();ctx.arc(W/2,CY,32,0,Math.PI*2);ctx.fill();
-    ctx.globalAlpha=1;
-    // パネル枠
-    ctx.strokeStyle=ch.col;ctx.lineWidth=1.5;
-    ctx.strokeRect(W/2-28,CY-36,56,60);
-    ctx.fillStyle='rgba(0,0,0,.35)';ctx.fillRect(W/2-28,CY-36,56,60);
-    // キャラ描画
-    drawCharPreview(selectedChar,W/2,CY,2.2);
-    // テキスト
-    txo(ch.name,W/2,CY+32,ch.col,8);
-    txo(ch.desc,W/2,CY+43,'#aaaaaa',5.5);
-    // HP表示
-    txo('HP',W/2-16,CY+54,'#88ff88',5);
-    for(let i=0;i<ch.mhp;i++){
-        ctx.fillStyle=i<4?'#44ff44':'#ffaa00';
-        ctx.fillRect(W/2-8+i*5,CY+49,4,4);
-    }
-    // 点インジケータ
-    const unlocked=CHARS.filter(c=>!c.locked);
-    const uidx=unlocked.findIndex(c=>c===ch);
-    const dotTotal=unlocked.length;
-    const dotY=CY+60;
-    unlocked.forEach((_,di)=>{
-        ctx.fillStyle=di===uidx?ch.col:'rgba(255,255,255,.25)';
-        ctx.beginPath();ctx.arc(W/2-((dotTotal-1)*5)+di*10,dotY,2.5,0,Math.PI*2);ctx.fill();
-    });
-
     if(Math.floor(gTick/28)%2===0)
-        txo('中央タップでスタート',W/2,H-8,'#44ff88',6);
+        txo('タップで選択  もう一度でSTART',W/2,H-4,'#44ff88',5);
 }
 
 function startBgm(st){
@@ -353,6 +332,14 @@ cv.addEventListener('touchend',e=>{
 cv.addEventListener('touchcancel',()=>{keys.L=keys.R=false;Object.keys(tids).forEach(k=>tids[k]=null);},{passive:true});
 document.addEventListener('keydown',e=>{
     getAC();
+    if(gs==='start'){
+        if(e.key==='ArrowLeft'&&selectedChar%2===1){selectedChar--;return;}
+        if(e.key==='ArrowRight'&&selectedChar%2===0&&selectedChar+1<CHARS.length){selectedChar++;return;}
+        if(e.key==='ArrowUp'&&selectedChar>=2){selectedChar-=2;return;}
+        if(e.key==='ArrowDown'&&selectedChar+2<CHARS.length){selectedChar+=2;return;}
+        if(e.key==='Enter'){if(!CHARS[selectedChar].locked){gs='playing';resetGame();}return;}
+        return;
+    }
     if(e.key==='ArrowLeft')keys.L=true;
     if(e.key==='ArrowRight')keys.R=true;
     if(e.key==='ArrowUp'||e.key===' ')doJump();
@@ -434,27 +421,17 @@ function inp(cx,cy){
     if(gs==='splash'){splashTimer=200;return;}
     if(gs==='start'){
         if(cx!==undefined){
-            // ← ボタン
-            if(cx<44&&cy>50&&cy<H-20){
-                let n=selectedChar-1;
-                while(n>=0&&CHARS[n].locked)n--;
-                if(n>=0)selectedChar=n;
-                return;
+            const GTOP=42,rowH=(158-42)/4;
+            const col=cx<W/2?0:1;
+            const row=Math.floor((cy-GTOP)/rowH);
+            const idx=row*2+col;
+            if(idx>=0&&idx<CHARS.length&&cy>=GTOP&&row<4){
+                if(idx===selectedChar){if(!CHARS[idx].locked){gs='playing';resetGame();}}
+                else{selectedChar=idx;}
             }
-            // → ボタン
-            if(cx>W-44&&cy>50&&cy<H-20){
-                let n=selectedChar+1;
-                while(n<CHARS.length&&CHARS[n].locked)n++;
-                if(n<CHARS.length)selectedChar=n;
-                return;
-            }
-            // 中央タップでもキャラ変更（左右でprev/next）
-            if(cy>50&&cy<H-20){
-                if(!CHARS[selectedChar].locked){gs='playing';resetGame();}
-                return;
-            }
+        }else{
+            if(!CHARS[selectedChar].locked){gs='playing';resetGame();}
         }
-        if(cx===undefined){gs='playing';resetGame();}
         return;
     }
     if(gs==='stageclear'){if(clearTimer>60){if(stage>=2){if(score>best){best=score;localStorage.setItem('ldo_best',best);}location.reload();}else{stage++;gs='playing';resetGame();}}return;}
@@ -1262,22 +1239,22 @@ function draw(){
             ctx.fillStyle=`rgba(255,255,255,${.2+Math.sin(gTick*.03+i)*.15})`;
             ctx.fillRect((i*73+11)%W,(i*47+7)%70,1,1);
         }
-        // Orbs
+        // タイトル（上部コンパクト）
         const pulse=Math.sin(gTick*.06)*.15;
-        ctx.globalAlpha=.75+pulse;
-        ctx.fillStyle='#ffe840';ctx.beginPath();ctx.arc(W/2-28,H/2-8,10,0,Math.PI*2);ctx.fill();
-        ctx.fillStyle='#8822ff';ctx.beginPath();ctx.arc(W/2+28,H/2-8,10,0,Math.PI*2);ctx.fill();
-        ctx.globalAlpha=.18+pulse*.5;
-        ctx.fillStyle='#ffe840';ctx.beginPath();ctx.arc(W/2-28,H/2-8,18,0,Math.PI*2);ctx.fill();
-        ctx.fillStyle='#8822ff';ctx.beginPath();ctx.arc(W/2+28,H/2-8,18,0,Math.PI*2);ctx.fill();
+        ctx.globalAlpha=.8+pulse;
+        ctx.fillStyle='#ffe840';ctx.beginPath();ctx.arc(W/2-38,18,5,0,Math.PI*2);ctx.fill();
+        ctx.fillStyle='#8822ff';ctx.beginPath();ctx.arc(W/2+38,18,5,0,Math.PI*2);ctx.fill();
+        ctx.globalAlpha=.2+pulse*.3;
+        ctx.fillStyle='#ffe840';ctx.beginPath();ctx.arc(W/2-38,18,10,0,Math.PI*2);ctx.fill();
+        ctx.fillStyle='#8822ff';ctx.beginPath();ctx.arc(W/2+38,18,10,0,Math.PI*2);ctx.fill();
         ctx.globalAlpha=1;
-        txo('LIGHT',W/2-28,H/2-8+4,'#ffe840',8);
-        txo('DARK',W/2+28,H/2-8+4,'#cc88ff',8);
-        txo('&',W/2,H/2-8+4,'#ffffff',7);
-        txo('ORB',W/2,H/2+14,'#ffffff',14);
-        // ===== カルーセル式キャラ選択 =====
-        drawCarousel();
-        if(best>0)txo('ベスト: '+best+' pt',W/2,H-4,'#ffaa44',5.5);
+        txo('LIGHT',W/2-38,22,'#ffe840',5.5);
+        txo('&',W/2,22,'#ffffff',5);
+        txo('DARK',W/2+38,22,'#cc88ff',5.5);
+        txo('ORB',W/2,34,'#ffffff',9);
+        // 2列グリッドキャラ選択
+        drawGrid();
+        if(best>0)txo('BEST '+best,W-4,8,'#ffaa44',4.5,'right');
         ctx.restore();
     }
 
