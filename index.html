@@ -981,85 +981,120 @@ function drawElf(bx,by){
 function drawDragon(bx,by){
     if(P.inv>0&&Math.floor(P.inv/4)%2===0)return;
     const cx=bx+7,gy=by+22;
-    const bob=Math.round(Math.sin(P.fr*.18)*2);
-    const py=by+bob;
+    const ph=Math.floor(P.fr/7)%2;
     ctx.save();if(P.dir<0){ctx.translate(cx*2,0);ctx.scale(-1,1);}
 
-    // 尻尾（後方に太く、先端ひし形）
+    // === 尻尾（後方へ長くカーブ） ===
     ctx.fillStyle='#cc1a06';
-    ctx.beginPath();ctx.moveTo(cx-4,py+14);ctx.lineTo(cx-26,py+18);ctx.lineTo(cx-28,py+14);ctx.lineTo(cx-5,py+10);ctx.closePath();ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(cx-3,gy-12);ctx.quadraticCurveTo(cx-16,gy-8,cx-26,gy-4);
+    ctx.lineTo(cx-27,gy-1);ctx.quadraticCurveTo(cx-17,gy-6,cx-5,gy-14);
+    ctx.closePath();ctx.fill();
     ctx.fillStyle='#881004';
-    ctx.beginPath();ctx.moveTo(cx-26,py+14);ctx.lineTo(cx-34,py+12);ctx.lineTo(cx-26,py+10);ctx.lineTo(cx-24,py+12);ctx.closePath();ctx.fill();
+    ctx.beginPath();ctx.moveTo(cx-25,gy-4);ctx.lineTo(cx-33,gy-7);ctx.lineTo(cx-28,gy);ctx.closePath();ctx.fill();
 
-    // 大翼（後方に大きく展開）
-    ctx.fillStyle='#991004';
-    ctx.beginPath();ctx.moveTo(cx-3,py+6);ctx.lineTo(cx-26,py-14);ctx.lineTo(cx-32,py+2);ctx.lineTo(cx-24,py+16);ctx.closePath();ctx.fill();
+    // === 大翼（背中から上後方へ） ===
+    ctx.fillStyle='#770e04';
+    ctx.beginPath();ctx.moveTo(cx-1,gy-21);ctx.lineTo(cx-28,gy-43);ctx.lineTo(cx-35,gy-23);ctx.lineTo(cx-22,gy-15);ctx.closePath();ctx.fill();
+    ctx.fillStyle='#aa1806';
+    ctx.beginPath();ctx.moveTo(cx-1,gy-21);ctx.lineTo(cx-25,gy-41);ctx.lineTo(cx-32,gy-23);ctx.lineTo(cx-20,gy-15);ctx.closePath();ctx.fill();
+    ctx.globalAlpha=0.6;ctx.fillStyle='#cc2208';
+    ctx.beginPath();ctx.moveTo(cx-1,gy-21);ctx.lineTo(cx-22,gy-39);ctx.lineTo(cx-29,gy-23);ctx.lineTo(cx-17,gy-15);ctx.closePath();ctx.fill();
+    ctx.globalAlpha=1;
     ctx.strokeStyle='#660804';ctx.lineWidth=1.5;
-    ctx.beginPath();ctx.moveTo(cx-3,py+6);ctx.lineTo(cx-26,py-14);ctx.stroke();
-    ctx.beginPath();ctx.moveTo(cx-3,py+6);ctx.lineTo(cx-32,py+2);ctx.stroke();
-    ctx.beginPath();ctx.moveTo(cx-3,py+6);ctx.lineTo(cx-24,py+16);ctx.stroke();
-    ctx.fillStyle='#550604';
-    ctx.beginPath();ctx.moveTo(cx-26,py-14);ctx.lineTo(cx-30,py-18);ctx.lineTo(cx-24,py-12);ctx.closePath();ctx.fill();
-    ctx.beginPath();ctx.moveTo(cx-32,py+2);ctx.lineTo(cx-37,py+3);ctx.lineTo(cx-31,py+7);ctx.closePath();ctx.fill();
+    ctx.beginPath();ctx.moveTo(cx-1,gy-21);ctx.lineTo(cx-25,gy-41);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(cx-1,gy-21);ctx.lineTo(cx-32,gy-23);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(cx-1,gy-21);ctx.lineTo(cx-20,gy-15);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(cx-1,gy-21);ctx.lineTo(cx-15,gy-38);ctx.stroke();
+    ctx.fillStyle='#440604';
+    ctx.beginPath();ctx.moveTo(cx-25,gy-41);ctx.lineTo(cx-30,gy-45);ctx.lineTo(cx-23,gy-39);ctx.closePath();ctx.fill();
+    ctx.beginPath();ctx.moveTo(cx-32,gy-23);ctx.lineTo(cx-38,gy-23);ctx.lineTo(cx-31,gy-19);ctx.closePath();ctx.fill();
 
-    // 背びれ（3本）
+    // === 後ろ脚2本（二足歩行） ===
+    const la=ph*3; // 左脚オフセット
+    const ra=(1-ph)*3; // 右脚オフセット
+    // 右脚
+    ctx.fillStyle='#aa1204';
+    ctx.beginPath();ctx.moveTo(cx+2,gy-14);ctx.lineTo(cx+8,gy-14);ctx.lineTo(cx+9,gy-7-ra);ctx.lineTo(cx+3,gy-7-ra);ctx.closePath();ctx.fill();
+    ctx.beginPath();ctx.moveTo(cx+3,gy-7-ra);ctx.lineTo(cx+8,gy-7-ra);ctx.lineTo(cx+9+ra/2,gy);ctx.lineTo(cx+4,gy);ctx.closePath();ctx.fill();
+    ctx.fillStyle='#0a0404';ctx.fillRect(cx+2,gy,3,4);ctx.fillRect(cx+5,gy+1,3,5);ctx.fillRect(cx+8,gy,3,4);
+    // 左脚
+    ctx.fillStyle='#cc1806';
+    ctx.beginPath();ctx.moveTo(cx-6,gy-14);ctx.lineTo(cx,gy-14);ctx.lineTo(cx+1,gy-7-la);ctx.lineTo(cx-5,gy-7-la);ctx.closePath();ctx.fill();
+    ctx.beginPath();ctx.moveTo(cx-5,gy-7-la);ctx.lineTo(cx,gy-7-la);ctx.lineTo(cx+1-la/2,gy);ctx.lineTo(cx-4,gy);ctx.closePath();ctx.fill();
+    ctx.fillStyle='#0a0404';ctx.fillRect(cx-6,gy,3,4);ctx.fillRect(cx-3,gy+1,3,5);ctx.fillRect(cx,gy,3,4);
+
+    // === 胴体（どっしり） ===
+    ctx.fillStyle='#bb1606';ctx.beginPath();ctx.ellipse(cx,gy-15,8,5,0,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#cc1806';ctx.beginPath();ctx.ellipse(cx+1,gy-22,10,9,0,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#ee2808';ctx.beginPath();ctx.ellipse(cx-1,gy-23,7,6,0,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#ee7a10';ctx.beginPath();ctx.ellipse(cx+2,gy-20,5,7,0,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#f09820';ctx.fillRect(cx-1,gy-27,6,12);
+    ctx.fillStyle='#cc6510';for(let i=0;i<5;i++)ctx.fillRect(cx-2,gy-26+i*2.2,8,1);
+
+    // === 前腕（短く前方に） ===
+    ctx.fillStyle='#cc1806';
+    ctx.fillRect(cx+8,gy-25,4,8);
+    ctx.fillRect(cx-10,gy-25,4,8);
+    ctx.fillStyle='#0a0404';
+    ctx.fillRect(cx+7,gy-17,3,5);ctx.fillRect(cx+9,gy-16,3,6);ctx.fillRect(cx+11,gy-17,3,5);
+    ctx.fillRect(cx-11,gy-17,3,5);ctx.fillRect(cx-9,gy-16,3,6);ctx.fillRect(cx-7,gy-17,3,5);
+
+    // === 背びれ（3本） ===
     ctx.fillStyle='#aa1006';
-    [[cx-1,8],[cx+2,12],[cx+5,9]].forEach(([fx,fh])=>{
-        ctx.beginPath();ctx.moveTo(fx-2,py+5);ctx.lineTo(fx,py+5-fh);ctx.lineTo(fx+2,py+5);ctx.closePath();ctx.fill();
+    [[cx-3,13],[cx,18],[cx+3,14]].forEach(([fx,fh])=>{
+        ctx.beginPath();ctx.moveTo(fx-2,gy-25);ctx.lineTo(fx,gy-25-fh);ctx.lineTo(fx+2,gy-25);ctx.closePath();ctx.fill();
     });
 
-    // 胴体（どっしり楕円）
-    ctx.fillStyle='#cc1806';ctx.beginPath();ctx.ellipse(cx+1,py+11,10,9,0,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle='#ee2808';ctx.beginPath();ctx.ellipse(cx-1,py+9,7,6,0,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle='#ee7a10';ctx.beginPath();ctx.ellipse(cx+2,py+13,5,7,0,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle='#f09820';ctx.fillRect(cx-1,py+8,6,10);
-    ctx.fillStyle='#cc6510';for(let i=0;i<4;i++)ctx.fillRect(cx-2,py+9+i*2.5,8,1);
+    // === 首（前方へ長く） ===
+    ctx.fillStyle='#cc1806';
+    ctx.beginPath();
+    ctx.moveTo(cx-3,gy-28);ctx.lineTo(cx+4,gy-28);
+    ctx.lineTo(cx+9,gy-37);ctx.lineTo(cx+2,gy-37);
+    ctx.closePath();ctx.fill();
+    ctx.fillStyle='#ee2808';
+    ctx.beginPath();
+    ctx.moveTo(cx-2,gy-28);ctx.lineTo(cx+3,gy-28);
+    ctx.lineTo(cx+8,gy-37);ctx.lineTo(cx+2,gy-37);
+    ctx.closePath();ctx.fill();
 
-    // 後ろ脚（爪付き）
-    ctx.fillStyle='#cc1806';ctx.fillRect(cx-6,gy-11,5,11+bob);
-    ctx.fillStyle='#0a0404';ctx.fillRect(cx-8,gy,3,4);ctx.fillRect(cx-5,gy+1,3,5);ctx.fillRect(cx-2,gy,3,4);
-
-    // 前腕（右手、爪付き）
-    ctx.fillStyle='#cc1806';ctx.fillRect(cx+8,py+12,5,9+bob);
-    ctx.fillStyle='#0a0404';ctx.fillRect(cx+7,gy-2,3,5);ctx.fillRect(cx+9,gy-1,3,6);ctx.fillRect(cx+12,gy-2,3,5);
-
-    // 首（太く）
-    ctx.fillStyle='#cc1806';ctx.beginPath();ctx.ellipse(cx+6,py+4,6,8,0.3,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle='#ee2808';ctx.beginPath();ctx.ellipse(cx+5,py+3,5,6,0.25,0,Math.PI*2);ctx.fill();
-
-    // 頭（大きめ、ドラゴン顔）
-    ctx.fillStyle='#aa1204';ctx.beginPath();ctx.ellipse(cx+13,py-2,12,8,0.1,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle='#cc1806';ctx.beginPath();ctx.ellipse(cx+13,py-3,11,7,0.1,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle='#ee2808';ctx.beginPath();ctx.ellipse(cx+11,py-4,9,6,0.05,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle='#bb1504';ctx.beginPath();ctx.ellipse(cx+14,py+1,9,4,0.2,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle='#cc1806';ctx.fillRect(cx+20,py-5,8,6);
-    ctx.fillStyle='#ee2808';ctx.fillRect(cx+21,py-4,6,4);
-    ctx.fillStyle='#220606';ctx.beginPath();ctx.arc(cx+26,py-3,1.2,0,Math.PI*2);ctx.fill();
+    // === 頭（大きな西洋ドラゴン顔） ===
+    ctx.fillStyle='#aa1204';ctx.beginPath();ctx.ellipse(cx+11,gy-41,13,9,0.2,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#cc1806';ctx.beginPath();ctx.ellipse(cx+11,gy-42,12,8,0.2,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#ee2808';ctx.beginPath();ctx.ellipse(cx+9,gy-43,10,7,0.1,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#bb1504';ctx.beginPath();ctx.ellipse(cx+12,gy-37,10,5,0.2,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#cc1806';ctx.fillRect(cx+19,gy-44,9,8);
+    ctx.fillStyle='#ee2808';ctx.fillRect(cx+20,gy-43,7,6);
+    ctx.fillStyle='#220606';ctx.beginPath();ctx.arc(cx+26,gy-41,1.5,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle='#660804';ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(cx+13,gy-38);ctx.lineTo(cx+27,gy-40);ctx.stroke();
     ctx.fillStyle='#f0eedc';
-    ctx.beginPath();ctx.moveTo(cx+18,py+0);ctx.lineTo(cx+17,py+6);ctx.lineTo(cx+20,py+0);ctx.closePath();ctx.fill();
-    ctx.beginPath();ctx.moveTo(cx+22,py-1);ctx.lineTo(cx+21,py+4);ctx.lineTo(cx+24,py-1);ctx.closePath();ctx.fill();
+    ctx.beginPath();ctx.moveTo(cx+18,gy-38);ctx.lineTo(cx+17,gy-32);ctx.lineTo(cx+21,gy-38);ctx.closePath();ctx.fill();
+    ctx.beginPath();ctx.moveTo(cx+22,gy-38);ctx.lineTo(cx+21,gy-32);ctx.lineTo(cx+25,gy-38);ctx.closePath();ctx.fill();
+    ctx.fillStyle='#e0dcc8';
+    ctx.beginPath();ctx.moveTo(cx+19,gy-39);ctx.lineTo(cx+20,gy-44);ctx.lineTo(cx+22,gy-39);ctx.closePath();ctx.fill();
 
-    // 目（黄色スリット瞳）
-    ctx.fillStyle='#0a0202';ctx.beginPath();ctx.ellipse(cx+9,py-4,5,4,0,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle='#f8e000';ctx.beginPath();ctx.ellipse(cx+9,py-4,4,3,0,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle='#0a0202';ctx.beginPath();ctx.ellipse(cx+9,py-4,1.3,2.8,0,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle='#ffffff';ctx.beginPath();ctx.arc(cx+7.5,py-5.5,1,0,Math.PI*2);ctx.fill();
+    // === 目（黄スリット） ===
+    ctx.fillStyle='#0a0202';ctx.beginPath();ctx.ellipse(cx+8,gy-44,5.5,4.5,0,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#f8e000';ctx.beginPath();ctx.ellipse(cx+8,gy-44,4.5,3.5,0,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#0a0202';ctx.beginPath();ctx.ellipse(cx+8,gy-44,1.4,3.2,0,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#ffffff';ctx.beginPath();ctx.arc(cx+6.5,gy-45.5,1.1,0,Math.PI*2);ctx.fill();
 
-    // 角（2本）
-    ctx.fillStyle='#550806';
-    ctx.beginPath();ctx.moveTo(cx+10,py-9);ctx.lineTo(cx+7,py-20);ctx.lineTo(cx+13,py-9);ctx.closePath();ctx.fill();
-    ctx.fillStyle='#771008';
-    ctx.beginPath();ctx.moveTo(cx+10,py-9);ctx.lineTo(cx+8,py-18);ctx.lineTo(cx+12,py-9);ctx.closePath();ctx.fill();
-    ctx.fillStyle='#550806';
-    ctx.beginPath();ctx.moveTo(cx+7,py-8);ctx.lineTo(cx+2,py-17);ctx.lineTo(cx+9,py-7);ctx.closePath();ctx.fill();
+    // === 角（2本、後方へ） ===
+    ctx.fillStyle='#440804';
+    ctx.beginPath();ctx.moveTo(cx+8,gy-48);ctx.lineTo(cx+5,gy-60);ctx.lineTo(cx+11,gy-48);ctx.closePath();ctx.fill();
+    ctx.fillStyle='#661008';
+    ctx.beginPath();ctx.moveTo(cx+8,gy-48);ctx.lineTo(cx+6,gy-57);ctx.lineTo(cx+10,gy-48);ctx.closePath();ctx.fill();
+    ctx.fillStyle='#440804';
+    ctx.beginPath();ctx.moveTo(cx+5,gy-46);ctx.lineTo(cx+0,gy-57);ctx.lineTo(cx+7,gy-45);ctx.closePath();ctx.fill();
 
-    // 炎ブレス（攻撃時）
+    // === 炎ブレス（攻撃時） ===
     if(P.atkCd>25){
         const tf=Math.min(1,(P.atkCd-25)/10);
         for(let i=5;i>=1;i--){
             ctx.globalAlpha=(0.15+i*0.17)*tf;
             ctx.fillStyle=['#ffffff','#ffee00','#ffaa00','#ff5500','#cc1100'][5-i];
-            ctx.beginPath();ctx.ellipse(cx+28+i*4,py-2,i*4,i*2.5,0,0,Math.PI*2);ctx.fill();
+            ctx.beginPath();ctx.ellipse(cx+29+i*4,gy-40,i*4.5,i*2.8,0,0,Math.PI*2);ctx.fill();
         }
         ctx.globalAlpha=1;
     }
