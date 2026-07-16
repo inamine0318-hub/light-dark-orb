@@ -294,7 +294,7 @@ const GR=0.42,JMP=5.8,PW=14,PH=22;
 let P={x:60,y:GY-PH,w:PW,h:PH,vx:0,vy:0,onG:false,dj:false,hp:5,mhp:5,inv:0,fr:0,dir:1,atk:0,atkCd:0,atkCombo:0,comboWin:0,comboSkillWin:0};
 
 // ===== ENEMIES / OBJECTS =====
-let enemies=[],items=[],arrows=[],platforms=[];
+let enemies=[],items=[],arrows=[],platforms=[],bombs=[];
 let spawnCd=60,platSpawnCd=120;
 let boss=null,bossActive=false,bossDefeated=false;
 const BOSS_TRIGGER=2800; // scrollがこの値を超えたらボス出現
@@ -502,7 +502,7 @@ function inp(cx,cy){
 function resetGame(){
     P.x=60;P.y=GY-P.h;P.vx=0;P.vy=0;P.onG=true;P.dj=false;
     P.mhp=CHARS[selectedChar].mhp;P.hp=P.mhp;P.inv=0;P.fr=0;P.atk=0;P.atkCd=0;P.dir=1;P.atkCombo=0;P.comboWin=0;P.comboSkillWin=0;
-    enemies=[];items=[];arrows=[];platforms=[];orbs=[];parts=[];
+    enemies=[];items=[];arrows=[];platforms=[];orbs=[];parts=[];bombs=[];
     scroll=0;score=0;shake=0;flash=0;t=0;spawnCd=60;platSpawnCd=120;
     boss=null;bossActive=false;bossDefeated=false;clearTimer=0;
     skillLv=0;skillExp=0;skillCd=0;pwrupSpawnCd=220;combo=0;comboTimer=0;comboMax=0;hitStop=0;
@@ -627,6 +627,87 @@ function drawHero(bx,by){
     ctx.fillStyle='#f0c000';ctx.fillRect(cx+5,by+5+(sa?18:12),10,2);// 鍔
     ctx.fillStyle='#8a4010';ctx.fillRect(cx+9,by+7+(sa?18:12),2,5);// 柄
     if(sa){ctx.globalAlpha=0.3;ctx.fillStyle='#ffffff';ctx.fillRect(cx+6,by+3,7,22);ctx.globalAlpha=1;}
+    ctx.restore();
+}
+
+function drawUFO(en){
+    const x=Math.floor(en.sx-scroll),y=Math.floor(en.sy);
+    if(x<-40||x>W+40)return;
+    if(en.inv>0&&Math.floor(en.inv/4)%2===0)return;
+    const cx=x+15,cy=y+8;
+    ctx.save();
+    // 影（地面）
+    ctx.globalAlpha=.18;ctx.fillStyle='#000000';ctx.beginPath();ctx.ellipse(cx,GY-2,18,4,0,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;
+    // トラクタービーム（爆弾投下CD低い時）
+    if(en.shotCd<30){
+        ctx.globalAlpha=(30-en.shotCd)/30*.4;
+        const bgrad=ctx.createLinearGradient(cx,cy+6,cx,GY);
+        bgrad.addColorStop(0,'rgba(255,200,0,.8)');bgrad.addColorStop(1,'rgba(255,100,0,0)');
+        ctx.fillStyle=bgrad;
+        ctx.beginPath();ctx.moveTo(cx-4,cy+6);ctx.lineTo(cx+4,cy+6);ctx.lineTo(cx+12,GY);ctx.lineTo(cx-12,GY);ctx.closePath();ctx.fill();
+        ctx.globalAlpha=1;
+    }
+    // 本体（皿形）
+    ctx.fillStyle='#1a1a2e';ctx.beginPath();ctx.ellipse(cx,cy+2,17,6,0,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#2d2d4e';ctx.beginPath();ctx.ellipse(cx,cy+1,16,5,0,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#3a3a60';ctx.beginPath();ctx.ellipse(cx-2,cy,14,3,0,0,Math.PI*2);ctx.fill();// ハイライト
+    // ドーム
+    ctx.fillStyle='#0a2a10';ctx.beginPath();ctx.ellipse(cx,cy-2,9,7,0,-Math.PI,0);ctx.fill();
+    ctx.fillStyle='rgba(0,255,100,.18)';ctx.beginPath();ctx.ellipse(cx,cy-2,9,7,0,-Math.PI,0);ctx.fill();
+    ctx.fillStyle='rgba(180,255,200,.35)';ctx.beginPath();ctx.ellipse(cx-2,cy-4,4,3,-.3,-Math.PI*.9,-.1);ctx.fill();// ドームハイライト
+    // リムライト（回転）
+    const rp=en.fr*.12;
+    for(let i=0;i<6;i++){
+        const a=i*Math.PI/3+rp;
+        const lx=cx+Math.cos(a)*12,ly=cy+2+Math.sin(a)*3.5;
+        const lcol=i%2===0?'#ff4400':'#00ffcc';
+        ctx.fillStyle=lcol;ctx.beginPath();ctx.arc(lx,ly,1.8,0,Math.PI*2);ctx.fill();
+        ctx.globalAlpha=.4;ctx.fillStyle=lcol;ctx.beginPath();ctx.arc(lx,ly,3.5,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;
+    }
+    // HPバー（小）
+    if(en.hp<en.maxHp){
+        ctx.fillStyle='rgba(0,0,0,.7)';ctx.fillRect(cx-12,y-6,24,3);
+        ctx.fillStyle='#cc44ff';ctx.fillRect(cx-12,y-6,24*(en.hp/en.maxHp),3);
+    }
+    if(en.dead){ctx.globalAlpha=1-en.fr/20;ctx.fillStyle='#ff4400';ctx.beginPath();ctx.arc(cx,cy,14,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;}
+    ctx.restore();
+}
+
+function drawHunter(en){
+    const x=Math.floor(en.sx-scroll),y=Math.floor(en.sy);
+    if(x<-30||x>W+30)return;
+    if(en.inv>0&&Math.floor(en.inv/4)%2===0)return;
+    const cx=x+8,gy=y+26,ph=Math.floor(en.fr/5)%2,fl=en.dir<0;
+    ctx.save();if(fl){ctx.translate(cx*2,0);ctx.scale(-1,1);}
+    // 細い脚（高速型）
+    ctx.fillStyle='#060218';
+    ctx.fillRect(cx-5,gy-(ph?18:12),3,ph?18:12);ctx.fillRect(cx+2,gy-(ph?12:18),3,ph?12:18);
+    ctx.fillStyle='#180844';ctx.fillRect(cx-6,gy-4,4,4);ctx.fillRect(cx+2,gy-4,4,4);
+    // 流線型ボディ
+    ctx.fillStyle='#0c0430';ctx.beginPath();ctx.ellipse(cx,y+12,8,12,0,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#1a0848';ctx.beginPath();ctx.ellipse(cx-1,y+11,6,10,0,0,Math.PI*2);ctx.fill();
+    // 速度ライン（スリット）
+    ctx.strokeStyle='#4400cc';ctx.lineWidth=1;
+    for(let i=0;i<3;i++){ctx.beginPath();ctx.moveTo(cx+6,y+7+i*4);ctx.lineTo(cx+12,y+6+i*4);ctx.stroke();}
+    // 頭（細長い）
+    ctx.fillStyle='#0a0220';ctx.beginPath();ctx.ellipse(cx,y+2,7,8,0,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#160640';ctx.beginPath();ctx.ellipse(cx-1,y+1,5,6,0,0,Math.PI*2);ctx.fill();
+    // 目（2つ、横長）
+    ctx.fillStyle='#111111';ctx.fillRect(cx-5,y+0,4,3);ctx.fillRect(cx+1,y+0,4,3);
+    ctx.globalAlpha=.9+Math.sin(en.fr*.2)*.1;
+    ctx.fillStyle='#ff00cc';ctx.fillRect(cx-4,y+1,3,1);ctx.fillRect(cx+2,y+1,3,1);
+    ctx.globalAlpha=.3;ctx.fillStyle='#ff44ff';ctx.fillRect(cx-5,y-1,5,5);ctx.fillRect(cx+1,y-1,5,5);ctx.globalAlpha=1;
+    // 触手腕
+    ctx.strokeStyle='#220860';ctx.lineWidth=2.5;
+    ctx.beginPath();ctx.moveTo(cx-7,y+10);ctx.lineTo(cx-14,y+14);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(cx+7,y+10);ctx.lineTo(cx+14,y+14);ctx.stroke();
+    // 爪
+    ctx.strokeStyle='#8800cc';ctx.lineWidth=1.5;
+    [[cx-14,y+14],[cx+14,y+14]].forEach(([bx2,by2])=>{
+        ctx.beginPath();ctx.moveTo(bx2,by2);ctx.lineTo(bx2-3,by2+5);ctx.stroke();
+        ctx.beginPath();ctx.moveTo(bx2,by2);ctx.lineTo(bx2+3,by2+5);ctx.stroke();
+    });
+    if(en.dead){ctx.globalAlpha=1-en.fr/20;ctx.fillStyle='#8800cc';ctx.fillRect(cx-8,gy-4,16,4);ctx.globalAlpha=1;}
     ctx.restore();
 }
 
@@ -1419,18 +1500,37 @@ function update(){
             if(en.sy+en.h<GY){en.vy+=GR;en.sy+=en.vy;}else{en.sy=GY-en.h;en.vy=0;}
             if(Math.abs(pdx)>4){en.vx=(pdx>0?.55:-.55);en.dir=pdx>0?1:-1;}else en.vx=0;
         }else if(en.type==='droid'){
-            // Keep distance ~70px, shoot arrow
             const dist=Math.abs(pdx);
             en.dir=pdx>0?1:-1;
             if(dist>80){en.sx+=(pdx>0?.4:-.4);}
             else if(dist<50){en.sx+=(pdx>0?-.3:.3);}
-            else en.vx=0;
             if(en.sy+en.h<GY){en.vy+=GR;en.sy+=en.vy;}else{en.sy=GY-en.h;en.vy=0;}
             en.shotCd=Math.max(0,(en.shotCd||80)-1);
-            if(en.shotCd<=0&&dist<160){
-                en.shotCd=90;
-                arrows.push({sx:en.sx+(en.dir>0?en.w:0),sy:en.sy+8,vx:en.dir*3.2,life:0,maxLife:80});
+            if(en.shotCd<=0&&dist<170){
+                en.shotCd=85;
+                arrows.push({sx:en.sx+(en.dir>0?en.w:0),sy:en.sy+8,vx:en.dir*3.6,life:0,maxLife:85});
                 snd(320,.06,.4);
+            }
+        }else if(en.type==='hunter'){
+            // 高速・ジャンプ型
+            const dist=Math.abs(pdx);
+            en.dir=pdx>0?1:-1;
+            en.sx+=en.dir*.85;
+            if(en.sy+en.h<GY){en.vy+=GR*1.1;en.sy+=en.vy;}else{en.sy=GY-en.h;en.vy=0;}
+            en.jumpCd=Math.max(0,(en.jumpCd||80)-1);
+            if(en.jumpCd<=0&&dist<120&&en.sy+en.h>=GY){en.jumpCd=90;en.vy=-7;}
+        }else if(en.type==='ufo'){
+            // 空中浮遊・爆弾投下
+            const targetY=(en.floatBase||GY-72)+Math.sin(en.fr*.04)*8;
+            en.sy+=(targetY-en.sy)*.06;
+            const dist=Math.abs(pdx);
+            en.dir=pdx>0?1:-1;
+            if(dist>40){en.sx+=en.dir*.5;}
+            en.shotCd=Math.max(0,(en.shotCd||90)-1);
+            if(en.shotCd<=0&&dist<200){
+                en.shotCd=110+Math.floor(Math.random()*40);
+                bombs.push({sx:en.sx+en.w/2-3,sy:en.sy+en.h,vy:0,life:0,maxLife:140});
+                snd(180,.06,.3);
             }
         }
     });
@@ -1449,6 +1549,22 @@ function update(){
         });
     }
     arrows=arrows.filter(ar=>ar.life<ar.maxLife&&ar.sx>scroll-20&&ar.sx<scroll+W+20);
+
+    // UFO爆弾 update
+    bombs.forEach(bm=>{
+        bm.vy+=0.38;bm.sy+=bm.vy;bm.life++;
+        // プレイヤー当たり
+        if(P.inv<=0&&P.x<bm.sx+8&&P.x+P.w>bm.sx&&P.y<bm.sy+8&&P.y+P.h>bm.sy){
+            bm.life=999;P.hp--;P.inv=50;shake=7;flash=14;sfx('hit');P.vy=-2;
+            spark(bm.sx+4,bm.sy,'#ff8820',12);
+            if(P.hp<=0){if(score>best){best=score;localStorage.setItem('ldo_best',best);}gs='gameover';}
+        }
+        // 着地爆発
+        if(bm.sy>GY-4&&bm.life<999){
+            bm.life=999;spark(bm.sx+4,GY-4,'#ff6600',14);spark(bm.sx+4,GY-4,'#ffaa44',8);snd(200,.1,.5);
+        }
+    });
+    bombs=bombs.filter(bm=>bm.life<bm.maxLife&&bm.sx>scroll-20&&bm.sx<scroll+W+20);
 
     // Boss
     if(scroll>=BOSS_TRIGGER&&!bossActive&&!bossDefeated){
@@ -1506,19 +1622,42 @@ function update(){
     }
     platforms=platforms.filter(pl=>pl.sx>scroll-60&&pl.sx<scroll+W+200);
 
-    // Spawn
+    // Spawn（ステージ進行で種類増加）
     if(!bossActive){
         spawnCd--;
         if(spawnCd<=0){
-            spawnCd=90+Math.floor(Math.random()*70);
-            const useSkele=t>400&&Math.random()<.4;
-            if(useSkele){
-                enemies.push({sx:scroll+W+10,sy:GY-30,w:18,h:30,hp:3,maxHp:3,vx:0,vy:0,dir:-1,fr:0,inv:0,dead:false,type:'droid',shotCd:60});
-            }else{
-                enemies.push({sx:scroll+W+10,sy:GY-24,w:18,h:24,hp:2,maxHp:2,vx:-.5,vy:0,dir:-1,fr:0,inv:0,dead:false,type:'grub'});
+            spawnCd=80+Math.floor(Math.random()*60);
+            // Stage1: Grub→+Droid  Stage2: +Hunter→+UFO
+            const roll=Math.random();
+            if(stage===1){
+                if(t>350&&roll<.4){
+                    // ドロイド（遠距離）
+                    enemies.push({sx:scroll+W+10,sy:GY-30,w:18,h:30,hp:3,maxHp:3,vx:0,vy:0,dir:-1,fr:0,inv:0,dead:false,type:'droid',shotCd:60});
+                }else{
+                    // グラブ（近接）
+                    enemies.push({sx:scroll+W+10,sy:GY-24,w:18,h:24,hp:2,maxHp:2,vx:-.5,vy:0,dir:-1,fr:0,inv:0,dead:false,type:'grub'});
+                }
+            }else{// Stage 2
+                if(roll<.3){
+                    // ハンター（高速跳躍型）
+                    enemies.push({sx:scroll+W+10,sy:GY-26,w:16,h:26,hp:4,maxHp:4,vx:-.8,vy:0,dir:-1,fr:0,inv:0,dead:false,type:'hunter',jumpCd:80});
+                }else if(roll<.6){
+                    // ドロイド
+                    enemies.push({sx:scroll+W+10,sy:GY-30,w:18,h:30,hp:4,maxHp:4,vx:0,vy:0,dir:-1,fr:0,inv:0,dead:false,type:'droid',shotCd:50});
+                }else{
+                    // グラブ（HPup）
+                    enemies.push({sx:scroll+W+10,sy:GY-24,w:18,h:24,hp:3,maxHp:3,vx:-.6,vy:0,dir:-1,fr:0,inv:0,dead:false,type:'grub'});
+                }
             }
-            if(t>600&&Math.random()<.3)
+            if(t>400&&Math.random()<.3)
                 items.push({sx:scroll+W+50,y:GY-8,w:8,h:8,type:'heart',life:400});
+        }
+        // UFOスポーン（Stage1後半 or Stage2）
+        if(!bossActive&&(stage===2||(stage===1&&scroll>1200))){
+            const ufoOnScreen=enemies.some(e=>e.type==='ufo'&&!e.dead);
+            if(!ufoOnScreen&&Math.random()<.004){
+                enemies.push({sx:scroll+W+20,sy:GY-72,w:30,h:16,hp:5,maxHp:5,vx:-.4,vy:0,dir:-1,fr:0,inv:0,dead:false,type:'ufo',shotCd:90,floatBase:GY-72});
+            }
         }
     }
 
@@ -1637,14 +1776,23 @@ function draw(){
     // Items
     items.forEach(it=>{const ix=it.sx-scroll;if(ix<-10||ix>W+10)return;drawItem(it);});
 
-    // Arrows
+    // Arrows (ドロイドのエネルギービーム)
     arrows.forEach(ar=>{
         const ax=Math.floor(ar.sx-scroll),ay=Math.floor(ar.sy);
-        // ドロイドのエネルギービーム
         ctx.fillStyle='#0066cc';px(ax,ay+1,9,2);
         ctx.fillStyle='#22aaff';px(ax+1,ay,7,4);
         ctx.fillStyle='#aaddff';px(ax+2,ay+1,5,2);
         ctx.globalAlpha=.35;ctx.fillStyle='#00ccff';px(ax-1,ay,11,4);ctx.globalAlpha=1;
+    });
+    // UFO爆弾
+    bombs.forEach(bm=>{
+        const bx=Math.floor(bm.sx-scroll),by=Math.floor(bm.sy);
+        ctx.fillStyle='#ff4400';ctx.beginPath();ctx.arc(bx+4,by+4,5,0,Math.PI*2);ctx.fill();
+        ctx.fillStyle='#ffaa00';ctx.beginPath();ctx.arc(bx+3,by+3,3,0,Math.PI*2);ctx.fill();
+        ctx.globalAlpha=.35;ctx.fillStyle='#ff2200';ctx.beginPath();ctx.arc(bx+4,by+4,8,0,Math.PI*2);ctx.fill();
+        // 火花尾
+        ctx.globalAlpha=.6;ctx.fillStyle='#ffcc44';px(bx+2,by+8,4,4+Math.floor(bm.vy*.5));
+        ctx.globalAlpha=1;
     });
 
     // Enemies
@@ -1653,6 +1801,8 @@ function draw(){
         const ex=en.sx-scroll;if(ex<-20||ex>W+20)return;
         if(en.type==='grub')drawGrub(en);
         else if(en.type==='droid')drawDroid(en);
+        else if(en.type==='hunter')drawHunter(en);
+        else if(en.type==='ufo')drawUFO(en);
     });
 
     // Boss
