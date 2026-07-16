@@ -271,7 +271,8 @@ let gs='splash',gTick=0,t=0;
 let splashTimer=0,clearTimer=0;
 let scroll=0,stage=1,score=0;
 let best=parseInt(localStorage.getItem('ldo_best')||'0');
-let shake=0,flash=0;
+let shake=0,flash=0,hitStop=0;
+let combo=0,comboTimer=0,comboMax=0;
 let skillLv=0,skillExp=0,skillCd=0,pwrupSpawnCd=220;
 let selectedChar=0;
 let orbs=[]; // プレイヤー飛び道具（type:'dark'|'fire'）
@@ -398,24 +399,44 @@ function gainSkillExp(){
     }
 }
 function doSkill(){
-    if(gs!=='playing'||skillLv<1||skillCd>0)return;
-    skillCd=180;
+    if(gs!=='playing'||skillCd>0)return;
+    skillCd=300; // 5秒 @ 60fps
+    const scx=P.x+P.w/2,scy=P.y+P.h/2;
     const ox=P.x+(P.dir>0?P.w:0);
-    const oy=P.y+P.h/2;
-    if(skillLv===1){
-        orbs.push({sx:ox,sy:oy,vx:P.dir*7,vy:0,life:0,maxLife:90,type:'skill',dmg:3,lv:1});
-        snd(440,.25);
-    }else if(skillLv===2){
-        orbs.push({sx:ox,sy:oy,vx:P.dir*7,vy:0,life:0,maxLife:90,type:'skill',dmg:4,lv:2});
-        orbs.push({sx:ox,sy:oy,vx:P.dir*6,vy:-2.5,life:0,maxLife:70,type:'skill',dmg:4,lv:2});
-        orbs.push({sx:ox,sy:oy,vx:P.dir*6,vy:2.5,life:0,maxLife:70,type:'skill',dmg:4,lv:2});
-        snd(550,.25);
-    }else{
-        for(let i=0;i<8;i++){
-            const a=i*Math.PI/4;
-            orbs.push({sx:P.x+P.w/2,sy:P.y+P.h/2,vx:Math.cos(a)*5.5,vy:Math.sin(a)*5.5,life:0,maxLife:65,type:'skill',dmg:7,lv:3});
-        }
-        flash=22;shake=14;snd(330,.45);snd(660,.35);
+    if(selectedChar===0){
+        // 勇者：旋風斬（8方向斬撃）
+        for(let i=0;i<8;i++){const a=i*Math.PI/4;orbs.push({sx:scx,sy:scy,vx:Math.cos(a)*6,vy:Math.sin(a)*6,life:0,maxLife:50,type:'skill',dmg:4,lv:2});}
+        flash=10;shake=8;snd(440,.3);spark(scx,scy,'#ffe840',20);spark(scx,scy,'#ffffff',12);
+    }else if(selectedChar===1){
+        // 魔王：ダークノヴァ（8方向闇オーブ）
+        for(let i=0;i<8;i++){const a=i*Math.PI/4;orbs.push({sx:scx,sy:scy,vx:Math.cos(a)*6.5,vy:Math.sin(a)*6.5,life:0,maxLife:65,type:'dark',dmg:5});}
+        flash=20;shake=14;snd(220,.45);snd(110,.35);spark(scx,scy,'#8822ff',30);spark(scx,scy,'#cc44ff',20);
+    }else if(selectedChar===2){
+        // 魔法使い：メテオ（3発空から降下）
+        for(let i=0;i<3;i++){orbs.push({sx:scx+(i-1)*20,sy:P.y-50,vx:(i-1)*.6,vy:7+i*.4,life:0,maxLife:45,type:'fire',dmg:4});}
+        flash=12;snd(330,.3);snd(550,.2);spark(scx,scy,'#ff8820',18);
+    }else if(selectedChar===3){
+        // エルフ：矢の雨（5方向扇）
+        const spd=[8,7.5,7,7.5,8],vy=[-1.5,-.8,-.2,-.8,-1.5];
+        for(let i=0;i<5;i++)orbs.push({sx:ox,sy:P.y+5,vx:P.dir*spd[i],vy:vy[i],life:0,maxLife:60,type:'arrow',dmg:3});
+        flash=8;snd(520,.2);snd(660,.15);spark(scx,scy,'#44ff88',16);
+    }else if(selectedChar===4){
+        // ドラゴン：超炎ブレス（5弾広範囲）
+        for(let i=0;i<5;i++){const vy=(i-2)*.9;orbs.push({sx:ox,sy:scy,vx:P.dir*(7+i*.5),vy,life:0,maxLife:55,type:'flame',dmg:5});}
+        flash=18;shake=12;snd(180,.4);spark(scx,scy,'#ff4420',24);spark(scx,scy,'#ffaa44',16);
+    }else if(selectedChar===5){
+        // ゴブリン：煙幕ダッシュ（高速無敵）
+        P.vx=P.dir*16;P.inv=90;
+        spark(scx,scy,'#60cc30',22);spark(scx,scy,'#aaffaa',14);
+        snd(380,.15);snd(560,.12);
+    }else if(selectedChar===6){
+        // ゴーレム：大地震（3段衝撃波）
+        for(let i=0;i<3;i++)orbs.push({sx:P.x+(i-1)*15,sy:GY-7,vx:P.dir*(1.5+i*.6),vy:0,life:0,maxLife:90+i*20,type:'shock',dmg:8});
+        flash=24;shake=20;snd(80,.55);snd(120,.45);spark(scx,scy,'#b0b8c0',32);
+    }else if(selectedChar===7){
+        // スライム：跳弾分裂（6方向）
+        for(let i=0;i<6;i++){const a=i*Math.PI/3;orbs.push({sx:scx,sy:scy,vx:Math.cos(a)*4.5,vy:Math.sin(a)*4.5-1,life:0,maxLife:95,type:'bounce',dmg:3});}
+        flash=10;snd(480,.25);snd(640,.2);spark(scx,scy,'#44aaff',22);
     }
 }
 function inp(cx,cy){
@@ -446,7 +467,7 @@ function resetGame(){
     enemies=[];items=[];arrows=[];platforms=[];orbs=[];parts=[];
     scroll=0;score=0;shake=0;flash=0;t=0;spawnCd=60;platSpawnCd=120;
     boss=null;bossActive=false;bossDefeated=false;clearTimer=0;
-    skillLv=0;skillExp=0;skillCd=0;pwrupSpawnCd=220;
+    skillLv=0;skillExp=0;skillCd=0;pwrupSpawnCd=220;combo=0;comboTimer=0;comboMax=0;hitStop=0;
     startBgm(stage);
 }
 
@@ -1262,7 +1283,10 @@ function update(){
     if(gs==='splash'){splashTimer++;if(splashTimer>=180)gs='start';return;}
     if(gs==='stageclear'){clearTimer++;return;}
     if(gs!=='playing')return;
+    if(hitStop>0){hitStop--;return;}
     t++;
+    // コンボタイマー（2秒でリセット）
+    if(comboTimer>0){comboTimer--;if(comboTimer===0){combo=0;}};
 
     // Player move
     const cst=CHARS[selectedChar];
@@ -1307,11 +1331,12 @@ function update(){
             if(en.dead||en.inv>0)return;
             const ex=en.sx;
             if(ax<ex+en.w&&ax+aw>ex&&P.y<en.sy+en.h&&P.y+P.h>en.sy){
-                en.hp--;en.inv=20;
-                spark(ex+en.w/2,en.sy+en.h/2,'#ffaa44',8);
+                en.hp--;en.inv=20;hitStop=3;
+                combo++;comboTimer=120;if(combo>comboMax)comboMax=combo;
+                spark(ex+en.w/2,en.sy+en.h/2,'#ffaa44',10);spark(ex+en.w/2,en.sy+en.h/2,'#ffffff',5);
                 snd(260,.08,.6);
-                if(en.hp<=0){en.dead=true;sfx('kill');score+=100;spark(ex+5,en.sy+4,'#ff8820',16);
-                    if(Math.random()<.4)items.push({sx:en.sx,y:en.sy,w:8,h:8,type:'coin',life:300});}
+                if(en.hp<=0){en.dead=true;sfx('kill');score+=100*(1+Math.floor(combo/3));spark(ex+5,en.sy+4,'#ff8820',18);spark(ex+5,en.sy+4,'#ffff44',8);
+                    if(Math.random()<.5)items.push({sx:en.sx,y:en.sy,w:8,h:8,type:'coin',life:300});}
             }
         });
     }
@@ -1479,9 +1504,10 @@ function update(){
             if(en.dead||en.inv>0)return;
             const ex=en.sx,ox=ob.sx;
             if(ox<ex+en.w&&ox+osz>ex&&ob.sy<en.sy+en.h&&ob.sy+osz>en.sy){
-                en.hp-=(ob.dmg||1);en.inv=20;if(!ob.lv)ob.life=999;
-                spark(ex+en.w/2,en.sy+en.h/2,'#8822ff',8);snd(180,.08,.6);
-                if(en.hp<=0){en.dead=true;sfx('kill');score+=100;spark(ex+5,en.sy+4,'#6600cc',16);}
+                en.hp-=(ob.dmg||1);en.inv=20;if(!ob.lv)ob.life=999;hitStop=3;
+                combo++;comboTimer=120;if(combo>comboMax)comboMax=combo;
+                spark(ex+en.w/2,en.sy+en.h/2,'#8822ff',10);spark(ex+en.w/2,en.sy+en.h/2,'#ffffff',4);snd(180,.08,.6);
+                if(en.hp<=0){en.dead=true;sfx('kill');score+=100*(1+Math.floor(combo/3));spark(ex+5,en.sy+4,'#6600cc',18);spark(ex+5,en.sy+4,'#ff88ff',8);}
             }
         });
         if(boss&&!bossDefeated&&boss.inv<=0){
@@ -1648,6 +1674,21 @@ function draw(){
     const drawFns=[drawHero,drawDemonLord,drawMage,drawElf,drawDragon,drawGoblinPC,drawGolem,drawSlime];
     drawFns[selectedChar](P.x-scroll,P.y);
 
+    // 近接攻撃斬撃エフェクト
+    if(gs==='playing'&&P.atk>0&&(selectedChar===0||selectedChar===5)){
+        const ax=(P.x-scroll)+(P.dir>0?P.w+8:0);
+        const ay=P.y+P.h/2;
+        const a0=P.dir>0?-0.9:Math.PI+0.9,a1=P.dir>0?0.9:Math.PI-0.9;
+        const prog=P.atk/22;
+        ctx.globalAlpha=prog*.85;
+        ctx.strokeStyle='#ffffff';ctx.lineWidth=3;
+        ctx.beginPath();ctx.arc(ax,ay,18,a0,a1);ctx.stroke();
+        ctx.globalAlpha=prog*.3;
+        ctx.strokeStyle='#ffff88';ctx.lineWidth=7;
+        ctx.beginPath();ctx.arc(ax,ay,18,a0,a1);ctx.stroke();
+        ctx.globalAlpha=1;
+    }
+
     // Particles
     parts.forEach(p=>{
         ctx.globalAlpha=Math.max(0,1-p.life/p.maxLife)*.9;
@@ -1672,30 +1713,21 @@ function draw(){
             ctx.globalAlpha=1;txo(lbl,b.x,b.y+1.5,'#ffffff',9);
             if(sub)txo(sub,b.x,b.y+b.r+5,on?'#ffffff':'#778899',3.5);
         });
-        // スキルボタン追加情報
-        if(skillLv>0){
-            // レベル表示
-            txo('LV'+skillLv,BTN.S.x,BTN.S.y-BTN.S.r-3,'#ffe840',4.5);
-            // クールダウンアーク
+        // スキルボタン：常時使用可能、クールダウン表示
+        {
+            const skillNames=['旋風','闇波','隕石','矢雨','炎龍','爆走','地震','分裂'];
+            txo(skillNames[selectedChar],BTN.S.x,BTN.S.y-BTN.S.r-3,'#ffe840',3.8);
             if(skillCd>0){
-                const prog=(180-skillCd)/180;
-                ctx.globalAlpha=.7;ctx.strokeStyle='#44ff88';ctx.lineWidth=2.5;
+                // クールダウンアーク
+                const prog=(300-skillCd)/300;
+                ctx.globalAlpha=.8;ctx.strokeStyle='#44ff88';ctx.lineWidth=2.5;
                 ctx.beginPath();ctx.arc(BTN.S.x,BTN.S.y,BTN.S.r,-Math.PI/2,-Math.PI/2+prog*Math.PI*2);ctx.stroke();
-                ctx.globalAlpha=1;
-            }
-            // EXPドット（次のレベルまでの進捗）
-            if(skillLv<3){
-                for(let i=0;i<3;i++){
-                    ctx.globalAlpha=i<skillExp?.95:.28;
-                    ctx.fillStyle='#ffe840';
-                    ctx.beginPath();ctx.arc(BTN.S.x-8+i*8,BTN.S.y+BTN.S.r+5,2.5,0,Math.PI*2);ctx.fill();
-                }
+                // 残り秒数
+                txo(Math.ceil(skillCd/60)+'s',BTN.S.x,BTN.S.y+BTN.S.r+5,'#44ff88',3.5);
                 ctx.globalAlpha=1;
             }else{
-                txo('MAX',BTN.S.x,BTN.S.y+BTN.S.r+6,'#ff8800',4);
+                txo('READY',BTN.S.x,BTN.S.y+BTN.S.r+5,'#ffe840',3.5);
             }
-        }else{
-            txo('?',BTN.S.x,BTN.S.y+BTN.S.r+5,'#888888',4);
         }
     }
 
@@ -1705,6 +1737,16 @@ function draw(){
         txo('HP',9,9,'#ffffff',5.5,'left');
         for(let i=0;i<P.mhp;i++)txo(i<P.hp?'♥':'♡',22+i*10,9,i<P.hp?'#ff3355':'#553344',6);
         txo('SCORE '+score,W-4,9,'#ffee44',6,'right');
+        // コンボ表示
+        if(combo>=2){
+            const ct=comboTimer/120;
+            ctx.globalAlpha=Math.min(1,ct*3);
+            const csc=1+Math.sin(gTick*.2)*.05;
+            ctx.save();ctx.translate(W/2,26);ctx.scale(csc,csc);
+            txo(combo+'HIT',0,-4,combo>=10?'#ff4420':combo>=5?'#ff8820':'#ffe840',combo>=10?10:8);
+            txo('COMBO',0,6,'#ffffff',5);
+            ctx.restore();ctx.globalAlpha=1;
+        }
         // Boss approach warning
         const dist=BOSS_TRIGGER-scroll;
         if(dist>0&&dist<600&&!bossActive){
@@ -1757,7 +1799,8 @@ function draw(){
         txo('GAME OVER',W/2,H/2-16,'#ff4444',11);
         txo('スコア: '+score,W/2,H/2+6,'#ffff44',8);
         txo('ベスト: '+best,W/2,H/2+22,'#ffaa44',7);
-        if(Math.floor(gTick/28)%2===0)txo('タップでリトライ',W/2,H/2+44,'#44ff44',7);
+        if(comboMax>=2)txo('最大コンボ: '+comboMax+'HIT',W/2,H/2+34,'#ff8820',5.5);
+        if(Math.floor(gTick/28)%2===0)txo('タップでリトライ',W/2,H/2+48,'#44ff44',7);
         ctx.restore();
     }
 }
