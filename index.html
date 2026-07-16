@@ -553,6 +553,10 @@ function drawHero(bx,by){
     ctx.fillStyle='#f0c000';ctx.fillRect(cx-2,by-2,4,5);
     // バイザースリット（目）
     ctx.fillStyle='#111111';ctx.fillRect(cx-5,by+0,4,2);ctx.fillRect(cx+1,by+0,4,2);
+    // バイザー越しの青い瞳（グロー）
+    ctx.globalAlpha=0.7;ctx.fillStyle='#44aaff';ctx.fillRect(cx-4,by+0,3,1);ctx.fillRect(cx+2,by+0,3,1);
+    ctx.globalAlpha=0.25;ctx.fillStyle='#88ccff';ctx.fillRect(cx-5,by-1,5,3);ctx.fillRect(cx+1,by-1,5,3);
+    ctx.globalAlpha=1;
     // 羽飾り
     ctx.fillStyle='#ee2222';ctx.fillRect(cx-1,by-8,2,6);
     ctx.fillStyle='#ff6644';ctx.fillRect(cx-1,by-8,1,4);
@@ -740,7 +744,13 @@ function drawMage(bx,by){
     ctx.globalAlpha=1;
     // 顔
     ctx.fillStyle='#f0c898';ctx.beginPath();ctx.arc(cx,b2+2,5,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle='#111111';ctx.fillRect(cx-3,b2+1,2,2);ctx.fillRect(cx+1,b2+1,2,2);
+    // 目（大きく、紫の魔法使い目）
+    ctx.fillStyle='#111111';ctx.beginPath();ctx.arc(cx-2,b2+1,2.5,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.arc(cx+2,b2+1,2.5,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#8833ff';ctx.beginPath();ctx.arc(cx-2,b2+1,2,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.arc(cx+2,b2+1,2,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#111111';ctx.beginPath();ctx.arc(cx-2,b2+1,1,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.arc(cx+2,b2+1,1,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#ffffff';ctx.beginPath();ctx.arc(cx-2.5,b2+0,0.8,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.arc(cx+1.5,b2+0,0.8,0,Math.PI*2);ctx.fill();
+    // 微笑み
+    ctx.strokeStyle='#a06040';ctx.lineWidth=1;ctx.beginPath();ctx.arc(cx,b2+4,3,0.2,Math.PI-0.2);ctx.stroke();
     // 三角帽子（高く太く）
     ctx.fillStyle='#0a0430';
     ctx.beginPath();ctx.moveTo(cx,b2-18);ctx.lineTo(cx-10,b2-1);ctx.lineTo(cx+10,b2-1);ctx.closePath();ctx.fill();
@@ -804,9 +814,15 @@ function drawElf(bx,by){
     ctx.fillStyle='#ddb888';
     ctx.beginPath();ctx.moveTo(cx+6,by+3);ctx.lineTo(cx+12,by-1);ctx.lineTo(cx+7,by+7);ctx.closePath();ctx.fill();
     // 目（緑）
-    ctx.fillStyle='#111111';ctx.beginPath();ctx.arc(cx-2,by+3,2,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.arc(cx+2,by+3,2,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle='#22cc44';ctx.beginPath();ctx.arc(cx-2,by+3,1,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.arc(cx+2,by+3,1,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle='#ffffff';ctx.beginPath();ctx.arc(cx-2.5,by+2,0.7,0,Math.PI*2);ctx.fill();
+    // 目（アーモンド型の鮮やかな緑）
+    ctx.fillStyle='#111111';ctx.beginPath();ctx.arc(cx-2,by+3,2.5,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.arc(cx+2,by+3,2.5,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#22dd44';ctx.beginPath();ctx.arc(cx-2,by+3,2,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.arc(cx+2,by+3,2,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#111111';ctx.beginPath();ctx.arc(cx-2,by+3.2,1,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.arc(cx+2,by+3.2,1,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#ffffff';ctx.beginPath();ctx.arc(cx-2.7,by+2,0.9,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.arc(cx+1.3,by+2,0.9,0,Math.PI*2);ctx.fill();
+    // 表情（凛々しい）
+    ctx.strokeStyle='#7a5030';ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(cx-4,by+1);ctx.lineTo(cx-0.5,by+1.5);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(cx+4,by+1);ctx.lineTo(cx+0.5,by+1.5);ctx.stroke();
     // 緑フード
     ctx.fillStyle='#1e4a0e';
     ctx.beginPath();ctx.moveTo(cx-8,by+8);ctx.lineTo(cx-1,by-7);ctx.lineTo(cx+5,by-6);ctx.lineTo(cx+8,by+8);ctx.closePath();ctx.fill();
@@ -924,6 +940,10 @@ function drawGoblinPC(bx,by){
     ctx.fillStyle='#f0d000';ctx.beginPath();ctx.arc(cx-3,by+3,3,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.arc(cx+3,by+3,3,0,Math.PI*2);ctx.fill();
     ctx.fillStyle='#111111';ctx.beginPath();ctx.arc(cx-2.5,by+3,1.5,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.arc(cx+3.5,by+3,1.5,0,Math.PI*2);ctx.fill();
     ctx.fillStyle='#ffffff';ctx.beginPath();ctx.arc(cx-3,by+2,0.8,0,Math.PI*2);ctx.fill();
+    // 意地悪な眉
+    ctx.strokeStyle='#0a2006';ctx.lineWidth=2;
+    ctx.beginPath();ctx.moveTo(cx-7,by-1);ctx.lineTo(cx-1,by+1);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(cx+7,by-1);ctx.lineTo(cx+1,by+1);ctx.stroke();
     // ニヤリ口
     ctx.fillStyle='#0a1808';ctx.fillRect(cx-5,by+8,10,4);
     ctx.fillStyle='#222222';ctx.beginPath();ctx.arc(cx,by+8,5,0,Math.PI);ctx.fill();
@@ -1012,6 +1032,11 @@ function drawSlime(bx,by){
     // 口（ニコ）
     ctx.strokeStyle='#0a1870';ctx.lineWidth=1.8;
     ctx.beginPath();ctx.arc(cx,gy-11-sq,3.5,0.15,Math.PI-0.15);ctx.stroke();
+    // 頬（ピンク）
+    ctx.globalAlpha=0.5;ctx.fillStyle='#ff88cc';
+    ctx.beginPath();ctx.ellipse(cx-6,gy-12-sq,3,2,0.3,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.ellipse(cx+6,gy-12-sq,3,2,-0.3,0,Math.PI*2);ctx.fill();
+    ctx.globalAlpha=1;
     // ベース（とろとろ感）
     ctx.fillStyle='#040e60';ctx.beginPath();ctx.ellipse(cx,gy-4,8,5,0,0,Math.PI*2);ctx.fill();
     ctx.fillStyle='#1448e0';ctx.beginPath();ctx.ellipse(cx,gy-5,7,4,0,0,Math.PI*2);ctx.fill();
