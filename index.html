@@ -291,7 +291,7 @@ const CHARS=[
 
 // ===== PLAYER =====
 const GR=0.42,JMP=5.8,PW=14,PH=22;
-let P={x:60,y:GY-PH,w:PW,h:PH,vx:0,vy:0,onG:false,dj:false,hp:5,mhp:5,inv:0,fr:0,dir:1,atk:0,atkCd:0};
+let P={x:60,y:GY-PH,w:PW,h:PH,vx:0,vy:0,onG:false,dj:false,hp:5,mhp:5,inv:0,fr:0,dir:1,atk:0,atkCd:0,atkCombo:0,comboWin:0,comboSkillWin:0};
 
 // ===== ENEMIES / OBJECTS =====
 let enemies=[],items=[],arrows=[],platforms=[];
@@ -362,30 +362,58 @@ function doJump(){
 }
 function doAtk(){
     if(gs!=='playing'||P.atkCd>0)return;
-    const ox=P.x+(P.dir>0?P.w:0);
-    if(selectedChar===0){P.atk=14;P.atkCd=22;sfx('swing');}
-    else if(selectedChar===1){
-        orbs.push({sx:ox,sy:P.y+8,vx:P.dir*4.2,vy:0,life:0,maxLife:60,type:'dark'});
-        P.atkCd=25;sfx('darkorb');
-    }else if(selectedChar===2){
-        orbs.push({sx:ox,sy:P.y+6,vx:P.dir*5.5,vy:0,life:0,maxLife:50,type:'fire'});
-        P.atkCd=18;sfx('darkorb');
-    }else if(selectedChar===3){// エルフ：高速の矢
-        orbs.push({sx:ox,sy:P.y+5,vx:P.dir*8,vy:0,life:0,maxLife:50,type:'arrow'});
-        P.atkCd=20;sfx('swing');
-    }else if(selectedChar===4){// ドラゴン：炎ブレス3方向
-        for(let i=0;i<3;i++){
-            orbs.push({sx:ox,sy:P.y+9,vx:P.dir*(2.5+i*1.8),vy:(i-1)*.9,life:0,maxLife:38,type:'flame'});
+    // 3段コンボ進行
+    P.atkCombo=P.comboWin>0?Math.min(2,P.atkCombo+1):0;
+    const co=P.atkCombo;
+    const ox=P.x+(P.dir>0?P.w:0),oy=P.y+P.h/2;
+    const setCombo=(cd,win)=>{P.atkCd=cd;P.comboWin=co<2?win:0;if(co===2)P.comboSkillWin=55;};
+
+    if(selectedChar===0){// 勇者：3段斬り（リーチ段階的拡大）
+        P.atk=[12,16,22][co];setCombo([18,20,24][co],52);sfx('swing');
+    }else if(selectedChar===1){// 魔王：1→2連→大型闇オーブ
+        const sp=[4.2,4.8,5.8][co],sz=[5,5,10][co],dm=[1,1,3][co],ml=[60,58,80][co];
+        if(co===1){
+            orbs.push({sx:ox,sy:oy-3,vx:P.dir*sp,vy:-.5,life:0,maxLife:ml,type:'dark',dmg:dm,size:sz});
+            orbs.push({sx:ox,sy:oy+3,vx:P.dir*sp,vy:.5,life:0,maxLife:ml,type:'dark',dmg:dm,size:sz});
+        }else{
+            orbs.push({sx:ox,sy:oy,vx:P.dir*sp,vy:0,life:0,maxLife:ml,type:'dark',dmg:dm,size:sz});
         }
-        P.atkCd=35;sfx('darkorb');
-    }else if(selectedChar===5){// ゴブリン：ダッシュ斬り
-        P.atk=22;P.atkCd=30;P.vx=P.dir*5;sfx('swing');
-    }else if(selectedChar===6){// ゴーレム：地面衝撃波
-        orbs.push({sx:ox,sy:GY-5,vx:P.dir*2.5,vy:0,life:0,maxLife:70,type:'shock'});
-        P.atkCd=50;sfx('darkorb');
-    }else if(selectedChar===7){// スライム：バウンド弾
-        orbs.push({sx:ox,sy:P.y+8,vx:P.dir*3.8,vy:-3.5,life:0,maxLife:80,type:'bounce'});
-        P.atkCd=22;sfx('jump');
+        setCombo([24,26,30][co],50);sfx('darkorb');
+    }else if(selectedChar===2){// 魔法使い：1→2連→大型炎
+        const sp=[5.5,6,5][co],sz=[4,5,9][co],dm=[1,1,3][co],ml=[48,50,68][co];
+        if(co===1){
+            orbs.push({sx:ox,sy:oy-2,vx:P.dir*sp,vy:-.3,life:0,maxLife:ml,type:'fire',dmg:dm,size:sz});
+            orbs.push({sx:ox,sy:oy+2,vx:P.dir*sp,vy:.3,life:0,maxLife:ml,type:'fire',dmg:dm,size:sz});
+        }else{
+            orbs.push({sx:ox,sy:oy,vx:P.dir*sp,vy:0,life:0,maxLife:ml,type:'fire',dmg:dm,size:sz});
+        }
+        setCombo([18,20,25][co],48);sfx('darkorb');
+    }else if(selectedChar===3){// エルフ：速射→2連→貫通矢
+        const sp=[8,9.5,7.5][co],dm=[1,1,2][co],lv=co===2?1:0,sz=[3,3,5][co];
+        orbs.push({sx:ox,sy:P.y+5,vx:P.dir*sp,vy:co===2?-.4:0,life:0,maxLife:55,type:'arrow',dmg:dm,size:sz,lv});
+        if(co===1)orbs.push({sx:ox,sy:P.y+8,vx:P.dir*9,vy:.3,life:0,maxLife:50,type:'arrow',dmg:1,size:3});
+        setCombo([18,18,22][co],46);sfx('swing');
+    }else if(selectedChar===4){// ドラゴン：1→2→3方向炎
+        const cnt=[1,2,3][co],sz=[4,5,7][co],dm=[1,1,2][co];
+        for(let i=0;i<cnt;i++){
+            const vy=cnt===1?0:(i-Math.floor(cnt/2))*.9;
+            orbs.push({sx:ox,sy:oy,vx:P.dir*(3+i*1.6),vy,life:0,maxLife:38+co*8,type:'flame',dmg:dm,size:sz});
+        }
+        setCombo([28,30,38][co],52);sfx('darkorb');
+    }else if(selectedChar===5){// ゴブリン：速爪→2連→飛び蹴り
+        P.atk=[8,11,15][co];
+        if(co===1)P.vx=P.dir*4;
+        else if(co===2){P.vx=P.dir*9;P.vy=-2.8;}
+        setCombo([14,16,20][co],42);sfx('swing');
+    }else if(selectedChar===6){// ゴーレム：衝撃波3段（広さ増大）
+        const sz=[16,26,40][co],sp=[2,2.5,3][co],dm=[1,1,2][co];
+        orbs.push({sx:ox,sy:GY-7,vx:P.dir*sp,vy:0,life:0,maxLife:50+co*18,type:'shock',dmg:dm,size:sz});
+        setCombo([44,46,52][co],56);sfx('darkorb');
+    }else if(selectedChar===7){// スライム：1→2連→大型跳弾
+        const sz=[4,5,8][co],dm=[1,1,2][co];
+        orbs.push({sx:ox,sy:P.y+8,vx:P.dir*(3.5+co*.5),vy:[-3,-2.8,-5.5][co],life:0,maxLife:70+co*18,type:'bounce',dmg:dm,size:sz});
+        if(co===1)orbs.push({sx:ox,sy:P.y+10,vx:P.dir*3.8,vy:-2.2,life:0,maxLife:65,type:'bounce',dmg:1,size:4});
+        setCombo([20,22,28][co],46);sfx('jump');
     }
 }
 function gainSkillExp(){
@@ -399,44 +427,54 @@ function gainSkillExp(){
     }
 }
 function doSkill(){
-    if(gs!=='playing'||skillCd>0)return;
-    skillCd=300; // 5秒 @ 60fps
+    if(gs!=='playing')return;
+    const comboFin=P.comboSkillWin>0;
+    if(skillCd>0&&!comboFin)return;
+    if(comboFin){P.comboSkillWin=0;skillCd=150;}else skillCd=300;
+    const lv=Math.min(3,skillLv+(comboFin?1:0)); // コンボ〆は+1LV
     const scx=P.x+P.w/2,scy=P.y+P.h/2;
     const ox=P.x+(P.dir>0?P.w:0);
-    if(selectedChar===0){
-        // 勇者：旋風斬（8方向斬撃）
-        for(let i=0;i<8;i++){const a=i*Math.PI/4;orbs.push({sx:scx,sy:scy,vx:Math.cos(a)*6,vy:Math.sin(a)*6,life:0,maxLife:50,type:'skill',dmg:4,lv:2});}
-        flash=10;shake=8;snd(440,.3);spark(scx,scy,'#ffe840',20);spark(scx,scy,'#ffffff',12);
-    }else if(selectedChar===1){
-        // 魔王：ダークノヴァ（8方向闇オーブ）
-        for(let i=0;i<8;i++){const a=i*Math.PI/4;orbs.push({sx:scx,sy:scy,vx:Math.cos(a)*6.5,vy:Math.sin(a)*6.5,life:0,maxLife:65,type:'dark',dmg:5});}
-        flash=20;shake=14;snd(220,.45);snd(110,.35);spark(scx,scy,'#8822ff',30);spark(scx,scy,'#cc44ff',20);
-    }else if(selectedChar===2){
-        // 魔法使い：メテオ（3発空から降下）
-        for(let i=0;i<3;i++){orbs.push({sx:scx+(i-1)*20,sy:P.y-50,vx:(i-1)*.6,vy:7+i*.4,life:0,maxLife:45,type:'fire',dmg:4});}
-        flash=12;snd(330,.3);snd(550,.2);spark(scx,scy,'#ff8820',18);
-    }else if(selectedChar===3){
-        // エルフ：矢の雨（5方向扇）
-        const spd=[8,7.5,7,7.5,8],vy=[-1.5,-.8,-.2,-.8,-1.5];
-        for(let i=0;i<5;i++)orbs.push({sx:ox,sy:P.y+5,vx:P.dir*spd[i],vy:vy[i],life:0,maxLife:60,type:'arrow',dmg:3});
-        flash=8;snd(520,.2);snd(660,.15);spark(scx,scy,'#44ff88',16);
-    }else if(selectedChar===4){
-        // ドラゴン：超炎ブレス（5弾広範囲）
-        for(let i=0;i<5;i++){const vy=(i-2)*.9;orbs.push({sx:ox,sy:scy,vx:P.dir*(7+i*.5),vy,life:0,maxLife:55,type:'flame',dmg:5});}
-        flash=18;shake=12;snd(180,.4);spark(scx,scy,'#ff4420',24);spark(scx,scy,'#ffaa44',16);
-    }else if(selectedChar===5){
-        // ゴブリン：煙幕ダッシュ（高速無敵）
-        P.vx=P.dir*16;P.inv=90;
-        spark(scx,scy,'#60cc30',22);spark(scx,scy,'#aaffaa',14);
+    const lvCol=['#ffe840','#44ffaa','#ff8820','#ff44ff'][lv];
+
+    if(selectedChar===0){// 勇者：旋風斬 LV別
+        const cnt=[8,8,12,16][lv],spd=[6,6.5,7,7.5][lv],dm=[4,5,5,7][lv],sz=[6,7,7,8][lv];
+        for(let i=0;i<cnt;i++){const a=i*Math.PI*2/cnt;orbs.push({sx:scx,sy:scy,vx:Math.cos(a)*spd,vy:Math.sin(a)*spd,life:0,maxLife:55,type:'skill',dmg:dm,lv:lv>0?2:1,size:sz});}
+        flash=10+lv*4;shake=8+lv*3;snd(440,.3);spark(scx,scy,lvCol,20+lv*8);spark(scx,scy,'#ffffff',12);
+        if(lv===3){spark(scx,scy,'#ff8800',20);snd(660,.25);}
+    }else if(selectedChar===1){// 魔王：ダークノヴァ
+        const cnt=[8,8,12,16][lv],spd=[6.5,7,7,7.5][lv],dm=[5,6,6,8][lv],sz=[6,7,7,9][lv];
+        for(let i=0;i<cnt;i++){const a=i*Math.PI*2/cnt;orbs.push({sx:scx,sy:scy,vx:Math.cos(a)*spd,vy:Math.sin(a)*spd,life:0,maxLife:65,type:'dark',dmg:dm,size:sz});}
+        flash=20+lv*4;shake=14+lv*3;snd(220,.45);snd(110,.35);spark(scx,scy,'#8822ff',28+lv*8);spark(scx,scy,lvCol,16);
+    }else if(selectedChar===2){// 魔法使い：メテオ
+        const cnt=[3,4,5,7][lv],dm=[4,5,5,7][lv],sz=[7,8,9,11][lv];
+        for(let i=0;i<cnt;i++){orbs.push({sx:scx+(i-(cnt-1)/2)*18,sy:P.y-55,vx:(i-(cnt-1)/2)*.5,vy:6.5+i*.3,life:0,maxLife:50,type:'fire',dmg:dm,size:sz});}
+        flash=12+lv*3;snd(330,.3);snd(550,.2);spark(scx,scy,lvCol,16+lv*6);
+        if(lv>=2)spark(scx,scy,'#ffaa44',12);
+    }else if(selectedChar===3){// エルフ：矢の雨
+        const cnt=[5,7,9,12][lv],dm=[3,3,4,5][lv],lv2=lv>0?1:0,sz=[3,4,4,5][lv];
+        for(let i=0;i<cnt;i++){
+            const t=cnt===1?0:(i/(cnt-1)-.5);
+            orbs.push({sx:ox,sy:P.y+5,vx:P.dir*(7+Math.abs(t)*2),vy:t*2-1,life:0,maxLife:60,type:'arrow',dmg:dm,size:sz,lv:lv2});
+        }
+        flash=8+lv*3;snd(520,.2);snd(660,.15);spark(scx,scy,lvCol,14+lv*5);
+    }else if(selectedChar===4){// ドラゴン：超炎ブレス
+        const cnt=[5,7,9,12][lv],dm=[5,5,6,8][lv],sz=[5,6,7,8][lv];
+        for(let i=0;i<cnt;i++){const vy=(i-Math.floor(cnt/2))*1.0;orbs.push({sx:ox,sy:scy,vx:P.dir*(7+i*.4),vy,life:0,maxLife:55,type:'flame',dmg:dm,size:sz});}
+        flash=18+lv*4;shake=12+lv*3;snd(180,.4);spark(scx,scy,lvCol,22+lv*8);spark(scx,scy,'#ffaa44',14);
+    }else if(selectedChar===5){// ゴブリン：煙幕ダッシュ
+        const spd=[16,18,20,22][lv],inv=[90,90,120,150][lv];
+        P.vx=P.dir*spd;P.inv=inv;
+        if(lv>=1){for(let i=0;i<4;i++)orbs.push({sx:P.x+P.dir*i*10,sy:GY-10,vx:P.dir*.5,vy:0,life:0,maxLife:30,type:'shock',dmg:2,size:10});}
+        spark(scx,scy,lvCol,18+lv*5);spark(scx,scy,'#aaffaa',12);
         snd(380,.15);snd(560,.12);
-    }else if(selectedChar===6){
-        // ゴーレム：大地震（3段衝撃波）
-        for(let i=0;i<3;i++)orbs.push({sx:P.x+(i-1)*15,sy:GY-7,vx:P.dir*(1.5+i*.6),vy:0,life:0,maxLife:90+i*20,type:'shock',dmg:8});
-        flash=24;shake=20;snd(80,.55);snd(120,.45);spark(scx,scy,'#b0b8c0',32);
-    }else if(selectedChar===7){
-        // スライム：跳弾分裂（6方向）
-        for(let i=0;i<6;i++){const a=i*Math.PI/3;orbs.push({sx:scx,sy:scy,vx:Math.cos(a)*4.5,vy:Math.sin(a)*4.5-1,life:0,maxLife:95,type:'bounce',dmg:3});}
-        flash=10;snd(480,.25);snd(640,.2);spark(scx,scy,'#44aaff',22);
+    }else if(selectedChar===6){// ゴーレム：大地震
+        const cnt=[3,4,5,6][lv],dm=[8,9,10,12][lv],sz=[40,50,60,70][lv];
+        for(let i=0;i<cnt;i++)orbs.push({sx:P.x+(i-(cnt-1)/2)*18,sy:GY-8,vx:P.dir*(1.5+i*.5),vy:0,life:0,maxLife:90+i*18,type:'shock',dmg:dm,size:sz});
+        flash=24+lv*5;shake=20+lv*5;snd(80,.55);snd(120,.45);spark(scx,scy,lvCol,28+lv*8);
+    }else if(selectedChar===7){// スライム：跳弾分裂
+        const cnt=[6,8,10,12][lv],dm=[3,3,4,5][lv],sz=[5,6,6,7][lv];
+        for(let i=0;i<cnt;i++){const a=i*Math.PI*2/cnt;orbs.push({sx:scx,sy:scy,vx:Math.cos(a)*4.5,vy:Math.sin(a)*4.5-1,life:0,maxLife:95,type:'bounce',dmg:dm,size:sz});}
+        flash=10+lv*3;snd(480,.25);snd(640,.2);spark(scx,scy,lvCol,18+lv*7);
     }
 }
 function inp(cx,cy){
@@ -463,7 +501,7 @@ function inp(cx,cy){
 // ===== RESET =====
 function resetGame(){
     P.x=60;P.y=GY-P.h;P.vx=0;P.vy=0;P.onG=true;P.dj=false;
-    P.mhp=CHARS[selectedChar].mhp;P.hp=P.mhp;P.inv=0;P.fr=0;P.atk=0;P.atkCd=0;P.dir=1;
+    P.mhp=CHARS[selectedChar].mhp;P.hp=P.mhp;P.inv=0;P.fr=0;P.atk=0;P.atkCd=0;P.dir=1;P.atkCombo=0;P.comboWin=0;P.comboSkillWin=0;
     enemies=[];items=[];arrows=[];platforms=[];orbs=[];parts=[];
     scroll=0;score=0;shake=0;flash=0;t=0;spawnCd=60;platSpawnCd=120;
     boss=null;bossActive=false;bossDefeated=false;clearTimer=0;
@@ -1321,17 +1359,19 @@ function update(){
     const target=P.x-W*.35+P.w/2;
     if(target>scroll)scroll=target;
 
-    P.fr++;P.inv=Math.max(0,P.inv-1);P.atkCd=Math.max(0,P.atkCd-1);
+    P.fr++;P.inv=Math.max(0,P.inv-1);P.atkCd=Math.max(0,P.atkCd-1);P.comboWin=Math.max(0,P.comboWin-1);P.comboSkillWin=Math.max(0,P.comboSkillWin-1);
     if(P.atk>0)P.atk--;
 
     // Attack hit
     if(P.atk>6){
-        const aw=21,ax=P.dir>0?P.x+P.w:P.x-aw;
+        const aw=[18,22,32][P.atkCombo]||21;
+        const dmgMul=[1,1,2][P.atkCombo]||1;
+        const ax=P.dir>0?P.x+P.w:P.x-aw;
         enemies.forEach(en=>{
             if(en.dead||en.inv>0)return;
             const ex=en.sx;
             if(ax<ex+en.w&&ax+aw>ex&&P.y<en.sy+en.h&&P.y+P.h>en.sy){
-                en.hp--;en.inv=20;hitStop=3;
+                en.hp-=dmgMul;en.inv=20;hitStop=3;
                 combo++;comboTimer=120;if(combo>comboMax)comboMax=combo;
                 spark(ex+en.w/2,en.sy+en.h/2,'#ffaa44',10);spark(ex+en.w/2,en.sy+en.h/2,'#ffffff',5);
                 snd(260,.08,.6);
@@ -1436,10 +1476,12 @@ function update(){
         }
         // Player attack on boss
         if(P.atk>6){
-            const aw=PW,ax=P.dir>0?P.x+P.w:P.x-aw;
+            const aw=[18,22,32][P.atkCombo]||PW;
+            const dmgMul=[1,1,2][P.atkCombo]||1;
+            const ax=P.dir>0?P.x+P.w:P.x-aw;
             const bx=boss.sx;
             if(boss.inv<=0&&ax<bx+boss.w&&ax+aw>bx&&P.y<boss.sy+boss.h&&P.y+P.h>boss.sy){
-                boss.hp--;boss.inv=16;spark(bx+11,boss.sy+10,'#ffaa44',10);snd(200,.08,.7);
+                boss.hp-=dmgMul;boss.inv=16;spark(bx+11,boss.sy+10,'#ffaa44',10);snd(200,.08,.7);
                 if(boss.hp<=0){
                     bossDefeated=true;boss=null;
                     score+=1000;spark(scroll+W/2,GY-40,'#ffe840',30);spark(scroll+W/2,GY-40,'#8822ff',30);
@@ -1499,7 +1541,7 @@ function update(){
             if(ob.sy>=GY-6){ob.sy=GY-6;ob.vy=-Math.abs(ob.vy)*.75;snd(300,.04,.3);}
         }
         ob.life++;
-        const osz=ob.lv?12:6;
+        const osz=ob.lv?12:(ob.size||6);
         enemies.forEach(en=>{
             if(en.dead||en.inv>0)return;
             const ex=en.sx,ox=ob.sx;
@@ -1621,27 +1663,34 @@ function draw(){
         const ox=Math.floor(ob.sx-scroll),oy=Math.floor(ob.sy);
         ctx.globalAlpha=1;
         if(ob.type==='dark'){
+            const r=ob.size||4;
             ctx.globalAlpha=.85+Math.sin(gTick*.15)*.15;
-            ctx.fillStyle='#8822ff';ctx.beginPath();ctx.arc(ox+3,oy+3,4,0,Math.PI*2);ctx.fill();
-            ctx.globalAlpha=.3;ctx.fillStyle='#cc88ff';ctx.beginPath();ctx.arc(ox+3,oy+3,7,0,Math.PI*2);ctx.fill();
+            ctx.fillStyle='#8822ff';ctx.beginPath();ctx.arc(ox+r,oy+r,r,0,Math.PI*2);ctx.fill();
+            ctx.globalAlpha=.3;ctx.fillStyle='#cc88ff';ctx.beginPath();ctx.arc(ox+r,oy+r,r*1.7,0,Math.PI*2);ctx.fill();
+            if(r>=8){ctx.globalAlpha=.15;ctx.fillStyle='#ff00ff';ctx.beginPath();ctx.arc(ox+r,oy+r,r*2.2,0,Math.PI*2);ctx.fill();}
         }else if(ob.type==='fire'||ob.type==='flame'){
+            const r=ob.size||(ob.type==='flame'?3:4);
             const f=.7+Math.sin(gTick*.2)*.3;
             ctx.globalAlpha=f*(ob.type==='flame'?.8:1);
-            ctx.fillStyle='#ff8820';ctx.beginPath();ctx.arc(ox+3,oy+3,ob.type==='flame'?3:4,0,Math.PI*2);ctx.fill();
-            ctx.fillStyle='#ffee44';ctx.beginPath();ctx.arc(ox+3,oy+3,ob.type==='flame'?1.5:2,0,Math.PI*2);ctx.fill();
-            ctx.globalAlpha=.2;ctx.fillStyle='#ff6600';ctx.beginPath();ctx.arc(ox+3,oy+3,6,0,Math.PI*2);ctx.fill();
+            ctx.fillStyle='#ff8820';ctx.beginPath();ctx.arc(ox+r,oy+r,r,0,Math.PI*2);ctx.fill();
+            ctx.fillStyle='#ffee44';ctx.beginPath();ctx.arc(ox+r,oy+r,r*.5,0,Math.PI*2);ctx.fill();
+            ctx.globalAlpha=.2;ctx.fillStyle='#ff6600';ctx.beginPath();ctx.arc(ox+r,oy+r,r*1.6,0,Math.PI*2);ctx.fill();
         }else if(ob.type==='arrow'){
-            ctx.fillStyle='#44cc44';px(ox,oy+2,10,2);
-            ctx.fillStyle='#ccee88';px(ob.vx>0?ox+8:ox,oy+1,3,4);
-            ctx.fillStyle='#886622';px(ob.vx>0?ox:ox+6,oy+2,4,2);
+            const th=ob.size||3;
+            ctx.fillStyle=ob.lv?'#88ffaa':'#44cc44';px(ox,oy+1,10,th);
+            ctx.fillStyle=ob.lv?'#eeffcc':'#ccee88';px(ob.vx>0?ox+8:ox,oy,3,th+1);
+            ctx.fillStyle='#886622';px(ob.vx>0?ox:ox+7,oy+1,3,th);
+            if(ob.lv){ctx.globalAlpha=.4;ctx.fillStyle='#aaffcc';px(ox,oy+1,10,th);ctx.globalAlpha=1;}
         }else if(ob.type==='shock'){
-            const sw=6+ob.life*.5;
-            ctx.globalAlpha=.8-ob.life/70*.5;
+            const base=ob.size||18;
+            const sw=base+ob.life*.7;
+            ctx.globalAlpha=Math.max(0,.85-ob.life/(ob.maxLife||70)*.7);
             ctx.fillStyle='#ffee44';ctx.fillRect(ox-sw/2,oy,sw,5);
-            ctx.globalAlpha=.3;ctx.fillStyle='#ffffff';ctx.fillRect(ox-sw/2-2,oy-1,sw+4,7);
+            ctx.globalAlpha*=.4;ctx.fillStyle='#ffffff';ctx.fillRect(ox-sw/2-3,oy-2,sw+6,9);
         }else if(ob.type==='bounce'){
-            ctx.fillStyle='#44aaff';ctx.beginPath();ctx.arc(ox+4,oy+4,5,0,Math.PI*2);ctx.fill();
-            ctx.globalAlpha=.5;ctx.fillStyle='#88ddff';ctx.beginPath();ctx.arc(ox+3,oy+3,3,0,Math.PI*2);ctx.fill();
+            const r=ob.size||5;
+            ctx.fillStyle='#44aaff';ctx.beginPath();ctx.arc(ox+r,oy+r,r,0,Math.PI*2);ctx.fill();
+            ctx.globalAlpha=.5;ctx.fillStyle='#88ddff';ctx.beginPath();ctx.arc(ox+r,oy+r,r*.65,0,Math.PI*2);ctx.fill();
         }else if(ob.type==='skill'){
             const lv=ob.lv||1;
             const r=4+lv*2;
@@ -1688,6 +1737,25 @@ function draw(){
         ctx.beginPath();ctx.arc(ax,ay,18,a0,a1);ctx.stroke();
         ctx.globalAlpha=1;
     }
+    // 3段コンボ斬撃エフェクト（勇者・ゴブリン）
+    if(gs==='playing'&&P.atk>0&&(selectedChar===0||selectedChar===5)){
+        const bxp=P.x-scroll;
+        const co=P.atkCombo;
+        const maxA=[12,16,22][co]||14;
+        const prog=Math.min(1,P.atk/maxA);
+        const r=[14,18,26][co]||16;
+        const lw=[2.5,3.5,5.5][co]||3;
+        const col=['#ffffff','#ffff88','#ffe840'][co]||'#ffffff';
+        const ax=bxp+(P.dir>0?P.w+6:-6);
+        const ay=P.y+P.h*[.6,.35,.5][co];
+        const a0=P.dir>0?-1.1:Math.PI+1.1,a1=P.dir>0?1.1:Math.PI-1.1;
+        ctx.globalAlpha=prog*.88;ctx.strokeStyle=col;ctx.lineWidth=lw;
+        ctx.beginPath();ctx.arc(ax,ay,r,a0,a1);ctx.stroke();
+        ctx.globalAlpha=prog*.28;ctx.strokeStyle='#ffffff';ctx.lineWidth=lw+5;
+        ctx.beginPath();ctx.arc(ax,ay,r,a0,a1);ctx.stroke();
+        if(co===2){ctx.globalAlpha=prog*.18;ctx.fillStyle='#ffe840';ctx.beginPath();ctx.arc(ax,ay,r+8,0,Math.PI*2);ctx.fill();}
+        ctx.globalAlpha=1;
+    }
 
     // Particles
     parts.forEach(p=>{
@@ -1713,16 +1781,21 @@ function draw(){
             ctx.globalAlpha=1;txo(lbl,b.x,b.y+1.5,'#ffffff',9);
             if(sub)txo(sub,b.x,b.y+b.r+5,on?'#ffffff':'#778899',3.5);
         });
-        // スキルボタン：常時使用可能、クールダウン表示
+        // スキルボタン：LV表示・コンボ〆ウィンドウ
         {
             const skillNames=['旋風','闇波','隕石','矢雨','炎龍','爆走','地震','分裂'];
-            txo(skillNames[selectedChar],BTN.S.x,BTN.S.y-BTN.S.r-3,'#ffe840',3.8);
-            if(skillCd>0){
-                // クールダウンアーク
+            const lvStr=skillLv>0?'Lv'+skillLv:'';
+            txo(skillNames[selectedChar]+lvStr,BTN.S.x,BTN.S.y-BTN.S.r-3,'#ffe840',3.5);
+            if(P.comboSkillWin>0){// コンボ〆可能→ボタン白フラッシュ
+                const pulse=Math.sin(gTick*.5)*.5+.5;
+                ctx.globalAlpha=.55+pulse*.4;ctx.fillStyle='#ffffff';
+                ctx.beginPath();ctx.arc(BTN.S.x,BTN.S.y,BTN.S.r+4,0,Math.PI*2);ctx.fill();
+                ctx.globalAlpha=1;
+                txo('NOW!',BTN.S.x,BTN.S.y+BTN.S.r+5,'#ffe840',4.5);
+            }else if(skillCd>0){
                 const prog=(300-skillCd)/300;
                 ctx.globalAlpha=.8;ctx.strokeStyle='#44ff88';ctx.lineWidth=2.5;
                 ctx.beginPath();ctx.arc(BTN.S.x,BTN.S.y,BTN.S.r,-Math.PI/2,-Math.PI/2+prog*Math.PI*2);ctx.stroke();
-                // 残り秒数
                 txo(Math.ceil(skillCd/60)+'s',BTN.S.x,BTN.S.y+BTN.S.r+5,'#44ff88',3.5);
                 ctx.globalAlpha=1;
             }else{
