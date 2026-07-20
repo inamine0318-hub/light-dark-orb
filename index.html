@@ -278,6 +278,10 @@ function spark(x,y,col,n){
     });
 }
 
+function popup(x,y,txt,col){
+    popups.push({x,y,txt,col:col||'#ffee44',life:0,maxLife:52,vy:-0.55});
+}
+
 // ===== STATE =====
 let gs='splash',gTick=0,t=0;
 let splashTimer=0,clearTimer=0;
@@ -288,6 +292,7 @@ let combo=0,comboTimer=0,comboMax=0;
 let skillLv=0,skillExp=0,skillCd=0,pwrupSpawnCd=220;
 let selectedChar=0;
 let orbs=[]; // プレイヤー飛び道具（type:'dark'|'fire'）
+let popups=[];let stageFlash=0; // フローティングテキスト・ステージ暗転
 
 // 全キャラ定義 spd=移動速度 jmp=ジャンプ力 gr=重力倍率 dj=二段ジャンプ
 const CHARS=[
@@ -436,6 +441,7 @@ function gainSkillExp(){
         spark(P.x+P.w/2,P.y+P.h/2,'#ffe840',24);
         spark(P.x+P.w/2,P.y+P.h/2,'#ff8800',16);
         snd(880,.35);flash=8;
+        popup(P.x-scroll+P.w/2,P.y-12,'SKILL LV'+skillLv,'#ffe840');
     }
 }
 function doSkill(){
@@ -506,7 +512,7 @@ function inp(cx,cy){
         }
         return;
     }
-    if(gs==='stageclear'){if(clearTimer>60){if(stage>=2){if(score>best){best=score;localStorage.setItem('ldo_best',best);}gs='ending';clearTimer=0;}else{stage++;gs='playing';resetGame();}}return;}
+    if(gs==='stageclear'){if(clearTimer>60){if(stage>=2){if(score>best){best=score;localStorage.setItem('ldo_best',best);}gs='ending';clearTimer=0;}else{stage++;stageFlash=60;gs='playing';resetGame();}}return;}
     if(gs==='gameover'){location.reload();}
 }
 
@@ -518,6 +524,7 @@ function resetGame(){
     scroll=0;score=0;shake=0;flash=0;t=0;spawnCd=60;platSpawnCd=120;
     boss=null;bossActive=false;bossDefeated=false;clearTimer=0;
     skillLv=0;skillExp=0;skillCd=0;pwrupSpawnCd=220;combo=0;comboTimer=0;comboMax=0;hitStop=0;
+    popups=[];stageFlash=0;
     startBgm(stage);
 }
 
@@ -1598,7 +1605,8 @@ function update(){
                 combo++;comboTimer=120;if(combo>comboMax)comboMax=combo;
                 spark(ex+en.w/2,en.sy+en.h/2,'#ffaa44',10);spark(ex+en.w/2,en.sy+en.h/2,'#ffffff',5);
                 snd(260,.08,.6);
-                if(en.hp<=0){en.dead=true;sfx('kill');score+=100*(1+Math.floor(combo/3));spark(ex+5,en.sy+4,'#ff8820',18);spark(ex+5,en.sy+4,'#ffff44',8);
+                if(en.hp<=0){en.dead=true;sfx('kill');const pts5=100*(1+Math.floor(combo/3));score+=pts5;spark(ex+5,en.sy+4,'#ff8820',18);spark(ex+5,en.sy+4,'#ffff44',8);
+                    popup(en.sx-scroll+en.w/2,en.sy-6,'+'+pts5,combo>=5?'#ff4420':combo>=3?'#ff8820':'#ffee44');
                     if(Math.random()<.5)items.push({sx:en.sx,y:en.sy,w:8,h:8,type:'coin',life:300});}
             }
         });
@@ -1622,9 +1630,9 @@ function update(){
         const ix=it.sx;
         if(P.x<ix+it.w&&P.x+P.w>ix&&P.y<it.y+it.h&&P.y+P.h>it.y){
             it.life=0;
-            if(it.type==='heart'){P.hp=Math.min(P.mhp,P.hp+1);spark(ix+4,it.y,'#ff4466',10);snd(660,.15);}
-            else if(it.type==='coin'){score+=50;spark(ix+4,it.y,'#ffe840',8);sfx('coin');}
-            else if(it.type==='orbfrag'){score+=500;spark(ix+5,it.y,'#ffe840',20);spark(ix+5,it.y,'#8822ff',16);snd(880,.5);}
+            if(it.type==='heart'){P.hp=Math.min(P.mhp,P.hp+1);spark(ix+4,it.y,'#ff4466',10);snd(660,.15);popup(ix+4-scroll,it.y-8,'HEAL!','#ff4466');}
+            else if(it.type==='coin'){score+=50;spark(ix+4,it.y,'#ffe840',8);sfx('coin');popup(ix+4-scroll,it.y-8,'+50','#ffe840');}
+            else if(it.type==='orbfrag'){score+=500;spark(ix+5,it.y,'#ffe840',20);spark(ix+5,it.y,'#8822ff',16);snd(880,.5);popup(ix+5-scroll,it.y-10,'+500!','#ff88ff');}
             else if(it.type==='pwrup'){gainSkillExp();spark(ix+5,it.y,'#ffe840',14);spark(ix+5,it.y,'#ff8800',10);snd(660,.22);}
         }
     });
@@ -1839,7 +1847,7 @@ function update(){
                 en.hp-=(ob.dmg||1);en.inv=20;if(!ob.lv)ob.life=999;hitStop=3;
                 combo++;comboTimer=120;if(combo>comboMax)comboMax=combo;
                 spark(ex+en.w/2,en.sy+en.h/2,'#8822ff',10);spark(ex+en.w/2,en.sy+en.h/2,'#ffffff',4);snd(180,.08,.6);
-                if(en.hp<=0){en.dead=true;sfx('kill');score+=100*(1+Math.floor(combo/3));spark(ex+5,en.sy+4,'#6600cc',18);spark(ex+5,en.sy+4,'#ff88ff',8);}
+                if(en.hp<=0){en.dead=true;sfx('kill');const pts6=100*(1+Math.floor(combo/3));score+=pts6;spark(ex+5,en.sy+4,'#6600cc',18);spark(ex+5,en.sy+4,'#ff88ff',8);popup(en.sx-scroll+en.w/2,en.sy-6,'+'+pts6,combo>=5?'#ff44ff':'#cc88ff');}
             }
         });
         if(boss&&!bossDefeated&&boss.inv<=0){
@@ -1851,6 +1859,7 @@ function update(){
                     bossDefeated=true;boss=null;score+=1000;
                     spark(scroll+W/2,GY-40,'#ffe840',30);spark(scroll+W/2,GY-40,'#8822ff',30);
                     sfx('kill');snd(880,.5);stopBgm();
+                    popup(W/2,GY-50,'+1000!!','#ffe840');
                     items.push({sx:scroll+W/2,y:GY-20,w:10,h:10,type:'orbfrag',life:600});
                     gs='stageclear';clearTimer=0;
                 }
@@ -1865,6 +1874,9 @@ function update(){
 
     if(skillCd>0)skillCd--;
     shake=Math.max(0,shake-1);flash=Math.max(0,flash-1);
+    if(stageFlash>0)stageFlash--;
+    popups.forEach(pp=>{pp.y+=pp.vy;pp.life++;});
+    popups=popups.filter(pp=>pp.life<pp.maxLife);
     if(t%90===0)score+=stage*5;
 }
 
@@ -1955,10 +1967,19 @@ function draw(){
     // Arrows (ドロイドのエネルギービーム)
     arrows.forEach(ar=>{
         const ax=Math.floor(ar.sx-scroll),ay=Math.floor(ar.sy);
-        ctx.fillStyle='#0066cc';px(ax,ay+1,9,2);
-        ctx.fillStyle='#22aaff';px(ax+1,ay,7,4);
-        ctx.fillStyle='#aaddff';px(ax+2,ay+1,5,2);
-        ctx.globalAlpha=.35;ctx.fillStyle='#00ccff';px(ax-1,ay,11,4);ctx.globalAlpha=1;
+        const adir=ar.vx>0?1:-1;
+        // グロー外輪
+        ctx.globalAlpha=.2;ctx.fillStyle='#00ddff';ctx.fillRect(ax-2,ay-2,14,8);
+        ctx.globalAlpha=1;
+        // ビーム本体
+        ctx.fillStyle='#0055bb';ctx.fillRect(ax,ay+1,11,2);
+        ctx.fillStyle='#22aaff';ctx.fillRect(ax+1,ay+1,9,2);
+        ctx.fillStyle='#88ddff';ctx.fillRect(ax+2,ay+2,5,1);
+        // 先端（光る矢先）
+        const tip=adir>0?ax+10:ax+1;
+        ctx.fillStyle='#ffffff';ctx.fillRect(tip,ay,2,4);
+        ctx.globalAlpha=.7;ctx.fillStyle='#aaeeff';ctx.fillRect(tip+(adir>0?2:-2),ay+1,3,2);
+        ctx.globalAlpha=1;
     });
     // UFO爆弾
     bombs.forEach(bm=>{
@@ -2083,6 +2104,21 @@ function draw(){
     });
     ctx.globalAlpha=1;
 
+    // フローティングポップアップ
+    popups.forEach(pp=>{
+        if(pp.x<-20||pp.x>W+20)return;
+        const pal=Math.max(0,1-pp.life/pp.maxLife);
+        const psc=1+Math.sin(pp.life*0.25)*0.06;
+        utx.save();
+        const ux=pp.x*SC*uRatio,uy=pp.y*SC*uRatio,usz=7*SC*uRatio*psc;
+        utx.font=`bold ${usz}px -apple-system,'Hiragino Sans','Noto Sans JP',Arial,sans-serif`;
+        utx.textAlign='center';
+        utx.globalAlpha=pal;
+        utx.fillStyle='rgba(0,0,0,.7)';
+        for(const[ox,oy]of[[-1,0],[1,0],[0,-1],[0,1]])utx.fillText(pp.txt,ux+ox*1.5,uy+oy*1.5);
+        utx.fillStyle=pp.col;utx.fillText(pp.txt,ux,uy);
+        utx.globalAlpha=1;utx.restore();
+    });
     // Buttons
     if(gs==='playing'){
         const skillReady=skillLv>0&&skillCd<=0;
@@ -2163,6 +2199,12 @@ function draw(){
 
     // Flash
     if(flash>0){ctx.globalAlpha=(flash/14)*.4;ctx.fillStyle='#ff0000';ctx.fillRect(0,0,W,H);ctx.globalAlpha=1;}
+    // ステージ暗転フラッシュ
+    if(stageFlash>0){
+        const sfp=stageFlash>30?(stageFlash-30)/30:stageFlash/30;
+        ctx.globalAlpha=sfp;ctx.fillStyle='#000000';ctx.fillRect(0,0,W,H);ctx.globalAlpha=1;
+        if(stageFlash>20&&stageFlash<45)txo('STAGE '+stage,W/2,H/2,'#ffe840',14,undefined,Math.min(1,(stageFlash-20)/12));
+    }
     ctx.restore();
 
     // Start screen
