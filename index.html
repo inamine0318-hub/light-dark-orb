@@ -159,14 +159,26 @@ const BGM2=[[N.A4,.2],[N._,.1],[N.G4,.15],[N.A4,.2],[N._,.15],[N.F4,.15],[N.G4,.
 
 // ===== CAROUSEL CHAR SELECT =====
 function drawCharPreview(idx,cx,cy,scale){
+    // [bx, by, scaleMultiplier] — キャラごとのサイズ・位置調整
+    const PP=[
+        [-7,-5,1.00], // 勇者
+        [-7,-3,0.88], // 魔王（王冠分）
+        [-7,-2,0.85], // 魔法使い（帽子高い）
+        [-7,-5,1.00], // エルフ
+        [-7, 9,0.48], // ドラゴン（角・翼が巨大→大幅縮小）
+        [-7,-5,1.00], // ゴブリン
+        [-7,-3,0.90], // ゴーレム（幅広）
+        [-7,-4,1.00], // スライム
+    ];
+    const [pbx,pby,pm]=PP[idx]||[-7,-5,1];
     ctx.save();
     ctx.translate(cx,cy);
-    ctx.scale(scale,scale);
+    ctx.scale(scale*pm,scale*pm);
     // 実際のdraw関数を流用（P.invなどは一時的に退避）
     const si=P.inv,sa=P.atk,sc=P.atkCd,sd=P.dir,sf=P.fr,sg=P.onG,svx=P.vx;
     P.inv=0;P.atk=0;P.atkCd=0;P.dir=1;P.fr=8;P.onG=true;P.vx=0;
     const drawFnsP=[drawHero,drawDemonLord,drawMage,drawElf,drawDragon,drawGoblinPC,drawGolem,drawSlime];
-    drawFnsP[idx](-7,-5);
+    drawFnsP[idx](pbx,pby);
     P.inv=si;P.atk=sa;P.atkCd=sc;P.dir=sd;P.fr=sf;P.onG=sg;P.vx=svx;
     ctx.restore();
 }
