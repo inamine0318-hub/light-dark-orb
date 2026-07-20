@@ -605,60 +605,123 @@ function drawHero(bx,by){
     const cx=bx+7,gy=by+22,ph=Math.floor(P.fr/8)%2;
     ctx.save();if(P.dir<0){ctx.translate(cx*2,0);ctx.scale(-1,1);}
     const sa=P.atk>0;
-    // 赤マント（背面）
-    ctx.fillStyle='#991010';ctx.beginPath();ctx.moveTo(cx-8,by+7);ctx.lineTo(cx-4,by+7);ctx.lineTo(cx-3,gy+2);ctx.lineTo(cx-14,gy+2);ctx.closePath();ctx.fill();
-    ctx.fillStyle='#cc1818';ctx.beginPath();ctx.moveTo(cx-8,by+8);ctx.lineTo(cx-5,by+8);ctx.lineTo(cx-5,gy-1);ctx.lineTo(cx-11,gy-1);ctx.closePath();ctx.fill();
-    // 剣（攻撃中は長くなる）
-    ctx.fillStyle='#111122';ctx.fillRect(cx+7,by+3,4,sa?20:13);
-    ctx.fillStyle='#c8daf0';ctx.fillRect(cx+7,by+2,3,sa?20:13);
-    ctx.fillStyle='#e8f4ff';ctx.fillRect(cx+8,by+2,1,sa?18:11);
-    ctx.fillStyle='#f0c000';ctx.fillRect(cx+4,by+2+(sa?20:13),8,2);
-    ctx.fillStyle='#6a3010';ctx.fillRect(cx+8,by+5+(sa?20:13),2,4);
-    if(sa){ctx.globalAlpha=0.22;ctx.fillStyle='#aaddff';ctx.fillRect(cx+5,by,8,24);ctx.globalAlpha=1;}
-    // 脚/ブーツ
-    ctx.fillStyle='#3a1a08';ctx.fillRect(cx-6,gy-(ph?12:10),5,ph?12:10);ctx.fillRect(cx+1,gy-(ph?10:12),5,ph?10:12);
-    ctx.fillStyle='#1c0c04';ctx.fillRect(cx-7,gy-4,6,4);ctx.fillRect(cx+1,gy-4,6,4);
-    ctx.fillStyle='#c08040';ctx.fillRect(cx-7,gy-5,6,1);ctx.fillRect(cx+1,gy-5,6,1);
-    // 鎧
-    ctx.fillStyle='#1a3060';ctx.fillRect(cx-7,by+8,14,12);
-    ctx.fillStyle='#2a50a0';ctx.fillRect(cx-6,by+9,12,10);
-    ctx.fillStyle='#4070c0';ctx.fillRect(cx-5,by+10,9,4);
-    ctx.fillStyle='#1a3060';ctx.fillRect(cx-1,by+10,2,10);
-    ctx.fillStyle='#f0c000';ctx.fillRect(cx-6,by+8,12,2);ctx.fillRect(cx-6,by+18,12,2);
-    ctx.fillStyle='#4a2810';ctx.fillRect(cx-6,by+19,12,3);ctx.fillStyle='#f0c000';ctx.fillRect(cx-2,by+19,4,3);
+
+    // ── 赤マント（背面、なびく） ──
+    ctx.fillStyle='#7a0c0c';
+    ctx.beginPath();ctx.moveTo(cx-3,by+7);ctx.lineTo(cx-12,by+9);ctx.lineTo(cx-16,gy+2);ctx.lineTo(cx-5,gy+2);ctx.closePath();ctx.fill();
+    ctx.fillStyle='#bb1a1a';
+    ctx.beginPath();ctx.moveTo(cx-3,by+8);ctx.lineTo(cx-10,by+10);ctx.lineTo(cx-13,gy);ctx.lineTo(cx-5,gy);ctx.closePath();ctx.fill();
+    ctx.fillStyle='#dd3030';
+    ctx.beginPath();ctx.moveTo(cx-4,by+10);ctx.lineTo(cx-9,by+12);ctx.lineTo(cx-11,gy-3);ctx.lineTo(cx-6,gy-3);ctx.closePath();ctx.fill();
+
+    // ── 剣（右手） ──
+    ctx.fillStyle='#888a9a';ctx.fillRect(cx+8,by,3,sa?22:14);
+    ctx.fillStyle='#d0dce8';ctx.fillRect(cx+8,by-1,2,sa?21:13);
+    ctx.fillStyle='#eef4ff';ctx.fillRect(cx+8,by-1,1,sa?18:10);
+    ctx.fillStyle='#e8b800';ctx.fillRect(cx+5,by-1+(sa?21:13),8,2);// 鍔
+    ctx.fillStyle='#6a3010';ctx.fillRect(cx+9,by+1+(sa?21:13),2,4);// 柄
+    if(sa){ctx.globalAlpha=0.18;ctx.fillStyle='#b0d8ff';ctx.fillRect(cx+6,by-3,7,26);ctx.globalAlpha=1;}
+
+    // ── ブーツ・脚 ──
+    ctx.fillStyle='#2a1808';ctx.fillRect(cx-7,gy-3,6,3);ctx.fillRect(cx+1,gy-3,6,3);// ブーツ底
+    ctx.fillStyle='#3c2210';ctx.fillRect(cx-6,gy-6,5,3);ctx.fillRect(cx+1,gy-6,5,3);// ブーツ上
+    ctx.fillStyle='#c09030';ctx.fillRect(cx-6,gy-7,5,1);ctx.fillRect(cx+1,gy-7,5,1);// ブーツ金トリム
+    ctx.fillStyle='#2a4080';ctx.fillRect(cx-6,gy-12,5,ph?5:6);ctx.fillRect(cx+1,gy-12,5,ph?6:5);// 脚鎧
+
+    // ── 胴体鎧（青、金トリム） ──
+    ctx.fillStyle='#162a60';ctx.fillRect(cx-8,by+7,16,12);// 外枠
+    ctx.fillStyle='#1e3c90';ctx.fillRect(cx-7,by+8,14,10);// 本体
+    ctx.fillStyle='#2a58c8';ctx.fillRect(cx-6,by+9,11,5);// 胸上ハイライト
+    // 縦中央線
+    ctx.fillStyle='#162a60';ctx.fillRect(cx-1,by+8,2,10);
+    // 金ライン（上下）
+    ctx.fillStyle='#e8b800';ctx.fillRect(cx-7,by+7,14,2);ctx.fillRect(cx-7,by+17,14,2);
+    // ベルト
+    ctx.fillStyle='#4a2a10';ctx.fillRect(cx-7,by+18,14,3);ctx.fillStyle='#e8b800';ctx.fillRect(cx-2,by+18,4,3);
     // 肩鎧
-    ctx.fillStyle='#4070c0';ctx.fillRect(cx-11,by+8,5,7);ctx.fillRect(cx+6,by+8,5,7);
-    ctx.fillStyle='#f0c000';ctx.fillRect(cx-11,by+8,5,2);ctx.fillRect(cx+6,by+8,5,2);
-    // 首
-    ctx.fillStyle='#f0c090';ctx.fillRect(cx-2,by+5,4,4);
-    // ── ゴールドヘルメット本体 ──
-    ctx.fillStyle='#b89000';ctx.fillRect(cx-8,by-1,16,9);
-    ctx.fillStyle='#f0c000';ctx.fillRect(cx-7,by,14,7);
-    ctx.fillStyle='#ffe840';ctx.fillRect(cx-6,by+1,12,3);// ハイライト
-    // 頬当て
-    ctx.fillStyle='#c8a800';ctx.fillRect(cx-9,by+2,3,6);ctx.fillRect(cx+6,by+2,3,6);
-    // バイザー開口部（暗め）
-    ctx.fillStyle='#110022';ctx.fillRect(cx-5,by+1,11,6);
-    // 顔（バイザー内）
-    ctx.fillStyle='#f8cc98';ctx.fillRect(cx-4,by+2,9,5);
-    // ── 目（大きく、バイザーにはっきり見える） ──
-    ctx.fillStyle='#000011';ctx.fillRect(cx-4,by+2,4,3);ctx.fillRect(cx+1,by+2,4,3);// 黒枠
-    ctx.fillStyle='#1144cc';ctx.fillRect(cx-3,by+2,3,3);ctx.fillRect(cx+2,by+2,3,3);// 青い虹彩
-    ctx.fillStyle='#88aaff';ctx.fillRect(cx-3,by+2,2,1);ctx.fillRect(cx+2,by+2,2,1);// ハイライト
-    ctx.fillStyle='#000000';ctx.fillRect(cx-2,by+3,1,1);ctx.fillRect(cx+3,by+3,1,1);// 瞳孔
-    ctx.fillStyle='#ffffff';ctx.fillRect(cx-4,by+2,1,1);ctx.fillRect(cx+1,by+2,1,1);// 白目光
-    // 口（口元の表情）
-    ctx.fillStyle='#aa5522';ctx.fillRect(cx-2,by+6,5,1);
-    ctx.fillStyle='#662200';ctx.fillRect(cx-1,by+7,3,1);// 下唇
-    // ── ヘルメットのスパイク（3本） ──
-    ctx.fillStyle='#b89000';
-    ctx.beginPath();ctx.moveTo(cx-6,by);ctx.lineTo(cx-4,by-7);ctx.lineTo(cx-2,by);ctx.closePath();ctx.fill();
-    ctx.beginPath();ctx.moveTo(cx-2,by);ctx.lineTo(cx,by-10);ctx.lineTo(cx+2,by);ctx.closePath();ctx.fill();
-    ctx.beginPath();ctx.moveTo(cx+2,by);ctx.lineTo(cx+4,by-7);ctx.lineTo(cx+6,by);ctx.closePath();ctx.fill();
+    ctx.fillStyle='#2a58c8';ctx.fillRect(cx-12,by+7,5,8);ctx.fillRect(cx+7,by+7,5,8);
+    ctx.fillStyle='#e8b800';ctx.fillRect(cx-12,by+7,5,2);ctx.fillRect(cx+7,by+7,5,2);// 肩金トリム
+    ctx.fillStyle='#3a6ae0';ctx.fillRect(cx-11,by+9,3,4);ctx.fillRect(cx+8,by+9,3,4);
+
+    // ── 首 ──
+    ctx.fillStyle='#f0bc80';ctx.fillRect(cx-2,by+5,4,4);
+
+    // ── 顔（丸みを帯びた） ──
+    // 顔の輪郭（暗め）
+    ctx.fillStyle='#c8904a';
+    ctx.beginPath();ctx.arc(cx,by+1,8,0,Math.PI*2);ctx.fill();
+    // 顔本体（肌色）
+    ctx.fillStyle='#f8c878';
+    ctx.beginPath();ctx.arc(cx,by,7.5,0,Math.PI*2);ctx.fill();
+    // 頬（ほんのり赤み）
+    ctx.globalAlpha=0.25;ctx.fillStyle='#ff8888';
+    ctx.beginPath();ctx.arc(cx-5,by+3,2.5,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.arc(cx+5,by+3,2.5,0,Math.PI*2);ctx.fill();
+    ctx.globalAlpha=1;
+
+    // ── 眉（太くたくましい） ──
+    ctx.fillStyle='#7a4010';ctx.fillRect(cx-6,by-4,5,2);ctx.fillRect(cx+1,by-4,5,2);
+    ctx.fillStyle='#5a2c08';ctx.fillRect(cx-6,by-4,5,1);ctx.fillRect(cx+1,by-4,5,1);
+
+    // ── 目（大きく、丸く、表情豊か） ──
+    // 白目
+    ctx.fillStyle='#ffffff';
+    ctx.beginPath();ctx.ellipse(cx-3.5,by-0.5,3.2,2.8,0,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.ellipse(cx+3.5,by-0.5,3.2,2.8,0,0,Math.PI*2);ctx.fill();
+    // 輪郭
+    ctx.strokeStyle='#3a1808';ctx.lineWidth=0.8;
+    ctx.beginPath();ctx.ellipse(cx-3.5,by-0.5,3.2,2.8,0,0,Math.PI*2);ctx.stroke();
+    ctx.beginPath();ctx.ellipse(cx+3.5,by-0.5,3.2,2.8,0,0,Math.PI*2);ctx.stroke();
+    // 虹彩（青）
+    ctx.fillStyle='#1a60d8';
+    ctx.beginPath();ctx.arc(cx-3.5,by-0.5,2.2,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.arc(cx+3.5,by-0.5,2.2,0,Math.PI*2);ctx.fill();
+    // 瞳孔
+    ctx.fillStyle='#111111';
+    ctx.beginPath();ctx.arc(cx-3.5,by-0.5,1.2,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.arc(cx+3.5,by-0.5,1.2,0,Math.PI*2);ctx.fill();
+    // 目ハイライト（輝き）
+    ctx.fillStyle='#ffffff';
+    ctx.beginPath();ctx.arc(cx-4.5,by-1.5,0.9,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.arc(cx+2.5,by-1.5,0.9,0,Math.PI*2);ctx.fill();
+    // 小さな2nd ハイライト
+    ctx.beginPath();ctx.arc(cx-3,by+0.2,0.5,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.arc(cx+4,by+0.2,0.5,0,Math.PI*2);ctx.fill();
+
+    // ── 鼻（小さく） ──
+    ctx.fillStyle='#d8924a';ctx.fillRect(cx-1,by+2,2,1);
+
+    // ── 口（キリッとした笑み） ──
+    ctx.strokeStyle='#8a3010';ctx.lineWidth=1.2;
+    ctx.beginPath();ctx.moveTo(cx-4,by+5);ctx.quadraticCurveTo(cx,by+7,cx+4,by+5);ctx.stroke();
+    ctx.fillStyle='#cc4418';ctx.fillRect(cx-1,by+5,2,1);// 唇中央
+
+    // ── ヘルメット（オープンフェイス、顔を覆わない） ──
+    // ヘルメット本体（頭の上半分）
+    ctx.fillStyle='#a07800';
+    ctx.beginPath();ctx.arc(cx,by-3,8.5,Math.PI,0);ctx.fill();
+    ctx.fillStyle='#e0aa00';
+    ctx.beginPath();ctx.arc(cx,by-3,7.5,Math.PI,0);ctx.fill();
     ctx.fillStyle='#ffe840';
-    ctx.beginPath();ctx.moveTo(cx-5,by);ctx.lineTo(cx-4,by-6);ctx.lineTo(cx-3,by);ctx.closePath();ctx.fill();
-    ctx.beginPath();ctx.moveTo(cx-1,by);ctx.lineTo(cx,by-9);ctx.lineTo(cx+1,by);ctx.closePath();ctx.fill();
-    ctx.beginPath();ctx.moveTo(cx+3,by);ctx.lineTo(cx+4,by-6);ctx.lineTo(cx+5,by);ctx.closePath();ctx.fill();
+    ctx.beginPath();ctx.arc(cx,by-4,6,Math.PI,0);ctx.fill();
+    // ヘルメット前面の庇（バイザー前端）
+    ctx.fillStyle='#c89800';ctx.fillRect(cx-8,by-3,16,3);
+    ctx.fillStyle='#e0aa00';ctx.fillRect(cx-7,by-3,14,2);
+    // ヘルメット頬当て（左右）
+    ctx.fillStyle='#a07800';ctx.fillRect(cx-9,by-5,3,9);ctx.fillRect(cx+6,by-5,3,9);
+    ctx.fillStyle='#c89800';ctx.fillRect(cx-8,by-4,2,7);ctx.fillRect(cx+6,by-4,2,7);
+    // ヘルメット中央のリッジ
+    ctx.fillStyle='#ffe840';
+    ctx.beginPath();ctx.moveTo(cx-2,by-10);ctx.lineTo(cx,by-15);ctx.lineTo(cx+2,by-10);ctx.closePath();ctx.fill();
+    ctx.fillStyle='#ffff88';ctx.fillRect(cx-1,by-10,2,2);
+    // 羽根飾り（プルーム）
+    ctx.fillStyle='#ff3a3a';
+    ctx.beginPath();ctx.moveTo(cx-1,by-10);ctx.bezierCurveTo(cx-8,by-16,cx-12,by-12,cx-10,by-8);ctx.bezierCurveTo(cx-7,by-7,cx-3,by-9,cx-1,by-10);ctx.closePath();ctx.fill();
+    ctx.fillStyle='#ff3a3a';
+    ctx.beginPath();ctx.moveTo(cx-1,by-10);ctx.bezierCurveTo(cx-8,by-16,cx-12,by-12,cx-10,by-8);ctx.bezierCurveTo(cx-7,by-7,cx-3,by-9,cx-1,by-10);ctx.closePath();ctx.fill();
+    ctx.fillStyle='#ff7070';
+    ctx.beginPath();ctx.moveTo(cx,by-10);ctx.bezierCurveTo(cx-5,by-15,cx-8,by-11,cx-7,by-8);ctx.bezierCurveTo(cx-4,by-7,cx-1,by-9,cx,by-10);ctx.closePath();ctx.fill();
+
     ctx.restore();
 }
 
