@@ -165,7 +165,7 @@ function drawCharPreview(idx,cx,cy,scale){
         [-7,-3,0.88], // 魔王（王冠分）
         [-7,-2,0.85], // 魔法使い（帽子高い）
         [-7,-5,1.00], // エルフ
-        [-7, 9,0.48], // ドラゴン（角・翼が巨大→大幅縮小）
+        [-7, 7,0.62], // ドラゴン（新デザイン・高さ48px→適切サイズ）
         [-7,-5,1.00], // ゴブリン
         [-7,-3,0.90], // ゴーレム（幅広）
         [-7,-4,1.00], // スライム
@@ -206,10 +206,10 @@ function drawGrid(){
         // キャラプレビュー
         drawCharPreview(i,cx+14,cy+rowH/2,0.62);
         // テキスト
-        const tx=cx+29;
+        const tx=cx+30;
         txo(ch.name,tx,cy+rowH/2-5,sel?ch.col:'#cccccc',6,'left');
-        if(ch.atk)txo(ch.atk,cx+colW-2,cy+rowH/2-5,sel?ch.col:'#556677',3.5,'right');
-        txo(ch.desc,tx,cy+rowH/2+4,'#778899',3.5,'left');
+        txo(ch.desc,tx,cy+rowH/2+5,'#778899',3.5,'left');
+        if(ch.atk)txo(ch.atk,cx+colW-2,cy+rowH-4,sel?ch.col:'#666688',3.2,'right');
         // HPドット
         for(let j=0;j<ch.mhp;j++){
             ctx.fillStyle=j<4?'#44ff44':'#ffaa00';
@@ -1065,168 +1065,116 @@ function drawDragon(bx,by){
     const ph=Math.floor(P.fr/7)%2;
     ctx.save();if(P.dir<0){ctx.translate(cx*2,0);ctx.scale(-1,1);}
 
-    // ─── 尻尾 ───
-    ctx.fillStyle='#b81806';
+    // ─── 尻尾（太く、菱形チップ） ───
+    ctx.fillStyle='#aa1200';
     ctx.beginPath();
-    ctx.moveTo(cx-2,gy-16);
-    ctx.quadraticCurveTo(cx-14,gy-12,cx-24,gy-7);
-    ctx.quadraticCurveTo(cx-28,gy-5,cx-30,gy-3);
-    ctx.lineTo(cx-28,gy);
-    ctx.quadraticCurveTo(cx-16,gy-5,cx-1,gy-18);
-    ctx.closePath();ctx.fill();
-    // 尾の棘
-    ctx.fillStyle='#880e04';
-    ctx.beginPath();ctx.moveTo(cx-18,gy-13);ctx.lineTo(cx-20,gy-20);ctx.lineTo(cx-15,gy-13);ctx.closePath();ctx.fill();
-    // 尾先（矢印型）
-    ctx.beginPath();ctx.moveTo(cx-29,gy-3);ctx.lineTo(cx-37,gy-7);ctx.lineTo(cx-30,gy+2);ctx.lineTo(cx-27,gy-2);ctx.closePath();ctx.fill();
+    ctx.moveTo(cx+1,gy-7);ctx.quadraticCurveTo(cx-9,gy-5,cx-18,gy-2);
+    ctx.quadraticCurveTo(cx-9,gy+1,cx+1,gy-4);ctx.closePath();ctx.fill();
+    ctx.fillStyle='#881000';
+    ctx.beginPath();ctx.moveTo(cx-18,gy-2);ctx.lineTo(cx-25,gy-6);
+    ctx.lineTo(cx-19,gy+3);ctx.lineTo(cx-14,gy-1);ctx.closePath();ctx.fill();
 
-    // ─── 大翼（バット翼、骨格付き） ───
-    // 翼の影（最背面）
-    ctx.fillStyle='#6a0c04';
-    ctx.beginPath();
-    ctx.moveTo(cx-2,gy-30);
-    ctx.lineTo(cx-30,gy-54);
-    ctx.lineTo(cx-38,gy-37);
-    ctx.lineTo(cx-28,gy-22);
-    ctx.lineTo(cx-6,gy-18);
-    ctx.closePath();ctx.fill();
-    // 翼本体
-    ctx.fillStyle='#991004';
-    ctx.beginPath();
-    ctx.moveTo(cx-2,gy-30);
-    ctx.lineTo(cx-27,gy-52);
-    ctx.lineTo(cx-36,gy-36);
-    ctx.lineTo(cx-26,gy-21);
-    ctx.lineTo(cx-6,gy-18);
-    ctx.closePath();ctx.fill();
-    // 翼膜ハイライト
-    ctx.globalAlpha=0.45;ctx.fillStyle='#dd1a08';
-    ctx.beginPath();
-    ctx.moveTo(cx-2,gy-30);
-    ctx.lineTo(cx-24,gy-50);
-    ctx.lineTo(cx-33,gy-36);
-    ctx.lineTo(cx-23,gy-21);
-    ctx.lineTo(cx-6,gy-19);
-    ctx.closePath();ctx.fill();
-    ctx.globalAlpha=1;
-    // 骨格ライン（5本）
-    ctx.strokeStyle='#550a04';ctx.lineWidth=2;
-    ctx.beginPath();ctx.moveTo(cx-2,gy-30);ctx.lineTo(cx-27,gy-52);ctx.stroke();
-    ctx.beginPath();ctx.moveTo(cx-2,gy-30);ctx.lineTo(cx-36,gy-36);ctx.stroke();
-    ctx.beginPath();ctx.moveTo(cx-2,gy-30);ctx.lineTo(cx-26,gy-21);ctx.stroke();
-    ctx.lineWidth=1.5;
-    ctx.beginPath();ctx.moveTo(cx-2,gy-30);ctx.lineTo(cx-16,gy-50);ctx.stroke();
-    ctx.beginPath();ctx.moveTo(cx-2,gy-30);ctx.lineTo(cx-32,gy-43);ctx.stroke();
-    // 翼先の鉤爪
-    ctx.fillStyle='#330604';
-    ctx.beginPath();ctx.moveTo(cx-27,gy-52);ctx.lineTo(cx-32,gy-57);ctx.lineTo(cx-25,gy-50);ctx.closePath();ctx.fill();
-    ctx.beginPath();ctx.moveTo(cx-36,gy-36);ctx.lineTo(cx-42,gy-37);ctx.lineTo(cx-35,gy-32);ctx.closePath();ctx.fill();
+    // ─── コンパクトバット翼 ───
+    ctx.fillStyle='#6e0c00';
+    ctx.beginPath();ctx.moveTo(cx,by+6);ctx.lineTo(cx-14,by-6);
+    ctx.lineTo(cx-18,by+5);ctx.lineTo(cx-10,by+16);ctx.closePath();ctx.fill();
+    ctx.fillStyle='#9e1200';
+    ctx.beginPath();ctx.moveTo(cx,by+7);ctx.lineTo(cx-12,by-4);
+    ctx.lineTo(cx-16,by+5);ctx.lineTo(cx-9,by+15);ctx.closePath();ctx.fill();
+    ctx.strokeStyle='#550800';ctx.lineWidth=1.2;
+    ctx.beginPath();ctx.moveTo(cx,by+7);ctx.lineTo(cx-12,by-4);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(cx-2,by+9);ctx.lineTo(cx-16,by+4);ctx.stroke();
 
-    // ─── 後ろ脚2本（二足歩行アニメ） ───
-    const la=ph===0?3:-2, ra=ph===0?-2:3;
-    // 右脚（やや暗め）
-    ctx.fillStyle='#aa1204';
-    ctx.beginPath();ctx.moveTo(cx+2,gy-18);ctx.lineTo(cx+8,gy-18);ctx.lineTo(cx+9+ra/3,gy-9);ctx.lineTo(cx+3+ra/3,gy-9);ctx.closePath();ctx.fill();
-    ctx.beginPath();ctx.moveTo(cx+3+ra/3,gy-9);ctx.lineTo(cx+8+ra/3,gy-9);ctx.lineTo(cx+7+ra*0.6,gy);ctx.lineTo(cx+3+ra*0.6,gy);ctx.closePath();ctx.fill();
-    ctx.fillStyle='#881002';ctx.fillRect(cx+1+ra,gy,7,3);
-    ctx.fillStyle='#0a0404';ctx.fillRect(cx+ra,gy+3,3,5);ctx.fillRect(cx+3+ra,gy+4,3,6);ctx.fillRect(cx+6+ra,gy+3,3,5);
-    // 左脚（明るめ）
-    ctx.fillStyle='#cc1806';
-    ctx.beginPath();ctx.moveTo(cx-6,gy-18);ctx.lineTo(cx,gy-18);ctx.lineTo(cx+1+la/3,gy-9);ctx.lineTo(cx-5+la/3,gy-9);ctx.closePath();ctx.fill();
-    ctx.beginPath();ctx.moveTo(cx-5+la/3,gy-9);ctx.lineTo(cx+la/3,gy-9);ctx.lineTo(cx-1+la*0.6,gy);ctx.lineTo(cx-5+la*0.6,gy);ctx.closePath();ctx.fill();
-    ctx.fillStyle='#aa1404';ctx.fillRect(cx-6+la,gy,7,3);
-    ctx.fillStyle='#0a0404';ctx.fillRect(cx-7+la,gy+3,3,5);ctx.fillRect(cx-4+la,gy+4,3,6);ctx.fillRect(cx-1+la,gy+3,3,5);
-
-    // ─── 胴体（直立、前傾） ───
-    ctx.fillStyle='#bb1606';ctx.beginPath();ctx.ellipse(cx+1,gy-19,8,6,0,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle='#cc1a06';ctx.beginPath();ctx.ellipse(cx+2,gy-28,10,11,0.18,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle='#ee2808';ctx.beginPath();ctx.ellipse(cx,gy-29,7,8,0.12,0,Math.PI*2);ctx.fill();
-    // 腹甲（オレンジ、縞付き）
-    ctx.fillStyle='#dd6e10';ctx.beginPath();ctx.ellipse(cx+3,gy-26,5,9,0.2,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle='#f09020';ctx.fillRect(cx,gy-34,5,15);
-    ctx.fillStyle='#bb5a0c';for(let i=0;i<6;i++)ctx.fillRect(cx-1,gy-33+i*2.4,7,1);
-
-    // ─── 前腕（短く） ───
-    ctx.fillStyle='#cc1806';
-    ctx.beginPath();ctx.moveTo(cx+8,gy-30);ctx.lineTo(cx+12,gy-30);ctx.lineTo(cx+13,gy-22);ctx.lineTo(cx+9,gy-22);ctx.closePath();ctx.fill();
-    ctx.beginPath();ctx.moveTo(cx-9,gy-30);ctx.lineTo(cx-5,gy-30);ctx.lineTo(cx-4,gy-22);ctx.lineTo(cx-8,gy-22);ctx.closePath();ctx.fill();
-    ctx.fillStyle='#0a0404';
-    ctx.fillRect(cx+8,gy-22,3,5);ctx.fillRect(cx+10,gy-21,3,6);ctx.fillRect(cx+12,gy-22,3,5);
-    ctx.fillRect(cx-11,gy-22,3,5);ctx.fillRect(cx-9,gy-21,3,6);ctx.fillRect(cx-7,gy-22,3,5);
-
-    // ─── 背びれ（4本） ───
-    ctx.fillStyle='#991004';
-    [[cx-4,13],[cx-1,18],[cx+2,16],[cx+5,11]].forEach(([fx,fh])=>{
-        ctx.beginPath();ctx.moveTo(fx-2,gy-28);ctx.lineTo(fx,gy-28-fh);ctx.lineTo(fx+2,gy-28);ctx.closePath();ctx.fill();
+    // ─── 後ろ足（ずっしり二足歩行） ───
+    ctx.fillStyle='#bb1400';
+    ctx.fillRect(cx-7,gy-(ph?13:9),5,ph?13:9);
+    ctx.fillRect(cx+2,gy-(ph?9:13),5,ph?9:13);
+    ctx.fillStyle='#991000';
+    ctx.fillRect(cx-9,gy-5,7,5);ctx.fillRect(cx+2,gy-5,7,5);
+    ctx.fillStyle='#ece090';
+    [[cx-10,cx-7,cx-4],[cx+1,cx+4,cx+7]].forEach(xs=>{
+        xs.forEach(x=>{ctx.beginPath();ctx.moveTo(x,gy);ctx.lineTo(x-2,gy+4);ctx.lineTo(x+2,gy+4);ctx.closePath();ctx.fill();});
     });
 
-    // ─── 首（S字カーブ、長め） ───
-    ctx.fillStyle='#cc1806';
-    ctx.beginPath();
-    ctx.moveTo(cx-2,gy-36);ctx.lineTo(cx+5,gy-36);
-    ctx.quadraticCurveTo(cx+14,gy-41,cx+11,gy-49);
-    ctx.lineTo(cx+5,gy-49);
-    ctx.quadraticCurveTo(cx+8,gy-41,cx-1,gy-37);
-    ctx.closePath();ctx.fill();
-    ctx.fillStyle='#ee2808';
-    ctx.beginPath();
-    ctx.moveTo(cx-1,gy-36);ctx.lineTo(cx+4,gy-36);
-    ctx.quadraticCurveTo(cx+12,gy-41,cx+9,gy-49);
-    ctx.lineTo(cx+6,gy-49);
-    ctx.quadraticCurveTo(cx+9,gy-41,cx,gy-37);
-    ctx.closePath();ctx.fill();
+    // ─── 胴体（たる型） ───
+    ctx.fillStyle='#cc1600';
+    ctx.beginPath();ctx.ellipse(cx,by+13,9,10,0,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#ff5a1a';
+    ctx.beginPath();ctx.ellipse(cx+1,by+14,6,8,0,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#ff7a38';
+    ctx.beginPath();ctx.ellipse(cx+1,by+15,4,6,0,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#881000';
+    [[cx-2,by+4],[cx-1,by+8],[cx-2,by+12]].forEach(([sx,sy])=>{
+        ctx.beginPath();ctx.moveTo(sx-2,sy+3);ctx.lineTo(sx,sy-3);ctx.lineTo(sx+2,sy+3);ctx.closePath();ctx.fill();
+    });
 
-    // ─── 頭（大型、西洋ドラゴン） ───
-    ctx.fillStyle='#880e04';ctx.beginPath();ctx.ellipse(cx+13,gy-54,14,10,0.25,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle='#cc1806';ctx.beginPath();ctx.ellipse(cx+13,gy-55,13,9,0.25,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle='#ee2808';ctx.beginPath();ctx.ellipse(cx+11,gy-56,11,8,0.18,0,Math.PI*2);ctx.fill();
-    // 眉稜（brow ridge）
-    ctx.fillStyle='#aa1404';
-    ctx.beginPath();ctx.moveTo(cx+3,gy-60);ctx.quadraticCurveTo(cx+10,gy-64,cx+16,gy-60);ctx.lineTo(cx+15,gy-58);ctx.quadraticCurveTo(cx+9,gy-62,cx+4,gy-58);ctx.closePath();ctx.fill();
-    // 下顎
-    ctx.fillStyle='#bb1504';ctx.beginPath();ctx.ellipse(cx+14,gy-49,11,5,0.22,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle='#dd2008';ctx.beginPath();ctx.ellipse(cx+13,gy-50,9,4,0.15,0,Math.PI*2);ctx.fill();
-    // スナウト（前に突き出す）
-    ctx.fillStyle='#cc1806';
-    ctx.beginPath();ctx.moveTo(cx+21,gy-57);ctx.lineTo(cx+30,gy-54);ctx.lineTo(cx+30,gy-48);ctx.lineTo(cx+21,gy-50);ctx.closePath();ctx.fill();
-    ctx.fillStyle='#ee2808';
-    ctx.beginPath();ctx.moveTo(cx+22,gy-56);ctx.lineTo(cx+29,gy-54);ctx.lineTo(cx+29,gy-50);ctx.lineTo(cx+22,gy-51);ctx.closePath();ctx.fill();
-    ctx.fillStyle='#1a0606';ctx.beginPath();ctx.arc(cx+27,gy-53,1.8,0,Math.PI*2);ctx.fill();
-    ctx.strokeStyle='#660a04';ctx.lineWidth=1;
-    ctx.beginPath();ctx.moveTo(cx+15,gy-51);ctx.lineTo(cx+29,gy-53);ctx.stroke();
-    // 上牙（2本）
-    ctx.fillStyle='#f0eedc';
-    ctx.beginPath();ctx.moveTo(cx+19,gy-51);ctx.lineTo(cx+18,gy-44);ctx.lineTo(cx+22,gy-51);ctx.closePath();ctx.fill();
-    ctx.beginPath();ctx.moveTo(cx+23,gy-51);ctx.lineTo(cx+22,gy-45);ctx.lineTo(cx+26,gy-51);ctx.closePath();ctx.fill();
-    // 下牙
-    ctx.fillStyle='#e4e0cc';
-    ctx.beginPath();ctx.moveTo(cx+20,gy-51);ctx.lineTo(cx+21,gy-56);ctx.lineTo(cx+23,gy-51);ctx.closePath();ctx.fill();
+    // ─── 前腕（短くがっしり） ───
+    ctx.fillStyle='#bb1400';
+    ctx.fillRect(cx-13,by+10,5,8);ctx.fillRect(cx+8,by+10,5,8);
+    ctx.fillStyle='#ece090';
+    [[cx-13,cx-10],[cx+8,cx+11]].forEach(xs=>{
+        xs.forEach(x=>{ctx.beginPath();ctx.moveTo(x,by+18);ctx.lineTo(x-2,by+23);ctx.lineTo(x+2,by+23);ctx.closePath();ctx.fill();});
+    });
 
-    // ─── 目（黄スリット） ───
-    ctx.fillStyle='#0a0202';ctx.beginPath();ctx.ellipse(cx+8,gy-57,6,5,0,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle='#f8e000';ctx.beginPath();ctx.ellipse(cx+8,gy-57,5,4,0,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle='#0a0202';ctx.beginPath();ctx.ellipse(cx+8,gy-57,1.5,3.8,0,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle='#ffffff';ctx.beginPath();ctx.arc(cx+6,gy-59,1.3,0,Math.PI*2);ctx.fill();
+    // ─── 首（太い短い） ───
+    ctx.fillStyle='#cc1600';
+    ctx.beginPath();ctx.moveTo(cx-4,by+5);ctx.lineTo(cx+8,by+5);ctx.lineTo(cx+7,by+9);ctx.lineTo(cx-3,by+9);ctx.closePath();ctx.fill();
+    ctx.fillStyle='#881000';
+    ctx.beginPath();ctx.moveTo(cx+1,by+4);ctx.lineTo(cx+3,by-1);ctx.lineTo(cx+5,by+4);ctx.closePath();ctx.fill();
+    ctx.beginPath();ctx.moveTo(cx+4,by+5);ctx.lineTo(cx+6,by+0);ctx.lineTo(cx+8,by+5);ctx.closePath();ctx.fill();
 
-    // ─── 角（2本、後方へ） ───
-    ctx.fillStyle='#440804';
-    ctx.beginPath();ctx.moveTo(cx+8,gy-62);ctx.lineTo(cx+4,gy-76);ctx.lineTo(cx+12,gy-62);ctx.closePath();ctx.fill();
-    ctx.fillStyle='#661008';
-    ctx.beginPath();ctx.moveTo(cx+8,gy-62);ctx.lineTo(cx+6,gy-73);ctx.lineTo(cx+10,gy-62);ctx.closePath();ctx.fill();
-    ctx.fillStyle='#440804';
-    ctx.beginPath();ctx.moveTo(cx+5,gy-60);ctx.lineTo(cx-1,gy-72);ctx.lineTo(cx+7,gy-59);ctx.closePath();ctx.fill();
+    // ─── 頭（大きく西洋ドラゴン） ───
+    ctx.fillStyle='#7a0e00';
+    ctx.beginPath();ctx.ellipse(cx+5,by-5,13,11,0.12,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#dd1600';
+    ctx.beginPath();ctx.ellipse(cx+5,by-6,12,10,0.10,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#ee2010';
+    ctx.beginPath();ctx.ellipse(cx+4,by-7,10,9,0.08,0,Math.PI*2);ctx.fill();
+    // 眉稜
+    ctx.fillStyle='#991200';
+    ctx.beginPath();ctx.moveTo(cx-3,by-12);ctx.quadraticCurveTo(cx+5,by-16,cx+13,by-11);
+    ctx.lineTo(cx+12,by-9);ctx.quadraticCurveTo(cx+5,by-14,cx-2,by-10);ctx.closePath();ctx.fill();
+    // スナウト
+    ctx.fillStyle='#cc1600';
+    ctx.beginPath();ctx.moveTo(cx+11,by-9);ctx.lineTo(cx+22,by-6);ctx.lineTo(cx+22,by-1);ctx.lineTo(cx+11,by-2);ctx.closePath();ctx.fill();
+    ctx.fillStyle='#ee2010';
+    ctx.beginPath();ctx.moveTo(cx+12,by-8);ctx.lineTo(cx+21,by-6);ctx.lineTo(cx+21,by-2);ctx.lineTo(cx+12,by-2);ctx.closePath();ctx.fill();
+    ctx.fillStyle='#330400';ctx.beginPath();ctx.arc(cx+19,by-5,1.5,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle='#551000';ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(cx+11,by-4);ctx.lineTo(cx+21,by-4);ctx.stroke();
+    // 牙
+    ctx.fillStyle='#f0eca0';
+    ctx.beginPath();ctx.moveTo(cx+14,by-3);ctx.lineTo(cx+13,by+2);ctx.lineTo(cx+16,by-3);ctx.closePath();ctx.fill();
+    ctx.beginPath();ctx.moveTo(cx+17,by-3);ctx.lineTo(cx+17,by+2);ctx.lineTo(cx+20,by-3);ctx.closePath();ctx.fill();
+    ctx.fillStyle='#d8d490';
+    ctx.beginPath();ctx.moveTo(cx+15,by-4);ctx.lineTo(cx+15,by-8);ctx.lineTo(cx+17,by-4);ctx.closePath();ctx.fill();
+    // 目（スリット）
+    ctx.fillStyle='#111111';ctx.beginPath();ctx.ellipse(cx+2,by-8,4.5,3.5,0.10,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#f8e000';ctx.beginPath();ctx.ellipse(cx+2,by-8,3.5,2.5,0.10,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#111111';ctx.beginPath();ctx.ellipse(cx+2,by-8,0.8,2.3,0.10,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#ffffff';ctx.beginPath();ctx.arc(cx+0.5,by-9.5,0.9,0,Math.PI*2);ctx.fill();
+
+    // ─── 角（2本、後ろ斜め上） ───
+    ctx.fillStyle='#660a00';
+    ctx.beginPath();ctx.moveTo(cx-1,by-13);ctx.lineTo(cx-6,by-25);ctx.lineTo(cx+3,by-12);ctx.closePath();ctx.fill();
+    ctx.fillStyle='#881000';
+    ctx.beginPath();ctx.moveTo(cx,by-13);ctx.lineTo(cx-4,by-23);ctx.lineTo(cx+2,by-12);ctx.closePath();ctx.fill();
+    ctx.fillStyle='#660a00';
+    ctx.beginPath();ctx.moveTo(cx+8,by-12);ctx.lineTo(cx+13,by-23);ctx.lineTo(cx+11,by-11);ctx.closePath();ctx.fill();
+    ctx.fillStyle='#881000';
+    ctx.beginPath();ctx.moveTo(cx+8,by-12);ctx.lineTo(cx+12,by-21);ctx.lineTo(cx+10,by-11);ctx.closePath();ctx.fill();
 
     // ─── 炎ブレス ───
     if(P.atkCd>25){
         const tf=Math.min(1,(P.atkCd-25)/10);
-        const fx=cx+31,fy=gy-52;
-        for(let i=6;i>=1;i--){
-            ctx.globalAlpha=(0.1+i*0.15)*tf;
-            ctx.fillStyle=['#ffffff','#ffff88','#ffee00','#ffaa00','#ff5500','#cc1100'][6-i];
-            ctx.beginPath();ctx.ellipse(fx+i*5,fy,i*5,i*3,0,0,Math.PI*2);ctx.fill();
+        const fx=cx+23,fy=by-4;
+        for(let i=5;i>=1;i--){
+            ctx.globalAlpha=(0.15+i*0.16)*tf;
+            ctx.fillStyle=['#ffff88','#ffee00','#ffaa00','#ff5500','#cc1100'][5-i];
+            ctx.beginPath();ctx.ellipse(fx+i*5,fy,i*4,i*2.5,0,0,Math.PI*2);ctx.fill();
         }
-        ctx.globalAlpha=tf*0.9;ctx.fillStyle='#ffffff';
-        ctx.beginPath();ctx.ellipse(fx+5,fy,7,5,0,0,Math.PI*2);ctx.fill();
+        ctx.globalAlpha=tf;ctx.fillStyle='#ffffff';
+        ctx.beginPath();ctx.ellipse(fx+4,fy,6,4,0,0,Math.PI*2);ctx.fill();
         ctx.globalAlpha=1;
     }
     ctx.restore();
