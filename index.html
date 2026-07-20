@@ -494,7 +494,7 @@ function inp(cx,cy){
         }
         return;
     }
-    if(gs==='stageclear'){if(clearTimer>60){if(stage>=2){if(score>best){best=score;localStorage.setItem('ldo_best',best);}location.reload();}else{stage++;gs='playing';resetGame();}}return;}
+    if(gs==='stageclear'){if(clearTimer>60){if(stage>=2){if(score>best){best=score;localStorage.setItem('ldo_best',best);}gs='ending';clearTimer=0;}else{stage++;gs='playing';resetGame();}}return;}
     if(gs==='gameover'){location.reload();}
 }
 
@@ -1506,11 +1506,19 @@ function drawBoss(b){
     ctx.fillStyle='#ffffff';ctx.beginPath();ctx.arc(cx-1,y+29,2,0,Math.PI*2);ctx.fill();
     ctx.globalAlpha=.2+pulse*.15;ctx.fillStyle='#ff00ff';ctx.beginPath();ctx.arc(cx,y+31,16,0,Math.PI*2);ctx.fill();
     ctx.globalAlpha=1;
+    // レイジオーラ（HP50%以下）
+    if(b.rage){
+        const rp=0.28+Math.sin(b.fr*.35)*.28;
+        ctx.globalAlpha=rp;ctx.globalCompositeOperation='lighter';
+        ctx.fillStyle='#cc2200';ctx.beginPath();ctx.arc(cx,y+7,28,0,Math.PI*2);ctx.fill();
+        ctx.fillStyle='#ff4400';ctx.beginPath();ctx.arc(cx,y+7,16,0,Math.PI*2);ctx.fill();
+        ctx.globalCompositeOperation='source-over';ctx.globalAlpha=1;
+    }
     // 触手腕（左）
     ctx.strokeStyle='#1e0838';ctx.lineWidth=8;
     ctx.beginPath();ctx.moveTo(cx-16,y+22);ctx.bezierCurveTo(cx-30,y+28,cx-32,y+38,cx-24,y+46);ctx.stroke();
     ctx.strokeStyle='#3a0a60';ctx.lineWidth=5;
-    ctx.beginPath();ctx.moveTo(cx-16,y+22);ctx.bezierCurveTo(cx-29,y+28,ctx-31,y+38,cx-23,y+46);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(cx-16,y+22);ctx.bezierCurveTo(cx-29,y+28,cx-31,y+38,cx-23,y+46);ctx.stroke();
     // 右腕（エネルギーキャノン）
     ctx.fillStyle='#1e0838';ctx.fillRect(cx+16,y+20,8,20);
     ctx.fillStyle='#0044aa';ctx.fillRect(cx+22,y+28,12,6);
@@ -1574,6 +1582,7 @@ function update(){
     gTick++;
     if(gs==='splash'){splashTimer++;if(splashTimer>=180)gs='start';return;}
     if(gs==='stageclear'){clearTimer++;return;}
+    if(gs==='ending'){clearTimer++;if(clearTimer>260)location.reload();return;}
     if(gs!=='playing')return;
     if(hitStop>0){hitStop--;return;}
     t++;
@@ -1741,19 +1750,27 @@ function update(){
     // Boss
     if(scroll>=BOSS_TRIGGER&&!bossActive&&!bossDefeated){
         bossActive=true;
-        boss={sx:scroll+W-50,sy:GY-36,w:27,h:36,hp:20,maxHp:20,vx:0,vy:0,dir:-1,fr:0,inv:0,phase:'charge',cd:80};
+        boss={sx:scroll+W-50,sy:GY-36,w:27,h:36,hp:20,maxHp:20,vx:0,vy:0,dir:-1,fr:0,inv:0,phase:'charge',cd:80,rage:false,dashDir:1};
     }
     if(boss&&!bossDefeated){
         boss.fr++;boss.inv=Math.max(0,boss.inv-1);
         const bdx=(P.x+scroll)-(boss.sx+boss.w/2);
         boss.dir=bdx>0?1:-1;
         boss.cd=Math.max(0,boss.cd-1);
+        boss.rage=boss.hp<=Math.floor(boss.maxHp*0.5);
+        const bspd=boss.rage?1.1:.7;
         if(boss.phase==='charge'){
-            boss.sx+=(bdx>0?.7:-.7);
+            boss.sx+=(bdx>0?bspd:-bspd);
             if(boss.sy+boss.h<GY){boss.vy+=GR;boss.sy+=boss.vy;}else{boss.sy=GY-boss.h;boss.vy=0;}
-            if(boss.cd<=0){boss.phase='stomp';boss.cd=40;boss.vy=-6;}
+            if(boss.cd<=0){
+                if(boss.rage&&Math.random()<.4){boss.phase='dash';boss.dashDir=boss.dir;boss.cd=30;}
+                else{boss.phase='stomp';boss.cd=38;boss.vy=-7;}
+            }
         }else if(boss.phase==='stomp'){
-            if(boss.sy+boss.h<GY){boss.vy+=GR;boss.sy+=boss.vy;}else{boss.sy=GY-boss.h;boss.vy=0;shake=4;boss.phase='charge';boss.cd=100;}
+            if(boss.sy+boss.h<GY){boss.vy+=GR;boss.sy+=boss.vy;}else{boss.sy=GY-boss.h;boss.vy=0;shake=4;boss.phase='charge';boss.cd=boss.rage?70:100;}
+        }else if(boss.phase==='dash'){
+            boss.sx+=boss.dashDir*(boss.rage?9:6);
+            if(boss.cd<=0){boss.phase='charge';boss.cd=boss.rage?75:100;shake=2;}
         }
         // Attack hitbox
         if(P.inv<=0){
@@ -1798,7 +1815,8 @@ function update(){
     if(!bossActive){
         spawnCd--;
         if(spawnCd<=0){
-            spawnCd=80+Math.floor(Math.random()*60);
+            const diff=Math.max(0.5,1-scroll/6000);
+            spawnCd=Math.floor((80+Math.floor(Math.random()*60))*diff);
             // Stage1: Grub→+Droid  Stage2: +Hunter→+UFO
             const roll=Math.random();
             if(stage===1){
@@ -1912,6 +1930,32 @@ function draw(){
         ctx.restore();return;
     }
 
+    // エンディング画面
+    if(gs==='ending'){
+        ctx.save();ctx.scale(SC,SC);
+        ctx.fillStyle='#000012';ctx.fillRect(0,0,W,H);
+        for(let i=0;i<70;i++){
+            const sa=Math.sin(clearTimer*.015+i*.8)*.5+.5;
+            ctx.fillStyle=`rgba(255,255,255,${sa*.55})`;
+            ctx.fillRect(((i*97+clearTimer*.5)%W+W)%W,((i*61+clearTimer*.3)%H+H)%H,1,1);
+        }
+        for(let i=0;i<10;i++){
+            const oa=i*Math.PI/5+clearTimer*.018;
+            const ox=W/2+Math.cos(oa)*68;const oy=H/2+Math.sin(oa)*38;
+            const oc=i%2===0?'#ffe840':'#8822ff';
+            ctx.globalAlpha=0.6+Math.sin(clearTimer*.12+i)*.4;
+            ctx.fillStyle=oc;ctx.beginPath();ctx.arc(ox,oy,4+Math.sin(clearTimer*.1+i)*1.5,0,Math.PI*2);ctx.fill();
+            ctx.globalAlpha=0.15;ctx.beginPath();ctx.arc(ox,oy,10,0,Math.PI*2);ctx.fill();
+        }
+        ctx.globalAlpha=1;
+        const fIn=Math.min(1,clearTimer/40);
+        txo('GAME CLEAR!',W/2,H/2-28,'#ffe840',13,undefined,fIn);
+        txo('全ステージ制覇！',W/2,H/2-8,'#ffff66',7.5,undefined,fIn);
+        txo('SCORE  '+score,W/2,H/2+10,'#44ffaa',8,undefined,fIn);
+        if(best===score&&clearTimer>20)txo('NEW RECORD!',W/2,H/2+26,'#ff8820',7,undefined,fIn);
+        if(clearTimer>60&&Math.floor(clearTimer/28)%2===0)txo('ありがとう！',W/2,H/2+40,'#ffffff',6.5);
+        ctx.restore();return;
+    }
     // Splash（ロゴはuicの高解像度キャンバスに描画→pixelated不使用）
     if(gs==='splash'){
         ctx.fillStyle='#000';ctx.fillRect(0,0,W,H);
@@ -1975,6 +2019,11 @@ function draw(){
         else if(en.type==='droid')drawDroid(en);
         else if(en.type==='hunter')drawHunter(en);
         else if(en.type==='ufo')drawUFO(en);
+        if(en.inv>0&&!en.dead&&Math.floor(en.inv/4)%2!==0){
+            ctx.globalAlpha=0.48;ctx.fillStyle='#ff2222';
+            ctx.fillRect(ex-1,en.sy-1,en.w+2,en.h+2);
+            ctx.globalAlpha=1;
+        }
     });
 
     // Boss
@@ -2047,20 +2096,6 @@ function draw(){
     const drawFns=[drawHero,drawDemonLord,drawMage,drawElf,drawDragon,drawGoblinPC,drawGolem,drawSlime];
     drawFns[selectedChar](P.x-scroll,P.y);
 
-    // 近接攻撃斬撃エフェクト
-    if(gs==='playing'&&P.atk>0&&(selectedChar===0||selectedChar===5)){
-        const ax=(P.x-scroll)+(P.dir>0?P.w+8:0);
-        const ay=P.y+P.h/2;
-        const a0=P.dir>0?-0.9:Math.PI+0.9,a1=P.dir>0?0.9:Math.PI-0.9;
-        const prog=P.atk/22;
-        ctx.globalAlpha=prog*.85;
-        ctx.strokeStyle='#ffffff';ctx.lineWidth=3;
-        ctx.beginPath();ctx.arc(ax,ay,18,a0,a1);ctx.stroke();
-        ctx.globalAlpha=prog*.3;
-        ctx.strokeStyle='#ffff88';ctx.lineWidth=7;
-        ctx.beginPath();ctx.arc(ax,ay,18,a0,a1);ctx.stroke();
-        ctx.globalAlpha=1;
-    }
     // 3段コンボ斬撃エフェクト（勇者・ゴブリン）
     if(gs==='playing'&&P.atk>0&&(selectedChar===0||selectedChar===5)){
         const bxp=P.x-scroll;
@@ -2152,6 +2187,18 @@ function draw(){
         }
         if(bossDefeated&&Math.floor(gTick/30)%2===0)
             txo('ボス討伐！ステージクリア！',W/2,H/2-20,'#ffe840',7);
+        // ボスHPバー（大型HUD）
+        if(bossActive&&boss&&!bossDefeated){
+            const bw=Math.floor(W*0.62);const bx2=Math.floor((W-bw)/2);
+            ctx.fillStyle='rgba(0,0,0,.85)';ctx.fillRect(bx2-2,14,bw+4,11);
+            ctx.fillStyle='#220000';ctx.fillRect(bx2,15,bw,9);
+            const hpFrac=boss.hp/boss.maxHp;
+            const bCol=hpFrac>0.5?'#cc2222':hpFrac>0.25?'#ff8800':'#ff2222';
+            ctx.fillStyle=bCol;ctx.fillRect(bx2,15,Math.floor(bw*hpFrac),9);
+            if(boss.rage){ctx.globalAlpha=0.3+Math.sin(gTick*.5)*.3;ctx.fillStyle='#ff4400';ctx.fillRect(bx2,15,Math.floor(bw*hpFrac),9);ctx.globalAlpha=1;}
+            ctx.fillStyle='rgba(255,255,255,.18)';ctx.fillRect(bx2,15,Math.floor(bw*hpFrac),3);
+            txo('WARLORD',W/2,21,'#ff88aa',4);
+        }
     }
 
     // Flash
