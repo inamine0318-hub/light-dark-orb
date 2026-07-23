@@ -178,7 +178,7 @@ function drawCharPreview(idx,cx,cy,scale){
     const si=P.inv,sa=P.atk,sc=P.atkCd,sd=P.dir,sf=P.fr,sg=P.onG,svx=P.vx;
     P.inv=0;P.atk=0;P.atkCd=0;P.dir=1;P.fr=8;P.onG=true;P.vx=0;
     const drawFnsP=[drawHero,drawDemonLord,drawMage,drawElf,drawDragon,drawGoblinPC,drawGolem,drawSlime];
-    drawFnsP[idx](pbx,pby);
+    drawWithOutline(drawFnsP[idx],pbx,pby,true);
     P.inv=si;P.atk=sa;P.atkCd=sc;P.dir=sd;P.fr=sf;P.onG=sg;P.vx=svx;
     ctx.restore();
 }
@@ -254,6 +254,61 @@ function stopBgm(){
 
 // ===== HELPERS =====
 function px(x,y,w,h){ctx.fillRect(Math.floor(x),Math.floor(y),w,h);}
+
+// ===== PIXEL ART HELPERS (Nintendo style) =====
+function pixelCircle(cx,cy,r,color,shade){
+    const cx_=Math.floor(cx),cy_=Math.floor(cy);
+    ctx.fillStyle=color;
+    for(let dy=-r;dy<=r;dy++){
+        const dx=Math.round(Math.sqrt(Math.max(0,r*r-dy*dy)));
+        if(dx>0)ctx.fillRect(cx_-dx,cy_+dy,dx*2+1,1);
+    }
+    if(shade){
+        ctx.fillStyle=shade;
+        for(let dy=Math.floor(r*.3);dy<=r;dy++){
+            const dx=Math.round(Math.sqrt(Math.max(0,r*r-dy*dy)));
+            if(dx>2)ctx.fillRect(cx_+dx-3,cy_+dy,3,1);
+        }
+    }
+}
+
+// Outline (Nintendo-style dark border around characters)
+const _OFC_W=72,_OFC_H=72,_OFC_BX=18,_OFC_BY=13;
+let _charOfc,_charOfcCtx,_outlineOfc,_outlineOfcCtx;
+function _initOfc(){
+    if(_charOfc)return;
+    _charOfc=new OffscreenCanvas(_OFC_W,_OFC_H);
+    _charOfcCtx=_charOfc.getContext('2d');
+    _charOfcCtx.imageSmoothingEnabled=false;
+    _outlineOfc=new OffscreenCanvas(_OFC_W,_OFC_H);
+    _outlineOfcCtx=_outlineOfc.getContext('2d');
+}
+function drawWithOutline(fn,bx,by,forceVisible){
+    _initOfc();
+    _charOfcCtx.clearRect(0,0,_OFC_W,_OFC_H);
+    const _prev=ctx; ctx=_charOfcCtx;
+    if(forceVisible){const si=P.inv;P.inv=0;fn(_OFC_BX,_OFC_BY);P.inv=si;}
+    else{fn(_OFC_BX,_OFC_BY);}
+    ctx=_prev;
+    const id=_charOfcCtx.getImageData(0,0,_OFC_W,_OFC_H);
+    const src=id.data;
+    const out=new Uint8ClampedArray(_OFC_W*_OFC_H*4);
+    for(let y=1;y<_OFC_H-1;y++){
+        for(let x=1;x<_OFC_W-1;x++){
+            const i=(y*_OFC_W+x)*4;
+            if(src[i+3]>30)continue;
+            const u=((y-1)*_OFC_W+x)*4,d=((y+1)*_OFC_W+x)*4;
+            const l=(y*_OFC_W+x-1)*4,r2=(y*_OFC_W+x+1)*4;
+            if(src[u+3]>50||src[d+3]>50||src[l+3]>50||src[r2+3]>50){
+                out[i]=4;out[i+1]=4;out[i+2]=16;out[i+3]=235;
+            }
+        }
+    }
+    _outlineOfcCtx.putImageData(new ImageData(out,_OFC_W,_OFC_H),0,0);
+    _prev.imageSmoothingEnabled=false;
+    _prev.drawImage(_outlineOfc,bx-_OFC_BX,by-_OFC_BY);
+    _prev.drawImage(_charOfc,bx-_OFC_BX,by-_OFC_BY);
+}
 function txo(s,x,y,c,sz,al,alpha){
     const prev=utx.globalAlpha;
     if(alpha!==undefined)utx.globalAlpha=alpha;
@@ -637,8 +692,7 @@ function drawHero(bx,by){
     // 金スパイク髪（影）
     ctx.fillStyle='#d89810';px(cx-8,by+2,5,8);px(cx+7,by+2,4,7);
     // 丸い頭（radius 8, center by+10）
-    ctx.fillStyle='#f0c888';ctx.beginPath();ctx.arc(cx+1,by+10,8,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle='#e0b070';px(cx+8,by+8,2,5);
+    pixelCircle(cx+1,by+10,8,'#f0c888','#e0b070');
     // 赤ハチマキ
     ctx.fillStyle='#cc1818';px(cx-7,by+7,17,4);
     ctx.fillStyle='#ee2828';px(cx-7,by+7,17,1);
@@ -698,8 +752,7 @@ function drawDemonLord(bx,by){
     ctx.fillStyle='#0a0615';
     px(cx-9,by+6+fl,5,14);px(cx+7,by+5+fl,5,12);
     // 丸い頭（radius 8, center by+10）
-    ctx.fillStyle='#bcc8b8';ctx.beginPath();ctx.arc(cx+1,by+10,8,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle='#aab8a8';px(cx+6,by+7,3,7);
+    pixelCircle(cx+1,by+10,8,'#bcc8b8','#aab8a8');
     ctx.fillStyle='#0a0615';px(cx-7,by+6,3,10);
     // 赤く光る目
     ctx.globalAlpha=.9+Math.sin(t*.09)*.1;
@@ -763,8 +816,7 @@ function drawMage(bx,by){
     ctx.fillStyle='#f8a810';px(cx-6,by+13,17,2);
     ctx.fillStyle='#f8e050';px(cx+1,by+1,2,2);
     // 丸い頭（radius 7, center by+17：帽子の下）
-    ctx.fillStyle='#f0c888';ctx.beginPath();ctx.arc(cx+1,by+17,7,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle='#e0b070';px(cx+7,by+14,2,6);
+    pixelCircle(cx+1,by+17,7,'#f0c888','#e0b070');
     // 目
     ctx.fillStyle='#5a1e08';px(cx-2,by+16,2,3);ctx.fillStyle='#000';px(cx-2,by+16,2,1);ctx.fillStyle='#fff';px(cx-1,by+17,1,1);
     ctx.fillStyle='#5a1e08';px(cx+1,by+16,3,3);ctx.fillStyle='#000';px(cx+1,by+16,3,1);ctx.fillStyle='#fff';px(cx+2,by+17,1,1);
@@ -814,8 +866,7 @@ function drawElf(bx,by){
     // 銀白の長髪（背面）
     ctx.fillStyle='#c8d0a8';px(cx-8,by+10,5,20);px(cx-7,by+8,4,16);
     // 丸い頭（radius 8, center by+10）
-    ctx.fillStyle='#f0d090';ctx.beginPath();ctx.arc(cx+1,by+10,8,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle='#e0c080';px(cx+7,by+7,2,6);
+    pixelCircle(cx+1,by+10,8,'#f0d090','#e0c080');
     // 長い尖り耳
     ctx.fillStyle='#f0d090';
     ctx.beginPath();ctx.moveTo(cx+8,by+11);ctx.lineTo(cx+16,by+7);ctx.lineTo(cx+9,by+15);ctx.fill();
@@ -942,8 +993,7 @@ function drawGoblinPC(bx,by){
     ctx.beginPath();ctx.moveTo(cx+8,by+8);ctx.lineTo(cx+17,by+3);ctx.lineTo(cx+15,by+16);ctx.fill();
     ctx.fillStyle='#306008';ctx.beginPath();ctx.moveTo(cx+8,by+9);ctx.lineTo(cx+15,by+5);ctx.lineTo(cx+14,by+15);ctx.fill();
     // 丸い頭（radius 8, center by+10）← by+16 から by+10 へ大幅移動
-    ctx.fillStyle='#60a820';ctx.beginPath();ctx.arc(cx+1,by+10,8,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle='#50901a';px(cx+7,by+7,3,7);
+    pixelCircle(cx+1,by+10,8,'#60a820','#50901a');
     // 粗末な兜（でこぼこ）
     ctx.fillStyle='#3e3e3e';px(cx-7,by+5,15,7);
     ctx.fillStyle='#2e2e2e';px(cx+6,by+5,4,7);
@@ -1022,10 +1072,10 @@ function drawGolem(bx,by){
     ctx.fillStyle='#666878';px(cx-1,by+14,6,4);ctx.fillStyle='#767888';px(cx+1,by+14,3,3);
     ctx.globalAlpha=gw*.5;ctx.fillStyle='#ff6000';px(cx+1,by+15,1,2);ctx.globalAlpha=1;
     // 大きな丸い石の頭（radius 10, center by+8）
-    ctx.fillStyle='#6e7888';ctx.beginPath();ctx.arc(cx+1,by+8,10,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle='#5e6878';ctx.beginPath();ctx.arc(cx+4,by+8,7,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle='#7e8898';ctx.beginPath();ctx.arc(cx-2,by+6,6,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle='#6e7888';ctx.beginPath();ctx.arc(cx+1,by+8,9,0,Math.PI*2);ctx.fill();
+    pixelCircle(cx+1,by+8,10,'#6e7888',null);
+    pixelCircle(cx+4,by+8,7,'#5e6878',null);
+    pixelCircle(cx-2,by+6,6,'#7e8898',null);
+    pixelCircle(cx+1,by+8,9,'#6e7888',null);
     // 頭の亀裂（マグマ）
     ctx.globalAlpha=gw*.9;ctx.fillStyle='#ff6000';
     px(cx-3,by+2,1,9);px(cx+1,by+1,1,8);px(cx+4,by+3,1,8);
@@ -1062,8 +1112,8 @@ function drawSlime(bx,by){
     ctx.beginPath();ctx.arc(cx,by+27+bob,15,0,Math.PI*2);ctx.fill();
     ctx.globalAlpha=.85;ctx.fillStyle='#2299ee';
     ctx.beginPath();ctx.arc(cx+1,by+28+bob,14,0,Math.PI*2);ctx.fill();
-    ctx.globalAlpha=1;ctx.fillStyle='#33aaff';
-    ctx.beginPath();ctx.arc(cx,by+27+bob,13,0,Math.PI*2);ctx.fill();
+    ctx.globalAlpha=1;
+    pixelCircle(cx,by+27+bob,13,'#33aaff',null);
     // つや（ハイライト）
     ctx.fillStyle='#99ddff';
     ctx.beginPath();ctx.arc(cx-5,by+20+bob,5,0,Math.PI*2);ctx.fill();
@@ -1851,7 +1901,7 @@ function draw(){
 
     // Player
     const drawFns=[drawHero,drawDemonLord,drawMage,drawElf,drawDragon,drawGoblinPC,drawGolem,drawSlime];
-    drawFns[selectedChar](P.x-scroll,P.y);
+    drawWithOutline(drawFns[selectedChar],P.x-scroll,P.y);
 
     // 3段コンボ斬撃エフェクト（勇者・ゴブリン）
     if(gs==='playing'&&P.atk>0&&(selectedChar===0||selectedChar===5)){
