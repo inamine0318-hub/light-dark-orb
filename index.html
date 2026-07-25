@@ -669,15 +669,16 @@ function drawHero(bx,by){
     if(P.inv>0&&Math.floor(P.inv/4)%2===0)return;
     const cx=Math.floor(bx)+18,wk=Math.floor(gTick/7)%2;
     ctx.save();if(P.dir<0){ctx.translate(cx*2,0);ctx.scale(-1,1);}
-    // 奥足
-    ctx.fillStyle='#1a3ab8';px(cx-5,by+33+wk,5,10-wk);
-    ctx.fillStyle='#7a5020';px(cx-6,by+43,6,4);
-    // 盾
-    ctx.fillStyle='#c8aa10';px(cx-14,by+19,6,14);
-    ctx.fillStyle='#e0cc20';px(cx-14,by+19,6,2);
-    ctx.fillStyle='#cc1818';px(cx-13,by+23,4,7);
-    // 奥腕
-    ctx.fillStyle='#2248c8';px(cx-9,by+19,4,13);
+    // 奥足（後方・やや浮き気味で重心を前足へ）
+    ctx.fillStyle='#1a3ab8';px(cx-5,by+35+wk,5,8-wk);
+    ctx.fillStyle='#7a5020';px(cx-6,by+43,5,4);
+    // 盾（前に突き出した左腕）
+    ctx.fillStyle='#c8aa10';px(cx-16,by+20,6,14);
+    ctx.fillStyle='#e0cc20';px(cx-16,by+20,6,2);
+    ctx.fillStyle='#cc1818';px(cx-15,by+24,4,7);
+    ctx.fillStyle='#f8e050';px(cx-14,by+25,2,2);
+    // 奥腕（盾腕・前方へ伸ばす）
+    ctx.fillStyle='#2248c8';px(cx-11,by+21,4,12);
     // 体
     ctx.fillStyle='#3060e8';
     px(cx-5,by+18,3,15);px(cx-2,by+18,9,15);px(cx+7,by+18,1,15);
@@ -685,17 +686,23 @@ function drawHero(bx,by){
     ctx.fillStyle='#c8d0f0';px(cx-3,by+20,7,9);
     ctx.fillStyle='#98a8d8';px(cx+2,by+20,2,9);
     ctx.fillStyle='#8a6010';px(cx-5,by+32,13,2);
-    // 剣
-    ctx.fillStyle='#c8e8ff';px(cx+9,by+3,3,28);
-    ctx.fillStyle='#ffffff';px(cx+9,by+3,1,11);
-    ctx.fillStyle='#f0c020';px(cx+6,by+23,9,3);
-    ctx.fillStyle='#7a4a10';px(cx+10,by+25,2,5);
-    // 手前腕
-    ctx.fillStyle='#3060e8';px(cx+5,by+19,5,12);
-    ctx.fillStyle='#c8d0f0';px(cx+6,by+30,4,3);
-    // 手前足
+    // 剣（斜め上・戦闘準備スタンス）
+    ctx.fillStyle='#c8e8ff';
+    px(cx+18,by+5,2,5);
+    px(cx+16,by+10,2,6);
+    px(cx+13,by+16,3,6);
+    px(cx+10,by+22,3,5);
+    ctx.fillStyle='#ffffff';
+    px(cx+18,by+5,1,4);
+    px(cx+16,by+10,1,5);
+    ctx.fillStyle='#f0c020';px(cx+7,by+26,11,3);
+    ctx.fillStyle='#7a4a10';px(cx+10,by+28,2,5);
+    // 手前腕（剣を握り上げる）
+    ctx.fillStyle='#3060e8';px(cx+6,by+22,5,10);
+    ctx.fillStyle='#c8d0f0';px(cx+7,by+31,4,3);
+    // 手前足（重心・しっかり踏み込む）
     ctx.fillStyle='#1e40c0';px(cx+1,by+33-wk,5,10+wk);
-    ctx.fillStyle='#7a5020';px(cx+1,by+43,6,4);
+    ctx.fillStyle='#7a5020';px(cx+1,by+43,7,4);
     // 金スパイク髪（影）
     ctx.fillStyle='#d89810';px(cx-8,by+2,5,8);px(cx+7,by+2,4,7);
     // 丸い頭（radius 8, center by+10）
@@ -718,7 +725,6 @@ function drawHero(bx,by){
     ctx.fillStyle='#a06040';px(cx-2,by+17,7,2);px(cx-1,by+18,5,1);
     ctx.restore();
 }
-
 // ===== 魔王 =====
 function drawDemonLord(bx,by){
     if(P.inv>0&&Math.floor(P.inv/4)%2===0)return;
@@ -970,15 +976,16 @@ function drawDragon(bx,by){
 function drawGoblin(bx,by){
     if(P.inv>0&&Math.floor(P.inv/4)%2===0)return;
     const cx=Math.floor(bx)+18,wk=Math.floor(gTick/6)%2;
-    ctx.save();if(P.dir<0){ctx.translate(cx*2,0);ctx.scale(-1,1);}
-    // 奥足
-    ctx.fillStyle='#509018';px(cx-5,by+33+wk,5,10-wk);
-    ctx.fillStyle='#382010';px(cx-6,by+43,6,4);
+    ctx.save();if(P.dir<0){ctx.translate(cx*2,0);ctx.scale(-1,1);} +
+
+    // 奥足（後方・浮き気味）
+    ctx.fillStyle='#509018';px(cx-5,by+35+wk,5,8-wk);
+    ctx.fillStyle='#382010';px(cx-6,by+43,5,4);
     // 短剣（奥手）
     ctx.fillStyle='#9898a8';px(cx-12,by+31,2,10);ctx.fillStyle='#c8d0d8';px(cx-11,by+31,2,6);
     ctx.fillStyle='#482e10';px(cx-12,by+41,2,5);ctx.fillStyle='#6a4218';px(cx-13,by+39,4,2);
     // 奥腕
-    ctx.fillStyle='#509018';px(cx-9,by+19,4,13);
+    ctx.fillStyle='#509018';px(cx-9,by+21,4,11);
     // 粗末な鎧
     ctx.fillStyle='#404040';
     px(cx-5,by+18,3,15);px(cx-2,by+18,9,15);px(cx+7,by+18,1,15);
@@ -989,19 +996,27 @@ function drawGoblin(bx,by){
     ctx.fillStyle='#503808';px(cx-5,by+33,13,10);ctx.fillStyle='#625020';px(cx-3,by+34,5,9);
     // 肩当て
     ctx.fillStyle='#383838';px(cx-9,by+17,5,7);px(cx+5,by+17,5,7);
-    // 手前腕
-    ctx.fillStyle='#509018';px(cx+5,by+19,5,11);px(cx+6,by+28,5,5);ctx.fillStyle='#60a820';px(cx+7,by+32,4,5);
-    // 手前足
+    // 手前腕（棍棒を振り上げる）
+    ctx.fillStyle='#509018';
+    px(cx+5,by+19,5,8);
+    px(cx+9,by+13,4,8);
+    // 棍棒（頭上・金属スパイク付き）
+    ctx.fillStyle='#5a3010';px(cx+10,by+5,3,9);
+    ctx.fillStyle='#6e4a20';px(cx+8,by+3,7,7);
+    ctx.fillStyle='#7e5a28';px(cx+9,by+4,4,4);
+    ctx.fillStyle='#484828';px(cx+7,by+2,2,2);px(cx+14,by+2,2,2);px(cx+7,by+7,2,2);px(cx+14,by+7,2,2);
+    ctx.fillStyle='#aaaaaa';px(cx+7,by+1,2,2);px(cx+14,by+1,2,2);
+    // 手前足（重心・踏み込む）
     ctx.fillStyle='#509018';px(cx+1,by+33-wk,5,10+wk);
-    ctx.fillStyle='#382010';px(cx+1,by+43,6,4);
-    // 大きな耳（バットイヤー）← head center by+10 に合わせて上へ
+    ctx.fillStyle='#382010';px(cx+1,by+43,7,4);
+    // 大きな耳（バットイヤー）
     ctx.fillStyle='#488012';
     ctx.beginPath();ctx.moveTo(cx-5,by+8);ctx.lineTo(cx-14,by+3);ctx.lineTo(cx-12,by+16);ctx.fill();
     ctx.fillStyle='#306008';ctx.beginPath();ctx.moveTo(cx-5,by+9);ctx.lineTo(cx-12,by+5);ctx.lineTo(cx-11,by+15);ctx.fill();
     ctx.fillStyle='#488012';
     ctx.beginPath();ctx.moveTo(cx+8,by+8);ctx.lineTo(cx+17,by+3);ctx.lineTo(cx+15,by+16);ctx.fill();
     ctx.fillStyle='#306008';ctx.beginPath();ctx.moveTo(cx+8,by+9);ctx.lineTo(cx+15,by+5);ctx.lineTo(cx+14,by+15);ctx.fill();
-    // 丸い頭（radius 8, center by+10）← by+16 から by+10 へ大幅移動
+    // 丸い頭（radius 8, center by+10）
     pixelCircle(cx+1,by+10,8,'#6ab822','#52981c');
     // 粗末な兜（でこぼこ）
     ctx.fillStyle='#3e3e3e';px(cx-7,by+5,15,7);
@@ -1018,11 +1033,11 @@ function drawGoblin(bx,by){
     ctx.fillStyle='#2a4808';
     px(cx-4,by+9,3,2);px(cx-2,by+8,2,2);
     px(cx+3,by+9,3,2);px(cx+5,by+8,3,2);
-    // ひん曲がった巨大な鼻（頭圏内 by+12~by+15）
+    // ひん曲がった巨大な鼻
     ctx.fillStyle='#509018';
     px(cx+1,by+12,4,2);px(cx-1,by+14,7,2);
     ctx.fillStyle='#3a6e0c';px(cx,by+15,2,1);px(cx+4,by+15,2,1);
-    // 汚い歯（by+16~by+18）
+    // 汚い歯
     ctx.fillStyle='#180a04';px(cx-3,by+16,10,3);
     ctx.fillStyle='#ccc088';px(cx-2,by+16,2,2);px(cx+1,by+16,2,3);px(cx+4,by+16,1,2);px(cx+5,by+16,2,2);
     ctx.fillStyle='#990000';px(cx-2,by+18,8,1);
