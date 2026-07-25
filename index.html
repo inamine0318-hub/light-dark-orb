@@ -284,7 +284,7 @@ function _initOfc(){
     _outlineOfc=new OffscreenCanvas(_OFC_W,_OFC_H);
     _outlineOfcCtx=_outlineOfc.getContext('2d');
 }
-function drawWithOutline(fn,bx,by,forceVisible){
+function drawWithOutline(fn,bx,by,forceVisible,sqX,sqY){
     _initOfc();
     _charOfcCtx.clearRect(0,0,_OFC_W,_OFC_H);
     const _prev=ctx; ctx=_charOfcCtx;
@@ -307,8 +307,17 @@ function drawWithOutline(fn,bx,by,forceVisible){
     }
     _outlineOfcCtx.putImageData(new ImageData(out,_OFC_W,_OFC_H),0,0);
     _prev.imageSmoothingEnabled=false;
-    _prev.drawImage(_outlineOfc,bx-_OFC_BX,by-_OFC_BY);
-    _prev.drawImage(_charOfc,bx-_OFC_BX,by-_OFC_BY);
+    if(sqX&&sqY&&(sqX!==1||sqY!==1)){
+        var _fx=Math.floor(bx)+18,_fy=Math.floor(by)+47;
+        _prev.save();
+        _prev.translate(_fx,_fy);_prev.scale(sqX,sqY);_prev.translate(-_fx,-_fy);
+        _prev.drawImage(_outlineOfc,bx-_OFC_BX,by-_OFC_BY);
+        _prev.drawImage(_charOfc,bx-_OFC_BX,by-_OFC_BY);
+        _prev.restore();
+    }else{
+        _prev.drawImage(_outlineOfc,bx-_OFC_BX,by-_OFC_BY);
+        _prev.drawImage(_charOfc,bx-_OFC_BX,by-_OFC_BY);
+    }
 }
 function txo(s,x,y,c,sz,al,alpha){
     const prev=utx.globalAlpha;
@@ -364,7 +373,7 @@ const CHARS=[
 
 // ===== PLAYER =====
 const GR=0.42,JMP=5.8,PW=14,PH=22;
-let P={x:60,y:GY-PH,w:PW,h:PH,vx:0,vy:0,onG:false,dj:false,hp:5,mhp:5,inv:0,fr:0,dir:1,atk:0,atkCd:0,atkCombo:0,comboWin:0,comboSkillWin:0};
+let P={x:60,y:GY-PH,w:PW,h:PH,vx:0,vy:0,onG:false,dj:false,hp:5,mhp:5,inv:0,fr:0,dir:1,atk:0,atkCd:0,atkCombo:0,comboWin:0,comboSkillWin:0,landSq:0,prevOnG:false};
 
 // ===== ENEMIES / OBJECTS =====
 let enemies=[],items=[],arrows=[],platforms=[],bombs=[];
@@ -574,7 +583,7 @@ function inp(cx,cy){
 
 // ===== RESET =====
 function resetGame(){
-    P.x=60;P.y=GY-P.h;P.vx=0;P.vy=0;P.onG=true;P.dj=false;
+    P.x=60;P.y=GY-P.h;P.vx=0;P.vy=0;P.onG=true;P.dj=false;P.landSq=0;P.prevOnG=true;
     P.mhp=CHARS[selectedChar].mhp;P.hp=P.mhp;P.inv=0;P.fr=0;P.atk=0;P.atkCd=0;P.dir=1;P.atkCombo=0;P.comboWin=0;P.comboSkillWin=0;
     enemies=[];items=[];arrows=[];platforms=[];orbs=[];parts=[];bombs=[];
     scroll=0;score=0;shake=0;flash=0;t=0;spawnCd=60;platSpawnCd=120;
@@ -704,9 +713,9 @@ function drawHero(bx,by){
     ctx.beginPath();ctx.moveTo(cx+2,by+2);ctx.lineTo(cx+5,by-5);ctx.lineTo(cx+7,by+2);ctx.fill();
     ctx.beginPath();ctx.moveTo(cx+6,by+3);ctx.lineTo(cx+8,by-2);ctx.lineTo(cx+10,by+3);ctx.fill();
     // 目（奥）
-    ctx.fillStyle='#1848e0';px(cx-3,by+11,2,3);ctx.fillStyle='#000';px(cx-3,by+11,2,1);ctx.fillStyle='#fff';px(cx-2,by+12,1,1);
+    ctx.fillStyle='#1848e0';px(cx-3,by+11,2,4);ctx.fillStyle='#000';px(cx-3,by+11,2,1);ctx.fillStyle='#fff';px(cx-2,by+11,1,1);
     // 目（手前）
-    ctx.fillStyle='#1848e0';px(cx+1,by+11,3,3);ctx.fillStyle='#000';px(cx+1,by+11,3,1);ctx.fillStyle='#fff';px(cx+2,by+12,1,1);
+    ctx.fillStyle='#1848e0';px(cx+1,by+11,3,4);ctx.fillStyle='#000';px(cx+1,by+11,3,1);ctx.fillStyle='#fff';px(cx+2,by+11,1,1);
     ctx.fillStyle='#806010';px(cx-4,by+8,3,2);px(cx,by+8,4,2);
     ctx.fillStyle='#c89060';px(cx+3,by+15,2,2);
     ctx.fillStyle='#a06040';px(cx-2,by+17,7,2);px(cx-1,by+18,5,1);
@@ -756,12 +765,13 @@ function drawDemonLord(bx,by){
     pixelCircle(cx+1,by+10,8,'#9890c8','#8880b8');
     ctx.fillStyle='#0a0615';px(cx-7,by+6,3,10);
     // 赤く光る目
+    ctx.fillStyle='#000';px(cx-4,by+9,5,6);px(cx+1,by+9,5,6);
     ctx.globalAlpha=.9+Math.sin(t*.09)*.1;
-    ctx.fillStyle='#ff0000';px(cx-3,by+9,3,4);px(cx+1,by+9,4,4);
+    ctx.fillStyle='#ff0000';px(cx-3,by+9,3,5);px(cx+1,by+9,4,5);
     ctx.globalAlpha=.4+Math.sin(t*.07)*.3;
     ctx.fillStyle='#ff3333';
-    ctx.beginPath();ctx.arc(cx-2,by+11,5,0,Math.PI*2);ctx.fill();
-    ctx.beginPath();ctx.arc(cx+3,by+11,5,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.arc(cx-2,by+11,7,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.arc(cx+3,by+11,7,0,Math.PI*2);ctx.fill();
     ctx.globalAlpha=1;ctx.fillStyle='#ff8888';px(cx-2,by+9,2,2);px(cx+2,by+9,2,2);
     // 鼻・牙
     ctx.fillStyle='#8880b8';px(cx-2,by+15,7,3);
@@ -819,8 +829,8 @@ function drawMage(bx,by){
     // 丸い頭（radius 7, center by+17：帽子の下）
     pixelCircle(cx+1,by+17,7,'#f0c888','#e0b070');
     // 目
-    ctx.fillStyle='#5a1e08';px(cx-2,by+16,2,3);ctx.fillStyle='#000';px(cx-2,by+16,2,1);ctx.fillStyle='#fff';px(cx-1,by+17,1,1);
-    ctx.fillStyle='#5a1e08';px(cx+1,by+16,3,3);ctx.fillStyle='#000';px(cx+1,by+16,3,1);ctx.fillStyle='#fff';px(cx+2,by+17,1,1);
+    ctx.fillStyle='#cc3300';px(cx-2,by+16,2,4);ctx.fillStyle='#000';px(cx-2,by+16,2,1);ctx.fillStyle='#fff';px(cx-1,by+16,1,1);
+    ctx.fillStyle='#cc3300';px(cx+1,by+16,3,4);ctx.fillStyle='#000';px(cx+1,by+16,3,1);ctx.fillStyle='#fff';px(cx+2,by+16,1,1);
     ctx.fillStyle='#381008';px(cx-3,by+14,3,2);px(cx,by+14,4,2);
     ctx.fillStyle='#c89060';px(cx+3,by+21,2,1);
     ctx.fillStyle='#9a6848';px(cx-1,by+22,6,1);px(cx,by+23,4,1);
@@ -883,7 +893,7 @@ function drawElf(bx,by){
     // 銀白髪（前面）
     ctx.fillStyle='#d0d8b0';px(cx+7,by+9,3,13);
     // 目（翡翠色）
-    ctx.fillStyle='#00aa44';px(cx-3,by+11,2,3);ctx.fillStyle='#000';px(cx-3,by+11,2,1);ctx.fillStyle='#fff';px(cx-2,by+12,1,1);
+    ctx.fillStyle='#00cc55';px(cx-3,by+11,2,4);ctx.fillStyle='#000';px(cx-3,by+11,2,1);ctx.fillStyle='#fff';px(cx-2,by+11,1,1);ctx.fillStyle='#aaffcc';px(cx-3,by+14,1,1);
     ctx.fillStyle='#00aa44';px(cx+1,by+11,3,4);ctx.fillStyle='#000';px(cx+1,by+11,3,1);ctx.fillStyle='#fff';px(cx+2,by+12,1,1);
     ctx.fillStyle='#b09050';px(cx-4,by+9,3,2);px(cx,by+9,4,2);
     ctx.fillStyle='#c09060';px(cx+3,by+15,2,2);
@@ -945,10 +955,11 @@ function drawDragon(bx,by){
     ctx.beginPath();ctx.moveTo(cx-1,by+2);ctx.lineTo(cx-3,by-5);ctx.lineTo(cx+3,by+2);ctx.fill();
     ctx.beginPath();ctx.moveTo(cx+4,by+1);ctx.lineTo(cx+6,by-5);ctx.lineTo(cx+8,by+1);ctx.fill();
     // 縦長の竜眼（黄＋黒スリット）
-    ctx.fillStyle='#ffcc00';px(cx-3,by+4,3,5);px(cx+3,by+4,3,5);
-    ctx.fillStyle='#ff8800';px(cx-2,by+4,1,5);px(cx+4,by+4,1,5);
-    ctx.fillStyle='#000';px(cx-2,by+5,1,4);px(cx+4,by+5,1,4);
-    ctx.fillStyle='#fff';px(cx-3,by+4,1,1);px(cx+3,by+4,1,1);
+    ctx.fillStyle='#ff6600';px(cx-4,by+3,5,7);px(cx+2,by+3,5,7);
+    ctx.fillStyle='#ffcc00';px(cx-3,by+3,3,7);px(cx+3,by+3,3,7);
+    ctx.fillStyle='#ff8800';px(cx-2,by+3,1,7);px(cx+4,by+3,1,7);
+    ctx.fillStyle='#000';px(cx-2,by+4,1,6);px(cx+4,by+4,1,6);
+    ctx.fillStyle='#fff';px(cx-3,by+3,1,1);px(cx+3,by+3,1,1);
     // 鼻孔
     ctx.fillStyle='#500e06';px(cx+8,by+8,2,2);
     // 牙（剥き出し）
@@ -1001,10 +1012,11 @@ function drawGoblin(bx,by){
     ctx.fillStyle='#505050';px(cx-5,by+5,9,5);
     ctx.fillStyle='#2a2a2a';px(cx,by+6,2,3);px(cx-4,by+5,2,2);px(cx+4,by+5,2,2);
     ctx.fillStyle='#404040';px(cx-1,by+3,3,4);ctx.fillStyle='#545454';px(cx,by+3,1,3);
-    // 充血した目（by+10の頭に合わせ）
-    ctx.fillStyle='#cc1000';px(cx-3,by+11,2,2);px(cx+2,by+11,3,2);
+    // 充血した目（白目追加）
+    ctx.fillStyle='#ffddcc';px(cx-4,by+10,4,4);px(cx+1,by+10,5,4);
+    ctx.fillStyle='#cc1000';px(cx-3,by+10,2,3);px(cx+2,by+10,3,3);
     ctx.fillStyle='#000';px(cx-3,by+12,2,1);px(cx+2,by+12,3,1);
-    ctx.fillStyle='#ff3300';px(cx-3,by+11,1,1);px(cx+2,by+11,1,1);
+    ctx.fillStyle='#ff3300';px(cx-3,by+10,1,1);px(cx+2,by+10,1,1);
     // 怒り眉（V字）
     ctx.fillStyle='#2a4808';
     px(cx-4,by+9,3,2);px(cx-2,by+8,2,2);
@@ -1081,13 +1093,15 @@ function drawGolem(bx,by){
     px(cx-3,by+2,1,9);px(cx+1,by+1,1,8);px(cx+4,by+3,1,8);
     px(cx-2,by+7,4,1);px(cx+1,by+10,3,1);
     ctx.globalAlpha=.5;ctx.fillStyle='#ff8800';px(cx-3,by+2,1,9);px(cx+1,by+1,1,8);ctx.globalAlpha=1;
-    // 輝くオレンジ目（顔のない恐怖）
+    // 輝くオレンジ目（石の眼窩 + グロー）
+    ctx.fillStyle='#363e48';px(cx-5,by+4,7,7);px(cx+2,by+4,7,7);
+    ctx.fillStyle='#1e262e';px(cx-4,by+5,5,5);px(cx+3,by+5,5,5);
     ctx.globalAlpha=gw;ctx.fillStyle='#ff6000';px(cx-4,by+5,5,5);px(cx+3,by+5,5,5);
     ctx.globalAlpha=gw*.8;ctx.fillStyle='#ffaa00';px(cx-3,by+6,3,3);px(cx+4,by+6,3,3);
     ctx.globalAlpha=gw*.6;ctx.fillStyle='#ffee44';
     ctx.beginPath();ctx.arc(cx-2,by+7,3,0,Math.PI*2);ctx.fill();
     ctx.beginPath();ctx.arc(cx+5,by+7,3,0,Math.PI*2);ctx.fill();
-    ctx.globalAlpha=1;ctx.fillStyle='#ffeeaa';px(cx-3,by+5,2,2);px(cx+4,by+5,2,2);
+    ctx.globalAlpha=1;ctx.fillStyle='#ffeeaa';px(cx-4,by+4,2,2);px(cx+3,by+4,2,2);
     ctx.restore();
 }
 
@@ -1125,23 +1139,26 @@ function drawSlime(bx,by){
     ctx.beginPath();ctx.ellipse(cx-3,by+39+bob,3,3+bob*.5,0,0,Math.PI*2);ctx.fill();
     // 目（左・白目）
     ctx.fillStyle='#ffffff';ctx.beginPath();ctx.arc(cx-4,by+23+bob,5,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle='#1155aa';ctx.beginPath();ctx.arc(cx-4,by+24+bob,3,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#2266cc';ctx.beginPath();ctx.arc(cx-4,by+24+bob,3,0,Math.PI*2);ctx.fill();
     ctx.fillStyle='#000';ctx.beginPath();ctx.arc(cx-4,by+25+bob,2,0,Math.PI*2);ctx.fill();
     ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(cx-5,by+23+bob,1,0,Math.PI*2);ctx.fill();
     // 目（右・白目・大きめ）
     ctx.fillStyle='#ffffff';ctx.beginPath();ctx.arc(cx+4,by+23+bob,6,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle='#1155aa';ctx.beginPath();ctx.arc(cx+4,by+24+bob,4,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#2266cc';ctx.beginPath();ctx.arc(cx+4,by+24+bob,4,0,Math.PI*2);ctx.fill();
     ctx.fillStyle='#000';ctx.beginPath();ctx.arc(cx+4,by+25+bob,2.5,0,Math.PI*2);ctx.fill();
     ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(cx+3,by+23+bob,1.5,0,Math.PI*2);ctx.fill();
+    // まつ毛（左目）
+    ctx.fillStyle='#2266cc';
+    px(cx-8,by+18+bob,1,3);px(cx-6,by+17+bob,1,3);px(cx-3,by+17+bob,1,3);px(cx-1,by+18+bob,1,3);
     // まつ毛（右目）
-    ctx.fillStyle='#1155aa';
+    ctx.fillStyle='#2266cc';
     px(cx+1,by+18+bob,1,3);px(cx+3,by+17+bob,1,3);px(cx+6,by+17+bob,1,3);px(cx+8,by+18+bob,1,3);
     // ほっぺ
     ctx.globalAlpha=.4;ctx.fillStyle='#ff88aa';
     ctx.beginPath();ctx.arc(cx-8,by+28+bob,4,0,Math.PI*2);ctx.fill();
     ctx.beginPath();ctx.arc(cx+7,by+28+bob,4,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;
     // 笑顔
-    ctx.fillStyle='#1155aa';
+    ctx.fillStyle='#2266cc';
     ctx.beginPath();ctx.arc(cx,by+32+bob,5,0.2,Math.PI-.2);ctx.fill();
     ctx.fillStyle='#33aaff';
     ctx.beginPath();ctx.arc(cx,by+32+bob,3,0.3,Math.PI-.3);ctx.fill();
@@ -1526,6 +1543,11 @@ function update(){
             }
         });
     }
+
+    // Squash landing detection
+    if(!P.prevOnG&&P.onG)P.landSq=8;
+    if(P.landSq>0)P.landSq--;
+    P.prevOnG=P.onG;
 
     // Bounds
     if(P.x<scroll)P.x=scroll;
@@ -2020,7 +2042,10 @@ function draw(){
 
     // Player
     const drawFns=[drawHero,drawDemonLord,drawMage,drawElf,drawDragon,drawGoblin,drawGolem,drawSlime];
-    drawWithOutline(drawFns[selectedChar],P.x-scroll,P.y);
+    var _sqX=1,_sqY=1;
+    if(!P.onG){if(P.vy<-2){var _s=Math.min(0.22,Math.abs(P.vy)*0.04);_sqY=1+_s;_sqX=1-_s*0.5;}else if(P.vy>2){var _s2=Math.min(0.14,P.vy*0.028);_sqY=1+_s2;_sqX=1-_s2*0.4;}}else if(P.landSq>0){var _t=P.landSq/8;_sqY=1-_t*0.22;_sqX=1+_t*0.18;}
+    var _ib=(P.onG&&Math.abs(P.vx)<0.5)?(Math.sin(gTick*0.06)*1.5|0):0;
+    drawWithOutline(drawFns[selectedChar],P.x-scroll,P.y+_ib,false,_sqX,_sqY);
 
     // 3段コンボ斬撃エフェクト（勇者・ゴブリン）
     if(gs==='playing'&&P.atk>0&&(selectedChar===0||selectedChar===5)){
