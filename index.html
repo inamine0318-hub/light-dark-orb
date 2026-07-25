@@ -203,21 +203,27 @@ function drawGrid(){
             ctx.globalAlpha=0.1+Math.sin(gTick*.09)*.06;
             ctx.fillStyle=ch.col;ctx.fillRect(cx,cy+1,colW,rowH-2);
             ctx.globalAlpha=1;
+            // 選択キャラきらめき粒子
+            for(let p=0;p<4;p++){const pang=gTick*.08+p*(Math.PI*2/4);const pr=7+Math.sin(gTick*.1+p)*2;ctx.globalAlpha=Math.max(0,.3+Math.sin(gTick*.12+p*1.5)*.25);ctx.fillStyle=ch.col;ctx.fillRect(Math.floor(cx+13+Math.cos(pang)*pr),Math.floor(cy+rowH/2+Math.sin(pang)*pr*.4),1,1);}
+            ctx.globalAlpha=1;
         }
-        // キャラプレビュー
-        drawCharPreview(i,cx+14,cy+rowH/2,0.62);
+        // キャラプレビュー（選択時やや拡大）
+        drawCharPreview(i,cx+14,cy+rowH/2,sel?0.72:0.62);
         // テキスト
         const tx=cx+30;
         txo(ch.name,tx,cy+rowH/2-5,sel?ch.col:'#cccccc',6,'left');
         txo(ch.desc,tx,cy+rowH/2+5,'#778899',3.5,'left');
-        if(ch.atk)txo(ch.atk,cx+colW-2,cy+rowH-4,sel?ch.col:'#666688',3.2,'right');
+        // SPD指標（■=速い □=遅い）
+        const sp5=Math.max(1,Math.min(5,Math.round((ch.spd-0.8)/2.0*5)));let spS='';for(let d=0;d<5;d++)spS+=(d<sp5?'■':'□');
+        txo(spS,cx+colW-2,cy+rowH-4,sel?'#44ff88':'#2a5540',3.2,'right',sel?.9:.45);
         // HP（ハート記号表示）
         const hpStr=ch.mhp<=5?'♥'.repeat(ch.mhp):'♥×'+ch.mhp;
         txo(hpStr,tx,cy+rowH-5,sel?'#ff4466':'#553344',4,'left',sel?0.9:0.32);
         ctx.globalAlpha=1;
     });
-    if(Math.floor(gTick/28)%2===0)
-        txo('タップで選択  もう一度でSTART',W/2,H-4,'#44ff88',5);
+    const _bs=Math.floor(gTick/22)%2===0;
+    if(_bs)txo('▶ 再タップでSTART ◀',W/2,H-4,'#44ff88',5.5);
+    else txo('タップでキャラ選択',W/2,H-4,'#338855',4.5);
 }
 
 function startBgm(st){
@@ -2221,12 +2227,14 @@ function draw(){
     if(gs==='start'){
         ctx.save();ctx.scale(SC,SC);
         ctx.fillStyle='rgba(0,0,5,.9)';ctx.fillRect(0,0,W,H);
-        // Stars（多色・大小混合）
-        for(let i=0;i<60;i++){
-            const stb=.14+Math.sin(gTick*.03+i)*.12;
+        // Stars（多色・流れる・80個）
+        for(let i=0;i<80;i++){
+            const stb=.12+Math.sin(gTick*.03+i)*.11;
+            const stx=((i*73+11)+Math.floor(gTick*(i%4===0?.22:i%4===1?.12:.07)))%W;
+            const sty=((i*47+7)+Math.floor(gTick*(i%3===0?.09:.06)))%90;
             const stc=i%3===0?[255,232,64]:i%3===1?[200,110,255]:[255,255,255];
             ctx.fillStyle=`rgba(${stc[0]},${stc[1]},${stc[2]},${stb})`;
-            ctx.fillRect((i*73+11)%W,(i*47+7)%82,i%5===0?2:1,i%5===0?2:1);
+            ctx.fillRect(stx,sty,i%7===0?2:1,i%7===0?2:1);
         }
         // タイトル背景パネル（グラデーション）
         const tbg=ctx.createLinearGradient(0,0,0,42);
@@ -2250,13 +2258,20 @@ function draw(){
         ctx.globalAlpha=1;
         ctx.fillStyle='#fffce0';ctx.beginPath();ctx.arc(W/2-40,16,2,0,Math.PI*2);ctx.fill();
         ctx.fillStyle='#e8b0ff';ctx.beginPath();ctx.arc(W/2+40,16,2,0,Math.PI*2);ctx.fill();
-        txo('LIGHT',W/2-38,22,'#ffe840',5.5);
+        // オーブ周回粒子（LIGHT=時計回り DARK=逆回転）
+        for(let i=0;i<10;i++){const ang=gTick*.06+i*(Math.PI*2/10);const pr=10+Math.sin(gTick*.1+i)*2;ctx.globalAlpha=Math.max(0,.2+Math.sin(gTick*.12+i*1.5)*.15);ctx.fillStyle='#ffe840';ctx.fillRect(Math.floor(W/2-38+Math.cos(ang)*pr),Math.floor(18+Math.sin(ang)*pr*.4),1,1);}
+        for(let i=0;i<10;i++){const ang=-gTick*.06+i*(Math.PI*2/10);const pr=10+Math.sin(gTick*.1+i)*2;ctx.globalAlpha=Math.max(0,.2+Math.sin(gTick*.12+i*1.5)*.15);ctx.fillStyle='#cc44ff';ctx.fillRect(Math.floor(W/2+38+Math.cos(ang)*pr),Math.floor(18+Math.sin(ang)*pr*.4),1,1);}
+        ctx.globalAlpha=1;
+        // LIGHT/DARK 逆位相パルス（交互に強調）
+        const pL=.65+Math.sin(gTick*.07)*.35;const pD=.65+Math.sin(gTick*.07+Math.PI)*.35;
+        txo('LIGHT',W/2-38,22,'#ffe840',5.5,'center',pL);
         txo('&',W/2,22,'#ffffff',5);
-        txo('DARK',W/2+38,22,'#cc88ff',5.5);
+        txo('DARK',W/2+38,22,'#cc88ff',5.5,'center',pD);
         txo('ORB',W/2,34,'#ffffff',10);
-        // ORB 後ろグロー
-        ctx.globalAlpha=.07+pulse*.05;ctx.fillStyle='#ffffff';
-        ctx.beginPath();ctx.arc(W/2,32,18,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;
+        // ORB 後ろグロー（2層 - DARK/LIGHT重ね）
+        ctx.globalAlpha=.05+Math.sin(gTick*.04)*.03;ctx.fillStyle='#8822ff';ctx.beginPath();ctx.arc(W/2,32,26,0,Math.PI*2);ctx.fill();
+        ctx.globalAlpha=.08+Math.sin(gTick*.04+.8)*.05;ctx.fillStyle='#ffe840';ctx.beginPath();ctx.arc(W/2,32,20,0,Math.PI*2);ctx.fill();
+        ctx.globalAlpha=.15+pulse*.09;ctx.fillStyle='#ffffff';ctx.beginPath();ctx.arc(W/2,32,14,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;
         // タイトル下区切り線（グラデーション）
         const slg=ctx.createLinearGradient(0,0,W,0);
         slg.addColorStop(0,'rgba(255,232,64,0)');slg.addColorStop(.25,'rgba(255,232,64,.7)');
