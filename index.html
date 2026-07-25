@@ -503,7 +503,7 @@ function gainSkillExp(){
         spark(P.x+P.w/2,P.y+P.h/2,'#ffe840',24);
         spark(P.x+P.w/2,P.y+P.h/2,'#ff8800',16);
         snd(880,.35);flash=8;
-        popup(P.x-scroll+P.w/2,P.y-12,'SKILL LV'+skillLv,'#ffe840');
+        if(skillLv>=3){popup(P.x-scroll+P.w/2,P.y-12,'SKILL MAX!!','#ff44ff');snd(1100,.3);}else{popup(P.x-scroll+P.w/2,P.y-12,'SKILL LV'+skillLv+' UP!','#ff8820');}
     }
 }
 function doSkill(){
@@ -1581,7 +1581,7 @@ function update(){
             const ex=en.sx;
             if(ax<ex+en.w&&ax+aw>ex&&P.y<en.sy+en.h&&P.y+P.h>en.sy){
                 en.hp-=dmgMul;en.inv=20;hitStop=3;
-                combo++;comboTimer=120;if(combo>comboMax)comboMax=combo;
+                combo++;comboTimer=150;if(combo>comboMax)comboMax=combo;
                 spark(ex+en.w/2,en.sy+en.h/2,'#ffaa44',10);spark(ex+en.w/2,en.sy+en.h/2,'#ffffff',5);
                 snd(260,.08,.6);
                 if(en.hp<=0){en.dead=true;sfx('kill');const pts5=100*(1+Math.floor(combo/3));score+=pts5;spark(ex+5,en.sy+4,'#ff8820',18);spark(ex+5,en.sy+4,'#ffff44',8);
@@ -1697,14 +1697,14 @@ function update(){
     // Boss
     if(scroll>=BOSS_TRIGGER&&!bossActive&&!bossDefeated){
         bossActive=true;
-        boss={sx:scroll+W-50,sy:GY-36,w:27,h:36,hp:20,maxHp:20,vx:0,vy:0,dir:-1,fr:0,inv:0,phase:'charge',cd:80,rage:false,dashDir:1};
+        boss={sx:scroll+W-50,sy:GY-36,w:27,h:36,hp:20,maxHp:20,vx:0,vy:0,dir:-1,fr:0,inv:0,phase:'charge',cd:80,rage:false,dashDir:1,knockX:0};
     }
     if(boss&&!bossDefeated){
         boss.fr++;boss.inv=Math.max(0,boss.inv-1);
         const bdx=(P.x+scroll)-(boss.sx+boss.w/2);
         boss.dir=bdx>0?1:-1;
         boss.cd=Math.max(0,boss.cd-1);
-        boss.rage=boss.hp<=Math.floor(boss.maxHp*0.5);
+        if(boss.knockX&&boss.inv>12){boss.sx+=boss.knockX*(boss.inv/16);}if(boss.inv<=0)boss.knockX=0;boss.rage=boss.hp<=Math.floor(boss.maxHp*0.5);
         const bspd=boss.rage?1.1:.7;
         if(boss.phase==='charge'){
             boss.sx+=(bdx>0?bspd:-bspd);
@@ -1734,7 +1734,7 @@ function update(){
             const ax=P.dir>0?P.x+P.w:P.x-aw;
             const bx=boss.sx;
             if(boss.inv<=0&&ax<bx+boss.w&&ax+aw>bx&&P.y<boss.sy+boss.h&&P.y+P.h>boss.sy){
-                boss.hp-=dmgMul;boss.inv=16;spark(bx+11,boss.sy+10,'#ffaa44',10);snd(200,.08,.7);
+                boss.hp-=dmgMul;boss.inv=16;boss.knockX=P.dir*5;spark(bx+11,boss.sy+10,'#ffaa44',10);snd(200,.08,.7);
                 if(boss.hp<=0){
                     bossDefeated=true;boss=null;
                     score+=1000;spark(scroll+W/2,GY-40,'#ffe840',30);spark(scroll+W/2,GY-40,'#8822ff',30);
@@ -1786,7 +1786,7 @@ function update(){
                     enemies.push({sx:scroll+W+10,sy:GY-24,w:18,h:24,hp:3,maxHp:3,vx:-.6,vy:0,dir:-1,fr:0,inv:0,dead:false,type:'grub'});
                 }
             }
-            if(t>400&&Math.random()<.3)
+            if(t>180&&Math.random()<(P.hp<=2?.6:.3))
                 items.push({sx:scroll+W+50,y:GY-8,w:8,h:8,type:'heart',life:400});
         }
         // UFOスポーン（Stage1後半 or Stage2）
@@ -1826,13 +1826,13 @@ function update(){
                 en.hp-=(ob.dmg||1);en.inv=20;if(!ob.lv)ob.life=999;hitStop=3;
                 combo++;comboTimer=120;if(combo>comboMax)comboMax=combo;
                 spark(ex+en.w/2,en.sy+en.h/2,'#8822ff',10);spark(ex+en.w/2,en.sy+en.h/2,'#ffffff',4);snd(180,.08,.6);
-                if(en.hp<=0){en.dead=true;sfx('kill');const pts6=100*(1+Math.floor(combo/3));score+=pts6;spark(ex+5,en.sy+4,'#6600cc',18);spark(ex+5,en.sy+4,'#ff88ff',8);popup(en.sx-scroll+en.w/2,en.sy-6,'+'+pts6,combo>=5?'#ff44ff':'#cc88ff');}
+                if(en.hp<=0){en.dead=true;sfx('kill');const pts6=100*(1+Math.floor(combo/3));score+=pts6;spark(ex+5,en.sy+4,'#6600cc',18);spark(ex+5,en.sy+4,'#ff88ff',8);popup(en.sx-scroll+en.w/2,en.sy-6,'+'+pts6,combo>=5?'#ff44ff':'#cc88ff');if(P.hp<=2&&Math.random()<.15)items.push({sx:en.sx,y:en.sy,w:8,h:8,type:'heart',life:400});}
             }
         });
         if(boss&&!bossDefeated&&boss.inv<=0){
             const bx=boss.sx,ox=ob.sx;
             if(ox<bx+boss.w&&ox+osz>bx&&ob.sy<boss.sy+boss.h&&ob.sy+osz>boss.sy){
-                boss.hp-=(ob.dmg||1);boss.inv=16;if(!ob.lv)ob.life=999;
+                boss.hp-=(ob.dmg||1);boss.inv=16;boss.knockX=(ob.vx>0?1:-1)*4;if(!ob.lv)ob.life=999;
                 spark(bx+11,boss.sy+10,'#8822ff',10);snd(180,.08,.7);
                 if(boss.hp<=0){
                     bossDefeated=true;boss=null;score+=1000;
@@ -2144,7 +2144,7 @@ function draw(){
         {
             const skillNames=['旋風','闇波','隕石','矢雨','炎龍','爆走','地震','分裂'];
             const lvStr=skillLv>0?'Lv'+skillLv:'';
-            txo(skillNames[selectedChar]+lvStr,BTN.S.x,BTN.S.y-BTN.S.r-3,'#ffe840',3.5);
+            txo(skillNames[selectedChar]+lvStr,BTN.S.x,BTN.S.y-BTN.S.r-3,'#ffe840',3.5);if(skillLv<3){var _se='';for(var _i=0;_i<3;_i++)_se+=(_i<skillExp?'*':'o');txo(_se,BTN.S.x,BTN.S.y-BTN.S.r-9,'#ffaa44',3);}
             if(P.comboSkillWin>0){// コンボ〆可能→ボタン白フラッシュ
                 const pulse=Math.sin(gTick*.5)*.5+.5;
                 ctx.globalAlpha=.55+pulse*.4;ctx.fillStyle='#ffffff';
@@ -2203,7 +2203,7 @@ function draw(){
             ctx.fillStyle=bCol;ctx.fillRect(bx2,15,Math.floor(bw*hpFrac),9);
             if(boss.rage){ctx.globalAlpha=0.3+Math.sin(gTick*.5)*.3;ctx.fillStyle='#ff4400';ctx.fillRect(bx2,15,Math.floor(bw*hpFrac),9);ctx.globalAlpha=1;}
             ctx.fillStyle='rgba(255,255,255,.18)';ctx.fillRect(bx2,15,Math.floor(bw*hpFrac),3);
-            txo('WARLORD',W/2,21,'#ff88aa',4);
+            if(boss.rage){var _rp=.7+Math.sin(gTick*.4)*.3;ctx.globalAlpha=_rp;txo('RAGE!',W/2-Math.floor(W*.31)-8,21,'#ff4400',4.5);ctx.globalAlpha=1;}txo('WARLORD',W/2,21,'#ff88aa',4);
         }
     }
 
