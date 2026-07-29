@@ -722,10 +722,9 @@ function drawHero(bx,by){
     ctx.beginPath();ctx.moveTo(cx-3,by+3);ctx.lineTo(cx-1,by-4);ctx.lineTo(cx+2,by+3);ctx.fill();
     ctx.beginPath();ctx.moveTo(cx+2,by+2);ctx.lineTo(cx+5,by-5);ctx.lineTo(cx+7,by+2);ctx.fill();
     ctx.beginPath();ctx.moveTo(cx+6,by+3);ctx.lineTo(cx+8,by-2);ctx.lineTo(cx+10,by+3);ctx.fill();
-    // 目（奥）
-    ctx.fillStyle='#1848e0';px(cx-3,by+11,2,4);ctx.fillStyle='#000';px(cx-3,by+11,2,1);ctx.fillStyle='#fff';px(cx-2,by+11,1,1);
-    // 目（手前）
-    ctx.fillStyle='#1848e0';px(cx+1,by+11,3,4);ctx.fillStyle='#000';px(cx+1,by+11,3,1);ctx.fillStyle='#fff';px(cx+2,by+11,1,1);
+    // 目（Ness風黒点）
+    ctx.fillStyle='#000';px(cx-3,by+11,2,3);
+    ctx.fillStyle='#000';px(cx+1,by+11,3,3);
     ctx.fillStyle='#806010';px(cx-4,by+8,3,2);px(cx,by+8,4,2);
     ctx.fillStyle='#c89060';px(cx+3,by+15,2,2);
     ctx.fillStyle='#a06040';px(cx-2,by+17,7,2);px(cx-1,by+18,5,1);
@@ -773,15 +772,11 @@ function drawDemonLord(bx,by){
     // 丸い頭（radius 8, center by+10）
     pixelCircle(cx+1,by+10,8,'#9890c8','#8880b8');
     ctx.fillStyle='#0a0615';px(cx-7,by+6,3,10);
-    // 赤く光る目
-    ctx.fillStyle='#000';px(cx-4,by+9,5,6);px(cx+1,by+9,5,6);
-    ctx.globalAlpha=.9+Math.sin(t*.09)*.1;
-    ctx.fillStyle='#ff0000';px(cx-3,by+9,3,5);px(cx+1,by+9,4,5);
-    ctx.globalAlpha=.4+Math.sin(t*.07)*.3;
-    ctx.fillStyle='#ff3333';
-    ctx.beginPath();ctx.arc(cx-2,by+11,7,0,Math.PI*2);ctx.fill();
-    ctx.beginPath();ctx.arc(cx+3,by+11,7,0,Math.PI*2);ctx.fill();
-    ctx.globalAlpha=1;ctx.fillStyle='#ff8888';px(cx-2,by+9,2,2);px(cx+2,by+9,2,2);
+    // 目（悪のNess風黒点・細目 + つり上がり眉）
+    ctx.fillStyle='#0a0615';px(cx-5,by+8,2,1);px(cx-3,by+7,2,1);
+    ctx.fillStyle='#0a0615';px(cx+2,by+7,2,1);px(cx+4,by+8,2,1);
+    ctx.fillStyle='#000';px(cx-4,by+9,4,2);
+    ctx.fillStyle='#000';px(cx+1,by+9,4,2);
     // 鼻・牙
     ctx.fillStyle='#8880b8';px(cx-2,by+15,7,3);
     ctx.fillStyle='#f0f0e8';px(cx-1,by+15,1,4);px(cx+2,by+15,1,3);
@@ -837,9 +832,9 @@ function drawMage(bx,by){
     ctx.fillStyle='#f8e050';px(cx+1,by+1,2,2);
     // 丸い頭（radius 7, center by+17：帽子の下）
     pixelCircle(cx+1,by+17,7,'#f0c888','#e0b070');
-    // 目
-    ctx.fillStyle='#cc3300';px(cx-2,by+16,2,4);ctx.fillStyle='#000';px(cx-2,by+16,2,1);ctx.fillStyle='#fff';px(cx-1,by+16,1,1);
-    ctx.fillStyle='#cc3300';px(cx+1,by+16,3,4);ctx.fillStyle='#000';px(cx+1,by+16,3,1);ctx.fillStyle='#fff';px(cx+2,by+16,1,1);
+    // 目（Ness風黒点）
+    ctx.fillStyle='#000';px(cx-2,by+16,2,3);
+    ctx.fillStyle='#000';px(cx+1,by+16,3,3);
     ctx.fillStyle='#381008';px(cx-3,by+14,3,2);px(cx,by+14,4,2);
     ctx.fillStyle='#c89060';px(cx+3,by+21,2,1);
     ctx.fillStyle='#9a6848';px(cx-1,by+22,6,1);px(cx,by+23,4,1);
@@ -901,9 +896,9 @@ function drawElf(bx,by){
     ctx.fillStyle='#22aaff';px(cx,by+5,2,2);
     // 銀白髪（前面）
     ctx.fillStyle='#d0d8b0';px(cx+7,by+9,3,13);
-    // 目（翡翠色）
-    ctx.fillStyle='#00cc55';px(cx-3,by+11,2,4);ctx.fillStyle='#000';px(cx-3,by+11,2,1);ctx.fillStyle='#fff';px(cx-2,by+11,1,1);ctx.fillStyle='#aaffcc';px(cx-3,by+14,1,1);
-    ctx.fillStyle='#00aa44';px(cx+1,by+11,3,4);ctx.fillStyle='#000';px(cx+1,by+11,3,1);ctx.fillStyle='#fff';px(cx+2,by+12,1,1);
+    // 目（Ness風黒点）
+    ctx.fillStyle='#000';px(cx-3,by+11,2,3);
+    ctx.fillStyle='#000';px(cx+1,by+11,3,3);
     ctx.fillStyle='#b09050';px(cx-4,by+9,3,2);px(cx,by+9,4,2);
     ctx.fillStyle='#c09060';px(cx+3,by+15,2,2);
     ctx.fillStyle='#d88070';px(cx-1,by+17,5,2);
@@ -1030,15 +1025,13 @@ function drawGoblin(bx,by){
     ctx.fillStyle='#505050';px(cx-5,by+5,9,5);
     ctx.fillStyle='#2a2a2a';px(cx,by+6,2,3);px(cx-4,by+5,2,2);px(cx+4,by+5,2,2);
     ctx.fillStyle='#404040';px(cx-1,by+3,3,4);ctx.fillStyle='#545454';px(cx,by+3,1,3);
-    // 充血した目（白目追加）
-    ctx.fillStyle='#ffddcc';px(cx-4,by+10,4,4);px(cx+1,by+10,5,4);
-    ctx.fillStyle='#cc1000';px(cx-3,by+10,2,3);px(cx+2,by+10,3,3);
-    ctx.fillStyle='#000';px(cx-3,by+12,2,1);px(cx+2,by+12,3,1);
-    ctx.fillStyle='#ff3300';px(cx-3,by+10,1,1);px(cx+2,by+10,1,1);
-    // 怒り眉（V字）
+    // 目（悪のNess風黒点・細め）
+    ctx.fillStyle='#000';px(cx-3,by+10,3,2);
+    ctx.fillStyle='#000';px(cx+2,by+10,3,2);
+    // 怒り眉（V字・鋭く）
     ctx.fillStyle='#2a4808';
-    px(cx-4,by+9,3,2);px(cx-2,by+8,2,2);
-    px(cx+3,by+9,3,2);px(cx+5,by+8,3,2);
+    px(cx-4,by+9,3,1);px(cx-2,by+8,2,1);
+    px(cx+3,by+9,3,1);px(cx+5,by+8,2,1);
     // ひん曲がった巨大な鼻
     ctx.fillStyle='#509018';
     px(cx+1,by+12,4,2);px(cx-1,by+14,7,2);
@@ -1111,15 +1104,13 @@ function drawGolem(bx,by){
     px(cx-3,by+2,1,9);px(cx+1,by+1,1,8);px(cx+4,by+3,1,8);
     px(cx-2,by+7,4,1);px(cx+1,by+10,3,1);
     ctx.globalAlpha=.5;ctx.fillStyle='#ff8800';px(cx-3,by+2,1,9);px(cx+1,by+1,1,8);ctx.globalAlpha=1;
-    // 輝くオレンジ目（石の眼窩 + グロー）
+    // 石の眼窩 + 目（悪のNess風黒点）+ 石の怒り眉
     ctx.fillStyle='#363e48';px(cx-5,by+4,7,7);px(cx+2,by+4,7,7);
     ctx.fillStyle='#1e262e';px(cx-4,by+5,5,5);px(cx+3,by+5,5,5);
-    ctx.globalAlpha=gw;ctx.fillStyle='#ff6000';px(cx-4,by+5,5,5);px(cx+3,by+5,5,5);
-    ctx.globalAlpha=gw*.8;ctx.fillStyle='#ffaa00';px(cx-3,by+6,3,3);px(cx+4,by+6,3,3);
-    ctx.globalAlpha=gw*.6;ctx.fillStyle='#ffee44';
-    ctx.beginPath();ctx.arc(cx-2,by+7,3,0,Math.PI*2);ctx.fill();
-    ctx.beginPath();ctx.arc(cx+5,by+7,3,0,Math.PI*2);ctx.fill();
-    ctx.globalAlpha=1;ctx.fillStyle='#ffeeaa';px(cx-4,by+4,2,2);px(cx+3,by+4,2,2);
+    ctx.fillStyle='#000';px(cx-4,by+6,4,3);
+    ctx.fillStyle='#000';px(cx+3,by+6,4,3);
+    ctx.fillStyle='#2e3840';px(cx-6,by+3,4,2);px(cx-3,by+2,2,2);
+    ctx.fillStyle='#2e3840';px(cx+3,by+2,2,2);px(cx+4,by+3,4,2);
     ctx.restore();
 }
 
@@ -1155,22 +1146,13 @@ function drawSlime(bx,by){
     ctx.fillStyle='#2299ee';
     ctx.beginPath();ctx.ellipse(cx+4,by+40+bob,4,4+bob,0,0,Math.PI*2);ctx.fill();
     ctx.beginPath();ctx.ellipse(cx-3,by+39+bob,3,3+bob*.5,0,0,Math.PI*2);ctx.fill();
-    // 目（左・白目）
-    ctx.fillStyle='#ffffff';ctx.beginPath();ctx.arc(cx-4,by+23+bob,5,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle='#2266cc';ctx.beginPath();ctx.arc(cx-4,by+24+bob,3,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle='#000';ctx.beginPath();ctx.arc(cx-4,by+25+bob,2,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(cx-5,by+23+bob,1,0,Math.PI*2);ctx.fill();
-    // 目（右・白目・大きめ）
-    ctx.fillStyle='#ffffff';ctx.beginPath();ctx.arc(cx+4,by+23+bob,6,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle='#2266cc';ctx.beginPath();ctx.arc(cx+4,by+24+bob,4,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle='#000';ctx.beginPath();ctx.arc(cx+4,by+25+bob,2.5,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(cx+3,by+23+bob,1.5,0,Math.PI*2);ctx.fill();
-    // まつ毛（左目）
-    ctx.fillStyle='#2266cc';
-    px(cx-8,by+18+bob,1,3);px(cx-6,by+17+bob,1,3);px(cx-3,by+17+bob,1,3);px(cx-1,by+18+bob,1,3);
-    // まつ毛（右目）
-    ctx.fillStyle='#2266cc';
-    px(cx+1,by+18+bob,1,3);px(cx+3,by+17+bob,1,3);px(cx+6,by+17+bob,1,3);px(cx+8,by+18+bob,1,3);
+    // 目（左・悪のNess風黒点）
+    ctx.fillStyle='#000';px(cx-6,by+23+bob,5,5);
+    // 目（右・大きめ・悪のNess風黒点）
+    ctx.fillStyle='#000';px(cx+1,by+23+bob,6,6);
+    // 重い上まぶた（悪い垂れ目）
+    ctx.fillStyle='#2299ee';px(cx-7,by+21+bob,7,3);
+    ctx.fillStyle='#2299ee';px(cx+0,by+20+bob,8,3);
     // ほっぺ
     ctx.globalAlpha=.4;ctx.fillStyle='#ff88aa';
     ctx.beginPath();ctx.arc(cx-8,by+28+bob,4,0,Math.PI*2);ctx.fill();
