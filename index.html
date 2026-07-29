@@ -208,7 +208,7 @@ function drawGrid(){
             ctx.globalAlpha=1;
         }
         // キャラプレビュー（選択時やや拡大）
-        drawCharPreview(i,cx+14,cy+rowH/2,sel?0.72:0.62);
+        const _pb=(Math.sin(gTick*0.07+i*0.9)*1.5|0);drawCharPreview(i,cx+14,cy+rowH/2+_pb,sel?0.72:0.62);
         // テキスト
         const tx=cx+30;
         txo(ch.name,tx,cy+rowH/2-5,sel?ch.col:'#cccccc',6,'left');
@@ -2085,7 +2085,7 @@ function draw(){
     var _sqX=1,_sqY=1;
     if(!P.onG){if(P.vy<-2){var _s=Math.min(0.22,Math.abs(P.vy)*0.04);_sqY=1+_s;_sqX=1-_s*0.5;}else if(P.vy>2){var _s2=Math.min(0.14,P.vy*0.028);_sqY=1+_s2;_sqX=1-_s2*0.4;}}else if(P.landSq>0){var _t=P.landSq/8;_sqY=1-_t*0.22;_sqX=1+_t*0.18;}
     var _ib=(P.onG&&Math.abs(P.vx)<0.5)?(Math.sin(gTick*0.06)*1.5|0):0;
-    drawWithOutline(drawFns[selectedChar],P.x-scroll,P.y+_ib,false,_sqX,_sqY);
+    drawWithOutline(drawFns[selectedChar],P.x-scroll,P.y+_ib-25,false,_sqX,_sqY);
 
     // 3段コンボ斬撃エフェクト（勇者・ゴブリン）
     if(gs==='playing'&&P.atk>0&&(selectedChar===0||selectedChar===5)){
@@ -2251,7 +2251,7 @@ function draw(){
         ctx.fillStyle='#ffe840';ctx.beginPath();ctx.arc(W/2-38,18,13,0,Math.PI*2);ctx.fill();
         ctx.fillStyle='#8822ff';ctx.beginPath();ctx.arc(W/2+38,18,13,0,Math.PI*2);ctx.fill();
         // オーブ本体
-        ctx.globalAlpha=.88+pulse;
+        ctx.globalAlpha=Math.min(1,.88+pulse);
         ctx.fillStyle='#ffe840';ctx.beginPath();ctx.arc(W/2-38,18,6,0,Math.PI*2);ctx.fill();
         ctx.fillStyle='#8822ff';ctx.beginPath();ctx.arc(W/2+38,18,6,0,Math.PI*2);ctx.fill();
         // オーブ白ハイライト
