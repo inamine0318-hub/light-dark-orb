@@ -681,6 +681,7 @@ function sprDraw(bx,by,rows,pal,flip,ps){
 function drawHero(bx,by){
     if(P.inv>0&&Math.floor(P.inv/4)%2===0)return;
     const cx=Math.floor(bx)+18,wk=Math.floor(gTick/7)%2;
+    const _am=P.atk>0,_amax=[12,16,22][P.atkCombo]||12,_ap=_am?Math.min(1,P.atk/_amax):0,_mph=_am?(_ap>.6?'w':_ap>.2?'s':'f'):'';
     ctx.save();if(P.dir<0){ctx.translate(cx*2,0);ctx.scale(-1,1);}
     // 奥足（後方・やや浮き気味で重心を前足へ）
     ctx.fillStyle='#1a3ab8';px(cx-5,by+35+wk,5,8-wk);
@@ -699,21 +700,36 @@ function drawHero(bx,by){
     ctx.fillStyle='#c8d0f0';px(cx-2,by+20,5,1);px(cx-3,by+21,7,7);px(cx-2,by+28,5,1);
     ctx.fillStyle='#98a8d8';px(cx+2,by+20,2,9);
     ctx.fillStyle='#8a6010';px(cx-5,by+32,13,2);
-    // 剣（斜め上・戦闘準備スタンス）
-    ctx.fillStyle='#c8e8ff';
-    px(cx+18,by+5,2,5);
-    px(cx+16,by+10,2,6);
-    px(cx+13,by+16,3,6);
-    px(cx+10,by+22,3,5);
-    ctx.fillStyle='#ffffff';
-    px(cx+18,by+5,1,4);
-    px(cx+16,by+10,1,5);
-    ctx.fillStyle='#f0c020';px(cx+7,by+26,11,3);
-    ctx.fillStyle='#7a4a10';px(cx+10,by+28,2,5);
-    // 手前腕（剣を握り上げる）
-    ctx.fillStyle='#3060e8';px(cx+6,by+22,5,10);
-    ctx.fillStyle='#1a3ab8';px(cx+10,by+22,1,10);
-    ctx.fillStyle='#c8d0f0';px(cx+7,by+31,4,3);
+    // 剣 + 手前腕（攻撃フェーズ連動）
+    if(_mph==='w'){
+        // 振りかぶり：剣を頭上に高く構える
+        ctx.fillStyle='#c8e8ff';px(cx+12,by-3,2,7);px(cx+10,by+4,2,6);px(cx+7,by+10,3,8);
+        ctx.fillStyle='#ffffff';px(cx+12,by-3,1,5);px(cx+10,by+4,1,5);
+        ctx.fillStyle='#f0c020';px(cx+4,by+17,9,3);ctx.fillStyle='#7a4a10';px(cx+7,by+19,2,5);
+        ctx.fillStyle='#3060e8';px(cx+5,by+11,5,13);ctx.fillStyle='#1a3ab8';px(cx+9,by+11,1,13);
+        ctx.fillStyle='#c8d0f0';px(cx+6,by+23,4,3);
+    }else if(_mph==='s'){
+        // 横一閃！剣が水平に走る
+        ctx.fillStyle='#c8e8ff';px(cx+6,by+18,9,2);px(cx+14,by+16,5,2);px(cx+18,by+14,7,2);
+        ctx.fillStyle='#ffffff';px(cx+6,by+18,9,1);px(cx+14,by+16,5,1);
+        ctx.fillStyle='#f0c020';px(cx+3,by+24,5,3);ctx.fillStyle='#7a4a10';px(cx+4,by+25,3,5);
+        ctx.fillStyle='#3060e8';px(cx+4,by+17,9,9);ctx.fillStyle='#1a3ab8';px(cx+12,by+17,1,9);
+        ctx.fillStyle='#c8d0f0';px(cx+11,by+24,3,3);
+    }else if(_mph==='f'){
+        // フォロー：剣が斜め下へ抜ける
+        ctx.fillStyle='#c8e8ff';px(cx+9,by+22,3,5);px(cx+10,by+27,2,6);px(cx+11,by+33,2,4);
+        ctx.fillStyle='#ffffff';px(cx+9,by+22,2,4);
+        ctx.fillStyle='#f0c020';px(cx+5,by+26,7,3);ctx.fillStyle='#7a4a10';px(cx+7,by+28,2,5);
+        ctx.fillStyle='#3060e8';px(cx+6,by+22,5,10);ctx.fillStyle='#1a3ab8';px(cx+10,by+22,1,10);
+        ctx.fillStyle='#c8d0f0';px(cx+7,by+31,4,3);
+    }else{
+        // 通常スタンス（斜め上）
+        ctx.fillStyle='#c8e8ff';px(cx+18,by+5,2,5);px(cx+16,by+10,2,6);px(cx+13,by+16,3,6);px(cx+10,by+22,3,5);
+        ctx.fillStyle='#ffffff';px(cx+18,by+5,1,4);px(cx+16,by+10,1,5);
+        ctx.fillStyle='#f0c020';px(cx+7,by+26,11,3);ctx.fillStyle='#7a4a10';px(cx+10,by+28,2,5);
+        ctx.fillStyle='#3060e8';px(cx+6,by+22,5,10);ctx.fillStyle='#1a3ab8';px(cx+10,by+22,1,10);
+        ctx.fillStyle='#c8d0f0';px(cx+7,by+31,4,3);
+    }
     // 手前足（重心・しっかり踏み込む）
     ctx.fillStyle='#1e40c0';px(cx+1,by+33-wk,5,10+wk);
     ctx.fillStyle='#0e2890';px(cx+5,by+33-wk,1,10+wk);
@@ -746,6 +762,7 @@ function drawHero(bx,by){
 function drawDemonLord(bx,by){
     if(P.inv>0&&Math.floor(P.inv/4)%2===0)return;
     const cx=Math.floor(bx)+18,t=gTick,fl=Math.sin(t*.05)*2|0;
+    const _am=P.atk>0,_amax=[12,16,22][P.atkCombo]||12,_ap=_am?Math.min(1,P.atk/_amax):0,_mph=_am?(_ap>.6?'w':_ap>.2?'s':'f'):'';
     ctx.save();if(P.dir<0){ctx.translate(cx*2,0);ctx.scale(-1,1);}
     // ローブ下（by+33〜by+47）
     ctx.fillStyle='#0a0618';px(cx-6,by+33,13,10);
@@ -768,9 +785,20 @@ function drawDemonLord(bx,by){
     // 肩当て
     ctx.fillStyle='#1a0c2e';px(cx-10,by+16,5,9);px(cx+5,by+16,5,9);
     ctx.fillStyle='#cc0000';px(cx-8,by+19,2,3);px(cx+8,by+19,2,3);
-    // 手前腕
-    ctx.fillStyle='#0e0a1e';px(cx+6,by+19,4,14);
-    ctx.fillStyle='#9ab098';px(cx+6,by+32,4,4);
+    // 手前腕（攻撃フェーズ：闇オーブ投射）
+    if(_mph==='w'){
+        ctx.fillStyle='#0e0a1e';px(cx+4,by+20,4,12);ctx.fillStyle='#9ab098';px(cx+4,by+31,4,4);
+        ctx.globalAlpha=.8;ctx.fillStyle='#cc44ff';ctx.beginPath();ctx.arc(cx+6,by+32,5,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;
+    }else if(_mph==='s'){
+        ctx.fillStyle='#0e0a1e';px(cx+9,by+20,4,10);ctx.fillStyle='#9ab098';px(cx+11,by+29,4,4);
+        ctx.globalAlpha=1;ctx.fillStyle='#8800ee';ctx.beginPath();ctx.arc(cx+16,by+27,9,0,Math.PI*2);ctx.fill();
+        ctx.globalAlpha=.5;ctx.fillStyle='#cc44ff';ctx.beginPath();ctx.arc(cx+16,by+27,13,0,Math.PI*2);ctx.fill();
+        ctx.globalAlpha=.25;ctx.fillStyle='#ffffff';ctx.beginPath();ctx.arc(cx+16,by+27,16,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;
+    }else if(_mph==='f'){
+        ctx.fillStyle='#0e0a1e';px(cx+7,by+19,4,13);ctx.fillStyle='#9ab098';px(cx+9,by+31,4,4);
+    }else{
+        ctx.fillStyle='#0e0a1e';px(cx+6,by+19,4,14);ctx.fillStyle='#9ab098';px(cx+6,by+32,4,4);
+    }
     // 角（頭の上）
     ctx.fillStyle='#150820';
     ctx.beginPath();ctx.moveTo(cx-4,by+3);ctx.lineTo(cx-8,by-8);ctx.lineTo(cx-0,by+3);ctx.fill();
@@ -802,6 +830,7 @@ function drawDemonLord(bx,by){
 function drawMage(bx,by){
     if(P.inv>0&&Math.floor(P.inv/4)%2===0)return;
     const cx=Math.floor(bx)+18,wk=Math.floor(gTick/8)%2,t=gTick;
+    const _am=P.atk>0,_amax=[12,16,22][P.atkCombo]||12,_ap=_am?Math.min(1,P.atk/_amax):0,_mph=_am?(_ap>.6?'w':_ap>.2?'s':'f'):'';
     ctx.save();if(P.dir<0){ctx.translate(cx*2,0);ctx.scale(-1,1);}
     // 奥足
     ctx.fillStyle='#7a1808';px(cx-5,by+33+wk,5,10-wk);
@@ -824,15 +853,34 @@ function drawMage(bx,by){
     ctx.fillStyle='#281808';px(cx-5,by+32,13,2);
     ctx.fillStyle='#b03e14';px(cx-5,by+33,13,10);
     ctx.fillStyle='#d04e1a';px(cx-3,by+34,6,9);
-    // 炎（手前手）
-    ctx.fillStyle='#c03810';px(cx+5,by+19,5,12);
-    ctx.fillStyle='#801806';px(cx+9,by+19,1,12);
-    ctx.fillStyle='#e8a068';px(cx+6,by+30,4,4);
-    ctx.globalAlpha=.95+Math.sin(t*.14)*.05;ctx.fillStyle='#ff3800';
-    ctx.beginPath();ctx.moveTo(cx+12,by+22);ctx.lineTo(cx+9,by+13);ctx.lineTo(cx+15,by+16);ctx.lineTo(cx+11,by+9);ctx.lineTo(cx+16,by+12);ctx.fill();
-    ctx.globalAlpha=.55+Math.sin(t*.1)*.3;ctx.fillStyle='#ffaa00';
-    ctx.beginPath();ctx.moveTo(cx+12,by+23);ctx.lineTo(cx+10,by+15);ctx.lineTo(cx+15,by+18);ctx.lineTo(cx+11,by+11);ctx.lineTo(cx+16,by+14);ctx.fill();
-    ctx.globalAlpha=1;
+    // 炎（手前手・攻撃フェーズ）
+    if(_mph==='w'){
+        ctx.fillStyle='#c03810';px(cx+4,by+21,5,10);ctx.fillStyle='#801806';px(cx+8,by+21,1,10);
+        ctx.fillStyle='#e8a068';px(cx+5,by+30,4,4);
+        ctx.globalAlpha=.9;ctx.fillStyle='#ff5800';ctx.beginPath();ctx.arc(cx+7,by+25,5,0,Math.PI*2);ctx.fill();
+        ctx.globalAlpha=.5;ctx.fillStyle='#ffaa00';ctx.beginPath();ctx.arc(cx+7,by+25,8,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;
+    }else if(_mph==='s'){
+        ctx.fillStyle='#c03810';px(cx+7,by+17,5,13);ctx.fillStyle='#801806';px(cx+11,by+17,1,13);
+        ctx.fillStyle='#e8a068';px(cx+10,by+28,4,4);
+        ctx.globalAlpha=1;ctx.fillStyle='#ff3800';
+        ctx.beginPath();ctx.moveTo(cx+20,by+20);ctx.lineTo(cx+13,by+8);ctx.lineTo(cx+22,by+12);ctx.lineTo(cx+15,by+3);ctx.lineTo(cx+25,by+8);ctx.fill();
+        ctx.globalAlpha=.7;ctx.fillStyle='#ffaa00';
+        ctx.beginPath();ctx.moveTo(cx+20,by+22);ctx.lineTo(cx+14,by+10);ctx.lineTo(cx+23,by+14);ctx.lineTo(cx+16,by+5);ctx.lineTo(cx+26,by+10);ctx.fill();
+        ctx.globalAlpha=1;
+    }else if(_mph==='f'){
+        ctx.fillStyle='#c03810';px(cx+5,by+19,5,12);ctx.fillStyle='#801806';px(cx+9,by+19,1,12);
+        ctx.fillStyle='#e8a068';px(cx+6,by+30,4,4);
+        ctx.globalAlpha=.35+Math.sin(t*.14)*.1;ctx.fillStyle='#ff3800';
+        ctx.beginPath();ctx.moveTo(cx+12,by+22);ctx.lineTo(cx+9,by+14);ctx.lineTo(cx+15,by+17);ctx.lineTo(cx+11,by+10);ctx.lineTo(cx+16,by+13);ctx.fill();ctx.globalAlpha=1;
+    }else{
+        ctx.fillStyle='#c03810';px(cx+5,by+19,5,12);ctx.fillStyle='#801806';px(cx+9,by+19,1,12);
+        ctx.fillStyle='#e8a068';px(cx+6,by+30,4,4);
+        ctx.globalAlpha=.95+Math.sin(t*.14)*.05;ctx.fillStyle='#ff3800';
+        ctx.beginPath();ctx.moveTo(cx+12,by+22);ctx.lineTo(cx+9,by+13);ctx.lineTo(cx+15,by+16);ctx.lineTo(cx+11,by+9);ctx.lineTo(cx+16,by+12);ctx.fill();
+        ctx.globalAlpha=.55+Math.sin(t*.1)*.3;ctx.fillStyle='#ffaa00';
+        ctx.beginPath();ctx.moveTo(cx+12,by+23);ctx.lineTo(cx+10,by+15);ctx.lineTo(cx+15,by+18);ctx.lineTo(cx+11,by+11);ctx.lineTo(cx+16,by+14);ctx.fill();
+        ctx.globalAlpha=1;
+    }
     // 手前足
     ctx.fillStyle='#8a2008';px(cx+1,by+33-wk,5,10+wk);
     ctx.fillStyle='#601006';px(cx+5,by+33-wk,1,10+wk);
@@ -862,6 +910,7 @@ function drawMage(bx,by){
 function drawElf(bx,by){
     if(P.inv>0&&Math.floor(P.inv/4)%2===0)return;
     const cx=Math.floor(bx)+18,wk=Math.floor(gTick/7)%2;
+    const _am=P.atk>0,_amax=[12,16,22][P.atkCombo]||12,_ap=_am?Math.min(1,P.atk/_amax):0,_mph=_am?(_ap>.6?'w':_ap>.2?'s':'f'):'';
     ctx.save();if(P.dir<0){ctx.translate(cx*2,0);ctx.scale(-1,1);}
     // 奥足
     ctx.fillStyle='#286018';px(cx-5,by+33+wk,5,10-wk);
@@ -872,12 +921,29 @@ function drawElf(bx,by){
     ctx.fillStyle='#d8c050';px(cx-10,by+15,4,5);
     ctx.fillStyle='#6a4010';px(cx-9,by+8,1,9);px(cx-8,by+6,1,11);px(cx-7,by+9,1,8);
     ctx.fillStyle='#888';px(cx-9,by+5,1,4);px(cx-8,by+3,1,4);
-    // 弓
+    // 弓（攻撃フェーズ：弦引き→矢放射）
     ctx.strokeStyle='#5a2e08';ctx.lineWidth=2;
     ctx.beginPath();ctx.arc(cx-11,by+22,12,-1.1,1.1,false);ctx.stroke();
     ctx.fillStyle='#5a2e08';px(cx-12,by+11,3,4);px(cx-12,by+29,3,4);
-    ctx.strokeStyle='#c8b060';ctx.lineWidth=1;
-    ctx.beginPath();ctx.moveTo(cx-10,by+13);ctx.lineTo(cx-9,by+31);ctx.stroke();
+    if(_mph==='w'){
+        // 弦を目一杯引く（V字弦+装填済み矢）
+        ctx.strokeStyle='#c8b060';ctx.lineWidth=1.5;
+        ctx.beginPath();ctx.moveTo(cx-10,by+13);ctx.lineTo(cx-2,by+22);ctx.lineTo(cx-9,by+31);ctx.stroke();
+        ctx.fillStyle='#c8b060';px(cx-2,by+21,10,1);ctx.fillStyle='#888';px(cx+7,by+20,2,3);
+    }else if(_mph==='s'){
+        // 矢が飛ぶ！（弦は真直ぐに戻る）
+        ctx.strokeStyle='#c8b060';ctx.lineWidth=1;
+        ctx.beginPath();ctx.moveTo(cx-10,by+13);ctx.lineTo(cx-9,by+31);ctx.stroke();
+        ctx.fillStyle='#c8b060';px(cx+2,by+21,18,1);ctx.fillStyle='#888';px(cx+18,by+20,2,3);
+        ctx.fillStyle='#c8b060';px(cx+8,by+21,1,1);px(cx+13,by+21,1,1);
+    }else if(_mph==='f'){
+        // 弦が微振動
+        ctx.strokeStyle='#c8b060';ctx.lineWidth=1;
+        ctx.beginPath();ctx.moveTo(cx-10,by+13);ctx.lineTo(cx-7,by+22);ctx.lineTo(cx-9,by+31);ctx.stroke();
+    }else{
+        ctx.strokeStyle='#c8b060';ctx.lineWidth=1;
+        ctx.beginPath();ctx.moveTo(cx-10,by+13);ctx.lineTo(cx-9,by+31);ctx.stroke();
+    }
     // 奥腕
     ctx.fillStyle='#307828';px(cx-9,by+19,4,13);
     ctx.fillStyle='#e0c870';px(cx-9,by+31,3,4);
@@ -929,6 +995,7 @@ function drawElf(bx,by){
 function drawDragon(bx,by){
     if(P.inv>0&&Math.floor(P.inv/4)%2===0)return;
     const cx=Math.floor(bx)+18,wk=Math.floor(gTick/6)%2,t=gTick;
+    const _am=P.atk>0,_amax=[12,16,22][P.atkCombo]||12,_ap=_am?Math.min(1,P.atk/_amax):0,_mph=_am?(_ap>.6?'w':_ap>.2?'s':'f'):'';
     ctx.save();if(P.dir<0){ctx.translate(cx*2,0);ctx.scale(-1,1);}
     // 尻尾
     ctx.fillStyle='#8a1c10';
@@ -964,18 +1031,31 @@ function drawDragon(bx,by){
     ctx.fillStyle='#6a1008';px(cx+6,by+33-wk,1,10+wk);
     ctx.fillStyle='#4e0e06';px(cx+1,by+43,6,4);
     ctx.fillStyle='#180604';px(cx+2,by+45,2,3);px(cx+4,by+45,2,3);px(cx+6,by+44,2,3);
-    // 首
-    ctx.fillStyle='#9a1e10';px(cx-1,by+12,7,7);
-    ctx.fillStyle='#c02e1e';px(cx,by+13,5,5);
-    ctx.fillStyle='#e0a050';px(cx,by+14,4,4);
-    // ドラゴンの頭（横長・吻あり）
-    ctx.fillStyle='#9a1e10';px(cx-5,by+2,17,11);
-    ctx.fillStyle='#7a1208';px(cx+9,by+2,4,11);
-    ctx.fillStyle='#c02e1e';px(cx-3,by+3,10,8);
-    ctx.fillStyle='#e0a050';px(cx-4,by+5,7,5);
-    // 吻（口先）
-    ctx.fillStyle='#8a1808';px(cx+8,by+5,5,5);
-    ctx.fillStyle='#c02e1e';px(cx+9,by+6,3,4);
+    // 首+頭（攻撃：首を伸ばしブレス）
+    if(_mph==='w'){
+        // 首引き（炎充填）
+        ctx.fillStyle='#9a1e10';px(cx-3,by+12,7,7);ctx.fillStyle='#c02e1e';px(cx-2,by+13,5,5);ctx.fillStyle='#e0a050';px(cx-2,by+14,4,4);
+        ctx.fillStyle='#9a1e10';px(cx-7,by+2,17,11);ctx.fillStyle='#7a1208';px(cx+7,by+2,4,11);
+        ctx.fillStyle='#c02e1e';px(cx-5,by+3,10,8);ctx.fillStyle='#e0a050';px(cx-6,by+5,7,5);
+        ctx.fillStyle='#8a1808';px(cx+6,by+5,5,5);ctx.fillStyle='#c02e1e';px(cx+7,by+6,3,4);
+    }else if(_mph==='s'){
+        // 首を前方に伸ばして口を開け炎放出！
+        ctx.fillStyle='#9a1e10';px(cx+2,by+11,7,7);ctx.fillStyle='#c02e1e';px(cx+3,by+12,5,5);ctx.fillStyle='#e0a050';px(cx+3,by+13,4,4);
+        ctx.fillStyle='#9a1e10';px(cx-2,by+1,18,10);ctx.fillStyle='#7a1208';px(cx+12,by+1,4,10);
+        ctx.fillStyle='#c02e1e';px(cx,by+2,10,8);ctx.fillStyle='#e0a050';px(cx-1,by+4,7,5);
+        ctx.fillStyle='#380806';px(cx+10,by+5,7,5);ctx.fillStyle='#ff2200';px(cx+11,by+6,5,3);
+        ctx.fillStyle='#ff6600';px(cx+12,by+7,3,1);
+    }else if(_mph==='f'){
+        ctx.fillStyle='#9a1e10';px(cx,by+12,7,7);ctx.fillStyle='#c02e1e';px(cx+1,by+13,5,5);ctx.fillStyle='#e0a050';px(cx+1,by+14,4,4);
+        ctx.fillStyle='#9a1e10';px(cx-4,by+2,17,11);ctx.fillStyle='#7a1208';px(cx+10,by+2,4,11);
+        ctx.fillStyle='#c02e1e';px(cx-2,by+3,10,8);ctx.fillStyle='#e0a050';px(cx-3,by+5,7,5);
+        ctx.fillStyle='#8a1808';px(cx+9,by+5,5,5);ctx.fillStyle='#c02e1e';px(cx+10,by+6,3,4);
+    }else{
+        ctx.fillStyle='#9a1e10';px(cx-1,by+12,7,7);ctx.fillStyle='#c02e1e';px(cx,by+13,5,5);ctx.fillStyle='#e0a050';px(cx,by+14,4,4);
+        ctx.fillStyle='#9a1e10';px(cx-5,by+2,17,11);ctx.fillStyle='#7a1208';px(cx+9,by+2,4,11);
+        ctx.fillStyle='#c02e1e';px(cx-3,by+3,10,8);ctx.fillStyle='#e0a050';px(cx-4,by+5,7,5);
+        ctx.fillStyle='#8a1808';px(cx+8,by+5,5,5);ctx.fillStyle='#c02e1e';px(cx+9,by+6,3,4);
+    }
     // 角
     ctx.fillStyle='#280e08';
     ctx.beginPath();ctx.moveTo(cx-1,by+2);ctx.lineTo(cx-3,by-5);ctx.lineTo(cx+3,by+2);ctx.fill();
@@ -999,6 +1079,7 @@ function drawDragon(bx,by){
 function drawGoblin(bx,by){
     if(P.inv>0&&Math.floor(P.inv/4)%2===0)return;
     const cx=Math.floor(bx)+18,wk=Math.floor(gTick/6)%2;
+    const _am=P.atk>0,_amax=[12,16,22][P.atkCombo]||12,_ap=_am?Math.min(1,P.atk/_amax):0,_mph=_am?(_ap>.6?'w':_ap>.2?'s':'f'):'';
     ctx.save();if(P.dir<0){ctx.translate(cx*2,0);ctx.scale(-1,1);}
 
     // 奥足（後方・浮き気味）
@@ -1020,17 +1101,31 @@ function drawGoblin(bx,by){
     ctx.fillStyle='#503808';px(cx-5,by+33,13,10);ctx.fillStyle='#625020';px(cx-3,by+34,5,9);
     // 肩当て
     ctx.fillStyle='#383838';px(cx-9,by+17,5,7);px(cx+5,by+17,5,7);
-    // 手前腕（棍棒を振り上げる）
-    ctx.fillStyle='#509018';
-    px(cx+5,by+19,5,8);
-    px(cx+9,by+13,4,8);
-    ctx.fillStyle='#307008';px(cx+9,by+21,1,6);
-    // 棍棒（頭上・金属スパイク付き）
-    ctx.fillStyle='#5a3010';px(cx+10,by+5,3,9);
-    ctx.fillStyle='#6e4a20';px(cx+8,by+3,7,7);
-    ctx.fillStyle='#7e5a28';px(cx+9,by+4,4,4);
-    ctx.fillStyle='#484828';px(cx+7,by+2,2,2);px(cx+14,by+2,2,2);px(cx+7,by+7,2,2);px(cx+14,by+7,2,2);
-    ctx.fillStyle='#aaaaaa';px(cx+7,by+1,2,2);px(cx+14,by+1,2,2);
+    // 手前腕+棍棒（攻撃フェーズ連動）
+    if(_mph==='w'){
+        // 棍棒を最高点に構える
+        ctx.fillStyle='#509018';px(cx+5,by+15,5,10);px(cx+7,by+5,4,12);ctx.fillStyle='#307008';px(cx+10,by+11,1,8);
+        ctx.fillStyle='#5a3010';px(cx+8,by-5,3,12);ctx.fillStyle='#6e4a20';px(cx+6,by-7,7,7);
+        ctx.fillStyle='#7e5a28';px(cx+7,by-6,4,4);ctx.fillStyle='#484828';px(cx+5,by-8,2,2);px(cx+12,by-8,2,2);px(cx+5,by-3,2,2);px(cx+12,by-3,2,2);
+        ctx.fillStyle='#aaaaaa';px(cx+5,by-9,2,2);px(cx+12,by-9,2,2);
+    }else if(_mph==='s'){
+        // 棍棒を前方に叩きつける！
+        ctx.fillStyle='#509018';px(cx+5,by+19,5,8);px(cx+9,by+13,8,5);ctx.fillStyle='#307008';px(cx+13,by+17,1,5);
+        ctx.fillStyle='#5a3010';px(cx+13,by+11,9,3);ctx.fillStyle='#6e4a20';px(cx+16,by+9,7,7);
+        ctx.fillStyle='#7e5a28';px(cx+17,by+10,4,4);ctx.fillStyle='#484828';px(cx+15,by+8,2,2);px(cx+22,by+8,2,2);px(cx+15,by+13,2,2);px(cx+22,by+13,2,2);
+        ctx.fillStyle='#aaaaaa';px(cx+15,by+7,2,2);px(cx+22,by+7,2,2);
+    }else if(_mph==='f'){
+        // 振り抜け（棍棒が下に）
+        ctx.fillStyle='#509018';px(cx+6,by+20,5,8);px(cx+10,by+15,6,6);ctx.fillStyle='#307008';px(cx+13,by+19,1,5);
+        ctx.fillStyle='#5a3010';px(cx+12,by+22,9,3);ctx.fillStyle='#6e4a20';px(cx+16,by+24,7,7);
+        ctx.fillStyle='#7e5a28';px(cx+17,by+25,4,4);ctx.fillStyle='#484828';px(cx+15,by+23,2,2);px(cx+22,by+23,2,2);px(cx+15,by+28,2,2);px(cx+22,by+28,2,2);
+        ctx.fillStyle='#aaaaaa';px(cx+15,by+22,2,2);px(cx+22,by+22,2,2);
+    }else{
+        ctx.fillStyle='#509018';px(cx+5,by+19,5,8);px(cx+9,by+13,4,8);ctx.fillStyle='#307008';px(cx+9,by+21,1,6);
+        ctx.fillStyle='#5a3010';px(cx+10,by+5,3,9);ctx.fillStyle='#6e4a20';px(cx+8,by+3,7,7);
+        ctx.fillStyle='#7e5a28';px(cx+9,by+4,4,4);ctx.fillStyle='#484828';px(cx+7,by+2,2,2);px(cx+14,by+2,2,2);px(cx+7,by+7,2,2);px(cx+14,by+7,2,2);
+        ctx.fillStyle='#aaaaaa';px(cx+7,by+1,2,2);px(cx+14,by+1,2,2);
+    }
     // 手前足（重心・踏み込む）
     ctx.fillStyle='#509018';px(cx+1,by+33-wk,5,10+wk);
     ctx.fillStyle='#304808';px(cx+5,by+33-wk,1,10+wk);
@@ -1072,6 +1167,7 @@ function drawGoblin(bx,by){
 function drawGolem(bx,by){
     if(P.inv>0&&Math.floor(P.inv/4)%2===0)return;
     const cx=Math.floor(bx)+18,wk=Math.floor(gTick/10)%2,gw=.6+Math.sin(gTick*.07)*.4;
+    const _am=P.atk>0,_amax=[12,16,22][P.atkCombo]||12,_ap=_am?Math.min(1,P.atk/_amax):0,_mph=_am?(_ap>.6?'w':_ap>.2?'s':'f'):'';
     ctx.save();if(P.dir<0){ctx.translate(cx*2,0);ctx.scale(-1,1);}
     // 奥足（太い石柱）
     ctx.fillStyle='#5e6870';px(cx-7,by+33+wk*2,7,10-wk*2);
@@ -1102,17 +1198,34 @@ function drawGolem(bx,by){
     ctx.globalAlpha=gw;ctx.fillStyle='#ff8800';px(cx-1,by+22,5,7);
     ctx.globalAlpha=gw*.9;ctx.fillStyle='#ffaa00';px(cx,by+23,3,5);
     ctx.globalAlpha=gw*.7;ctx.fillStyle='#ffee00';px(cx,by+24,2,3);ctx.globalAlpha=1;
-    // 手前腕（長く垂れる）
-    ctx.fillStyle='#6e7888';px(cx+8,by+18,6,18);
-    ctx.fillStyle='#7e8898';px(cx+9,by+18,4,18);
-    ctx.fillStyle='#9098a8';px(cx+9,by+18,2,4);
-    ctx.globalAlpha=gw*.6;ctx.fillStyle='#ff6000';px(cx+10,by+22,1,11);px(cx+12,by+26,1,8);ctx.globalAlpha=1;
-    // 手前のこぶし
-    ctx.fillStyle='#6e7888';px(cx+7,by+35,10,9);
-    ctx.fillStyle='#7e8898';px(cx+9,by+35,6,6);
-    ctx.fillStyle='#565870';px(cx+7,by+35,4,9);
-    ctx.fillStyle='#5e6878';px(cx+7,by+42,9,3);
-    ctx.globalAlpha=gw*.8;ctx.fillStyle='#ff6000';px(cx+10,by+37,1,6);px(cx+12,by+36,1,7);ctx.globalAlpha=1;
+    // 手前腕+こぶし（攻撃フェーズ：衝撃パンチ）
+    if(_mph==='w'){
+        // こぶし引き（腕を縮める）
+        ctx.fillStyle='#6e7888';px(cx+8,by+18,6,14);ctx.fillStyle='#7e8898';px(cx+9,by+18,4,14);ctx.fillStyle='#9098a8';px(cx+9,by+18,2,4);
+        ctx.globalAlpha=gw*.5;ctx.fillStyle='#ff6000';px(cx+10,by+22,1,8);ctx.globalAlpha=1;
+        ctx.fillStyle='#6e7888';px(cx+7,by+28,10,9);ctx.fillStyle='#7e8898';px(cx+9,by+28,6,6);
+        ctx.fillStyle='#565870';px(cx+7,by+28,4,9);ctx.fillStyle='#5e6878';px(cx+7,by+35,9,3);
+        ctx.globalAlpha=gw*.8;ctx.fillStyle='#ff6000';px(cx+10,by+30,1,5);px(cx+12,by+29,1,6);ctx.globalAlpha=1;
+    }else if(_mph==='s'){
+        // 前方にパンチ！（こぶしが横に出る）
+        ctx.fillStyle='#6e7888';px(cx+8,by+18,6,10);ctx.fillStyle='#7e8898';px(cx+9,by+18,4,10);ctx.fillStyle='#9098a8';px(cx+9,by+18,2,4);
+        ctx.globalAlpha=gw*.4;ctx.fillStyle='#ff6000';px(cx+10,by+22,1,6);ctx.globalAlpha=1;
+        ctx.fillStyle='#6e7888';px(cx+12,by+22,13,10);ctx.fillStyle='#7e8898';px(cx+14,by+22,8,7);
+        ctx.fillStyle='#565870';px(cx+12,by+22,5,10);ctx.fillStyle='#5e6878';px(cx+12,by+30,11,3);
+        ctx.globalAlpha=gw*.9;ctx.fillStyle='#ff6000';px(cx+15,by+24,1,6);px(cx+17,by+23,1,7);ctx.globalAlpha=1;
+    }else if(_mph==='f'){
+        ctx.fillStyle='#6e7888';px(cx+8,by+18,6,14);ctx.fillStyle='#7e8898';px(cx+9,by+18,4,14);ctx.fillStyle='#9098a8';px(cx+9,by+18,2,4);
+        ctx.globalAlpha=gw*.5;ctx.fillStyle='#ff6000';px(cx+10,by+22,1,8);ctx.globalAlpha=1;
+        ctx.fillStyle='#6e7888';px(cx+10,by+30,10,9);ctx.fillStyle='#7e8898';px(cx+12,by+30,6,6);
+        ctx.fillStyle='#565870';px(cx+10,by+30,4,9);ctx.fillStyle='#5e6878';px(cx+10,by+37,9,3);
+        ctx.globalAlpha=gw*.7;ctx.fillStyle='#ff6000';px(cx+13,by+32,1,5);px(cx+15,by+31,1,6);ctx.globalAlpha=1;
+    }else{
+        ctx.fillStyle='#6e7888';px(cx+8,by+18,6,18);ctx.fillStyle='#7e8898';px(cx+9,by+18,4,18);ctx.fillStyle='#9098a8';px(cx+9,by+18,2,4);
+        ctx.globalAlpha=gw*.6;ctx.fillStyle='#ff6000';px(cx+10,by+22,1,11);px(cx+12,by+26,1,8);ctx.globalAlpha=1;
+        ctx.fillStyle='#6e7888';px(cx+7,by+35,10,9);ctx.fillStyle='#7e8898';px(cx+9,by+35,6,6);
+        ctx.fillStyle='#565870';px(cx+7,by+35,4,9);ctx.fillStyle='#5e6878';px(cx+7,by+42,9,3);
+        ctx.globalAlpha=gw*.8;ctx.fillStyle='#ff6000';px(cx+10,by+37,1,6);px(cx+12,by+36,1,7);ctx.globalAlpha=1;
+    }
     // 手前足
     ctx.fillStyle='#6e7888';px(cx+3,by+33-wk*2,7,10+wk*2);
     ctx.fillStyle='#7e8898';px(cx+5,by+33,4,10);
@@ -1145,6 +1258,7 @@ function drawGolem(bx,by){
 function drawSlime(bx,by){
     if(P.inv>0&&Math.floor(P.inv/4)%2===0)return;
     const cx=Math.floor(bx)+18,t=gTick,bob=Math.abs(Math.sin(t*.09))*4|0;
+    const _am=P.atk>0,_amax=[12,16,22][P.atkCombo]||12,_ap=_am?Math.min(1,P.atk/_amax):0,_mph=_am?(_ap>.6?'w':_ap>.2?'s':'f'):'';
     ctx.save();if(P.dir<0){ctx.translate(cx*2,0);ctx.scale(-1,1);}
     // 影
     ctx.globalAlpha=.15;ctx.fillStyle='#000';
@@ -1154,9 +1268,21 @@ function drawSlime(bx,by){
     px(cx-7,by+36+bob,4,10-bob);px(cx+3,by+36+bob,4,10-bob);
     // 擬似腕（左）
     ctx.fillStyle='#1e88dd';px(cx-11,by+25+bob,4,8);px(cx-12,by+27+bob,3,6);
-    // 擬似腕（右・影ストリップ）
-    ctx.fillStyle='#2299ee';px(cx+7,by+23+bob,5,8);px(cx+9,by+25+bob,3,6);
-    ctx.fillStyle='#1a88dd';px(cx+11,by+23+bob,1,7);
+    // 擬似腕（右・攻撃フェーズ：体ごと伸びて叩く）
+    if(_mph==='w'){
+        ctx.fillStyle='#2299ee';px(cx+5,by+24+bob,5,7);px(cx+7,by+26+bob,3,5);
+        ctx.fillStyle='#1a88dd';px(cx+9,by+24+bob,1,6);
+    }else if(_mph==='s'){
+        ctx.fillStyle='#2299ee';px(cx+9,by+21+bob,8,9);px(cx+15,by+22+bob,5,8);px(cx+19,by+23+bob,3,7);
+        ctx.fillStyle='#1a88dd';px(cx+21,by+21+bob,1,9);
+        ctx.globalAlpha=.4;ctx.fillStyle='#66ddff';ctx.beginPath();ctx.arc(cx+23,by+26+bob,5,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;
+    }else if(_mph==='f'){
+        ctx.fillStyle='#2299ee';px(cx+8,by+22+bob,6,8);px(cx+12,by+24+bob,4,6);
+        ctx.fillStyle='#1a88dd';px(cx+14,by+22+bob,1,7);
+    }else{
+        ctx.fillStyle='#2299ee';px(cx+7,by+23+bob,5,8);px(cx+9,by+25+bob,3,6);
+        ctx.fillStyle='#1a88dd';px(cx+11,by+23+bob,1,7);
+    }
     // 本体（大きな丸い塊）
     ctx.globalAlpha=.65;ctx.fillStyle='#44bbff';
     ctx.beginPath();ctx.arc(cx,by+27+bob,15,0,Math.PI*2);ctx.fill();
