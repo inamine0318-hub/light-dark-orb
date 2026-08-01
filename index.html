@@ -693,13 +693,17 @@ function drawHero(bx,by){
     ctx.fillStyle='#f8e050';px(cx-14,by+25,2,2);
     // 奥腕（盾腕・前方へ伸ばす）
     ctx.fillStyle='#2248c8';px(cx-11,by+21,4,12);
-    // 体
+    // 体（重装鎧 + 幅広パウルドロン + 銀チェスト）
+    ctx.fillStyle='#9098b8';px(cx-10,by+17,7,9);ctx.fillStyle='#b0b8d8';px(cx-9,by+17,5,8);
+    ctx.fillStyle='#9098b8';px(cx+5,by+17,8,9);ctx.fillStyle='#7880a0';px(cx+10,by+17,3,9);
     ctx.fillStyle='#3060e8';
     px(cx-5,by+18,3,15);px(cx-2,by+18,9,15);px(cx+7,by+18,1,15);
     ctx.fillStyle='#1e4ed0';px(cx+5,by+18,3,15);
+    ctx.fillStyle='#d8e0ff';px(cx-3,by+19,8,11);ctx.fillStyle='#eef2ff';px(cx-2,by+19,3,4);
+    ctx.fillStyle='#9098c0';px(cx+3,by+23,2,7);
     ctx.fillStyle='#c8d0f0';px(cx-2,by+20,5,1);px(cx-3,by+21,7,7);px(cx-2,by+28,5,1);
     ctx.fillStyle='#98a8d8';px(cx+2,by+20,2,9);
-    ctx.fillStyle='#8a6010';px(cx-5,by+32,13,2);
+    ctx.fillStyle='#8a6010';px(cx-5,by+32,13,2);ctx.fillStyle='#f8c828';px(cx-1,by+32,4,1);
     // 剣 + 手前腕（攻撃フェーズ連動）
     if(_mph==='w'){
         // 振りかぶり：剣を頭上に高く構える
@@ -755,6 +759,7 @@ function drawHero(bx,by){
     ctx.fillStyle='#c89060';px(cx+3,by+15,2,2);
     ctx.fillStyle='#d0a060';px(cx,by+14,1,2);
     ctx.fillStyle='#9a6040';px(cx-1,by+16,2,1);
+    ctx.fillStyle='#7a3820';px(cx-1,by+16,5,1);ctx.fillStyle='#f5e8d0';px(cx,by+16,2,1);
     ctx.fillStyle='#a06040';px(cx-2,by+17,7,2);px(cx-1,by+18,5,1);
     ctx.restore();
 }
@@ -782,9 +787,13 @@ function drawDemonLord(bx,by){
     ctx.fillStyle='#141028';px(cx-4,by+19,8,15);
     ctx.fillStyle='#aa8800';px(cx-6,by+18,12,2);
     ctx.fillStyle='#aa8800';px(cx-4,by+24,2,8);px(cx+2,by+24,2,8);
-    // 肩当て
-    ctx.fillStyle='#1a0c2e';px(cx-10,by+16,5,9);px(cx+5,by+16,5,9);
-    ctx.fillStyle='#cc0000';px(cx-8,by+19,2,3);px(cx+8,by+19,2,3);
+    // 肩マント（幅広・フレア）
+    ctx.fillStyle='#0c0618';px(cx-14,by+14,9,13);ctx.fillStyle='#1a0c2e';px(cx-12,by+15,7,12);
+    ctx.fillStyle='#0c0618';px(cx+5,by+14,10,13);ctx.fillStyle='#08040e';px(cx+12,by+15,4,13);
+    ctx.fillStyle='#2a1040';px(cx-10,by+16,6,10);ctx.fillStyle='#3a1858';px(cx+6,by+16,5,10);
+    ctx.fillStyle='#cc0000';px(cx-10,by+18,3,5);px(cx+9,by+18,3,5);
+    ctx.fillStyle='#ff2200';px(cx-10,by+18,1,2);px(cx+9,by+18,1,2);
+    ctx.fillStyle='#ff6666';px(cx-9,by+18,1,1);px(cx+9,by+18,1,1);
     // 手前腕（攻撃フェーズ：闇オーブ投射）
     if(_mph==='w'){
         ctx.fillStyle='#0e0a1e';px(cx+4,by+20,4,12);ctx.fillStyle='#9ab098';px(cx+4,by+31,4,4);
@@ -846,10 +855,13 @@ function drawMage(bx,by){
     // 奥腕
     ctx.fillStyle='#9a2e10';px(cx-9,by+19,4,13);
     ctx.fillStyle='#e8a068';px(cx-9,by+31,4,4);
-    // ローブ体
+    // ローブ体（幅広袖）
+    ctx.fillStyle='#7a1206';px(cx-10,by+18,6,14);ctx.fillStyle='#9a2208';px(cx-9,by+18,4,13);
+    ctx.fillStyle='#7a1206';px(cx+5,by+18,7,14);ctx.fillStyle='#5a0e04';px(cx+10,by+18,2,14);
     ctx.fillStyle='#c04818';px(cx-5,by+18,3,15);px(cx-2,by+18,9,15);px(cx+7,by+18,1,15);
     ctx.fillStyle='#9a3010';px(cx+5,by+18,3,15);
     ctx.fillStyle='#e05820';px(cx-2,by+20,4,1);px(cx-3,by+21,6,9);px(cx-2,by+30,4,1);
+    ctx.fillStyle='#f07030';px(cx-2,by+21,2,5);
     ctx.fillStyle='#281808';px(cx-5,by+32,13,2);
     ctx.fillStyle='#b03e14';px(cx-5,by+33,13,10);
     ctx.fillStyle='#d04e1a';px(cx-3,by+34,6,9);
@@ -902,6 +914,8 @@ function drawMage(bx,by){
     ctx.fillStyle='#000';px(cx+1,by+16,3,3);
     ctx.fillStyle='#381008';px(cx-3,by+14,3,2);px(cx,by+14,4,2);
     ctx.fillStyle='#c89060';px(cx+3,by+21,2,1);
+    ctx.fillStyle='#f4f4f4';px(cx-3,by+20,8,5);ctx.fillStyle='#e0e0e0';px(cx-2,by+22,6,4);
+    ctx.fillStyle='#c8c8c8';px(cx-1,by+24,5,2);ctx.fillStyle='#ffffff';px(cx-2,by+20,4,2);
     ctx.fillStyle='#9a6848';px(cx-1,by+22,6,1);px(cx,by+23,4,1);
     ctx.restore();
 }
@@ -947,12 +961,14 @@ function drawElf(bx,by){
     // 奥腕
     ctx.fillStyle='#307828';px(cx-9,by+19,4,13);
     ctx.fillStyle='#e0c870';px(cx-9,by+31,3,4);
-    // 体
-    ctx.fillStyle='#286818';
-    px(cx-5,by+18,3,15);px(cx-2,by+18,9,15);px(cx+7,by+18,1,15);
+    // 体（ハンタークローク + 幅広袖）
+    ctx.fillStyle='#1e4e10';px(cx-9,by+17,5,14);ctx.fillStyle='#285e18';px(cx-8,by+17,3,13);
+    ctx.fillStyle='#1e4e10';px(cx+5,by+17,6,14);ctx.fillStyle='#143808';px(cx+9,by+17,2,14);
+    ctx.fillStyle='#286818';px(cx-5,by+18,3,15);px(cx-2,by+18,9,15);px(cx+7,by+18,1,15);
     ctx.fillStyle='#1e5010';px(cx+5,by+18,3,15);
     ctx.fillStyle='#38882a';px(cx-2,by+20,4,1);px(cx-3,by+21,6,8);px(cx-2,by+29,4,1);
-    ctx.fillStyle='#8a6810';px(cx-5,by+32,13,2);
+    ctx.fillStyle='#50a038';px(cx-2,by+21,2,4);
+    ctx.fillStyle='#8a6810';px(cx-5,by+32,13,2);ctx.fillStyle='#d8a828';px(cx-1,by+32,5,1);
     ctx.fillStyle='#286818';px(cx-5,by+33,13,10);
     ctx.fillStyle='#38882a';px(cx-3,by+34,5,9);
     // 手前腕
@@ -987,6 +1003,7 @@ function drawElf(bx,by){
     ctx.fillStyle='#000';px(cx+1,by+11,3,3);
     ctx.fillStyle='#b09050';px(cx-4,by+9,3,2);px(cx,by+9,4,2);
     ctx.fillStyle='#c09060';px(cx+3,by+15,2,2);
+    ctx.fillStyle='#b06858';px(cx,by+16,3,1);ctx.fillStyle='#ffe8d0';px(cx+1,by+16,1,1);
     ctx.fillStyle='#d88070';px(cx-1,by+17,5,2);
     ctx.restore();
 }
@@ -1012,16 +1029,18 @@ function drawDragon(bx,by){
     // 奥腕（爪）
     ctx.fillStyle='#8a1808';px(cx-9,by+19,4,13);
     ctx.fillStyle='#180604';px(cx-10,by+31,2,4);px(cx-8,by+31,2,4);px(cx-6,by+31,2,4);
-    // 体（鱗）
-    ctx.fillStyle='#9a1e10';
-    px(cx-5,by+18,3,15);px(cx-2,by+18,9,15);px(cx+7,by+18,1,15);
+    // 体（太い竜の胴体 + 鱗 + 翼の付け根）
+    ctx.fillStyle='#6e0e08';px(cx-8,by+17,4,16);ctx.fillStyle='#780e08';px(cx-7,by+17,3,15);
+    ctx.fillStyle='#6e0e08';px(cx+5,by+17,6,16);ctx.fillStyle='#500808';px(cx+9,by+17,3,16);
+    ctx.fillStyle='#9a1e10';px(cx-5,by+18,3,15);px(cx-2,by+18,9,15);px(cx+7,by+18,1,15);
     ctx.fillStyle='#7a1208';px(cx+5,by+18,3,15);
-    ctx.fillStyle='#c02e1e';px(cx-3,by+20,6,12);
+    ctx.fillStyle='#c02e1e';px(cx-3,by+20,6,12);ctx.fillStyle='#d83828';px(cx-2,by+20,2,5);
     for(let sy=0;sy<4;sy++)for(let sx=0;sx<2;sx++){
         ctx.fillStyle=(sx+sy)%2===0?'#881a0a':'#a82010';
         px(cx-3+sx*3,by+20+sy*3,3,2);
     }
     ctx.fillStyle='#e0a050';px(cx-1,by+22,3,1);px(cx-2,by+23,5,7);px(cx-1,by+30,3,1);
+    ctx.fillStyle='#f8e888';px(cx-1,by+24,2,4);
     // 手前腕（爪）
     ctx.fillStyle='#aa2210';px(cx+5,by+19,5,12);
     ctx.fillStyle='#6a1008';px(cx+9,by+19,1,12);
@@ -1090,17 +1109,19 @@ function drawGoblin(bx,by){
     ctx.fillStyle='#482e10';px(cx-12,by+41,2,5);ctx.fillStyle='#6a4218';px(cx-13,by+39,4,2);
     // 奥腕
     ctx.fillStyle='#509018';px(cx-9,by+21,4,11);
-    // 粗末な鎧
-    ctx.fillStyle='#404040';
-    px(cx-5,by+18,3,15);px(cx-2,by+18,9,15);px(cx+7,by+18,1,15);
+    // 粗末な鎧（幅広スパイク肩当て）
+    ctx.fillStyle='#202020';px(cx-12,by+15,8,11);ctx.fillStyle='#303030';px(cx-11,by+16,6,10);
+    ctx.fillStyle='#202020';px(cx+5,by+15,9,11);ctx.fillStyle='#181818';px(cx+11,by+16,3,11);
+    ctx.fillStyle='#505050';px(cx-10,by+16,3,5);px(cx+8,by+16,3,5);
+    ctx.fillStyle='#aaaaaa';px(cx-10,by+14,2,3);px(cx-8,by+13,2,2);px(cx+9,by+14,2,3);px(cx+11,by+13,2,2);
+    ctx.fillStyle='#888888';px(cx-10,by+12,2,3);px(cx+9,by+12,2,3);
+    ctx.fillStyle='#404040';px(cx-5,by+18,3,15);px(cx-2,by+18,9,15);px(cx+7,by+18,1,15);
     ctx.fillStyle='#303030';px(cx+5,by+18,3,15);
     ctx.fillStyle='#545454';px(cx-2,by+20,4,1);px(cx-3,by+21,6,7);px(cx-2,by+28,4,1);
     ctx.fillStyle='#686868';px(cx-3,by+20,3,1);
     ctx.fillStyle='#585858';px(cx-5,by+18,13,2);
     ctx.fillStyle='#523808';px(cx-5,by+32,13,2);ctx.fillStyle='#c89818';px(cx-1,by+32,3,2);
     ctx.fillStyle='#503808';px(cx-5,by+33,13,10);ctx.fillStyle='#625020';px(cx-3,by+34,5,9);
-    // 肩当て
-    ctx.fillStyle='#383838';px(cx-9,by+17,5,7);px(cx+5,by+17,5,7);
     // 手前腕+棍棒（攻撃フェーズ連動）
     if(_mph==='w'){
         // 棍棒を最高点に構える
@@ -1185,12 +1206,16 @@ function drawGolem(bx,by){
     ctx.fillStyle='#666880';px(cx-14,by+36,6,5);
     ctx.fillStyle='#383848';px(cx-14,by+42,8,3);
     ctx.globalAlpha=gw*.8;ctx.fillStyle='#ff6000';px(cx-13,by+37,1,5);px(cx-11,by+36,1,6);ctx.globalAlpha=1;
-    // 胴体（広い岩の胸板）
-    ctx.fillStyle='#6e7888';
-    px(cx-8,by+17,3,17);px(cx-5,by+16,15,18);px(cx+10,by+17,1,17);
+    // 胴体（超幅広 岩の胸板 + 亀裂）
+    ctx.fillStyle='#4e5868';px(cx-12,by+16,6,18);ctx.fillStyle='#5e6878';px(cx-11,by+16,4,17);
+    ctx.fillStyle='#4e5868';px(cx+7,by+16,7,18);ctx.fillStyle='#3e4858';px(cx+12,by+16,2,18);
+    ctx.fillStyle='#6e7888';px(cx-8,by+17,3,17);px(cx-5,by+16,15,18);px(cx+10,by+17,1,17);
     ctx.fillStyle='#5e6878';px(cx+8,by+17,3,17);
     ctx.fillStyle='#7e8898';px(cx-5,by+18,8,1);px(cx-6,by+19,10,11);px(cx-5,by+30,8,1);
+    ctx.fillStyle='#8e9aaa';px(cx-4,by+19,3,5);
     ctx.fillStyle='#585868';px(cx-8,by+17,19,3);px(cx-6,by+32,14,3);
+    ctx.fillStyle='#363848';px(cx-5,by+21,1,9);px(cx-1,by+20,1,12);px(cx+4,by+18,1,13);
+    ctx.fillStyle='#282a38';px(cx-3,by+27,4,1);px(cx+2,by+30,3,1);
     // マグマコア（胸の心臓）
     ctx.globalAlpha=gw*.85;ctx.fillStyle='#ff6000';
     px(cx-3,by+21,1,9);px(cx,by+20,1,11);px(cx+3,by+22,1,8);
@@ -1283,18 +1308,22 @@ function drawSlime(bx,by){
         ctx.fillStyle='#2299ee';px(cx+7,by+23+bob,5,8);px(cx+9,by+25+bob,3,6);
         ctx.fillStyle='#1a88dd';px(cx+11,by+23+bob,1,7);
     }
-    // 本体（大きな丸い塊）
-    ctx.globalAlpha=.65;ctx.fillStyle='#44bbff';
-    ctx.beginPath();ctx.arc(cx,by+27+bob,15,0,Math.PI*2);ctx.fill();
-    ctx.globalAlpha=.85;ctx.fillStyle='#2299ee';
-    ctx.beginPath();ctx.arc(cx+1,by+28+bob,14,0,Math.PI*2);ctx.fill();
+    // 本体（大きな丸い塊 + 奥行き感）
+    ctx.globalAlpha=.55;ctx.fillStyle='#44bbff';
+    ctx.beginPath();ctx.arc(cx,by+26+bob,17,0,Math.PI*2);ctx.fill();
+    ctx.globalAlpha=.80;ctx.fillStyle='#2299ee';
+    ctx.beginPath();ctx.arc(cx+1,by+27+bob,16,0,Math.PI*2);ctx.fill();
+    ctx.globalAlpha=.35;ctx.fillStyle='#005599';
+    ctx.beginPath();ctx.arc(cx+6,by+34+bob,11,0,Math.PI*2);ctx.fill();
     ctx.globalAlpha=1;
-    pixelCircle(cx,by+27+bob,13,'#33aaff',null,'#66ddff');
-    // つや（ハイライト）
+    pixelCircle(cx,by+26+bob,15,'#33aaff',null,'#66ddff');
+    // つや（ハイライト 3段）
     ctx.fillStyle='#99ddff';
-    ctx.beginPath();ctx.arc(cx-5,by+20+bob,5,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.arc(cx-5,by+19+bob,6,0,Math.PI*2);ctx.fill();
     ctx.fillStyle='#ccf0ff';
-    ctx.beginPath();ctx.arc(cx-6,by+19+bob,3,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.arc(cx-6,by+18+bob,4,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#ffffff';
+    ctx.beginPath();ctx.arc(cx-7,by+17+bob,2,0,Math.PI*2);ctx.fill();
     // 垂れ
     ctx.fillStyle='#2299ee';
     ctx.beginPath();ctx.ellipse(cx+4,by+40+bob,4,4+bob,0,0,Math.PI*2);ctx.fill();
