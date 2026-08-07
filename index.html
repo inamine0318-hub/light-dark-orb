@@ -1484,7 +1484,12 @@ function drawSlime(bx,by){
     if(P.inv>0&&Math.floor(P.inv/4)%2===0)return;
     const cx=Math.floor(bx)+18,t=gTick,bob=Math.abs(Math.sin(t*.09))*4|0;
     const _am=P.atk>0,_amax=[12,16,22][P.atkCombo]||12,_ap=_am?Math.min(1,P.atk/_amax):0,_mph=_am?(_ap>.6?'w':_ap>.2?'s':'f'):'';
+    // 二段ジャンプ上昇中は「ぐにょーん」と縦に伸びる
+    const _djStretch=(!P.onG&&P.dj&&P.vy<-2)?.14:0;
+    const _wob=Math.sin(t*.18)*.04+_djStretch;
     ctx.save();if(P.dir<0){ctx.translate(cx*2,0);ctx.scale(-1,1);}
+    // 常時プルプルとしたゼリーの揺れ（本体中心を軸に伸縮）
+    ctx.save();ctx.translate(cx,by+26);ctx.scale(1-_wob,1+_wob);ctx.translate(-cx,-(by+26));
     // 影
     ctx.globalAlpha=.15;ctx.fillStyle='#000';
     ctx.beginPath();ctx.ellipse(cx,by+47,12,3,0,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;
@@ -1501,9 +1506,14 @@ function drawSlime(bx,by){
         ctx.fillStyle='#2299ee';px(cx+9,by+21+bob,8,9);px(cx+15,by+22+bob,5,8);px(cx+19,by+23+bob,3,7);
         ctx.fillStyle='#1a88dd';px(cx+21,by+21+bob,1,9);
         ctx.globalAlpha=.4;ctx.fillStyle='#66ddff';ctx.beginPath();ctx.arc(cx+23,by+26+bob,5,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;
+        if(gs==='playing'&&Math.random()<.5)spark(P.x+P.w/2-scroll+P.dir*23,P.y+16,'#66ddff',1);
     }else if(_mph==='f'){
         ctx.fillStyle='#2299ee';px(cx+8,by+22+bob,6,8);px(cx+12,by+24+bob,4,6);
         ctx.fillStyle='#1a88dd';px(cx+14,by+22+bob,1,7);
+        // 発射後、本体表面に波紋が広がって収まる
+        const _rip=(_ap*5)%1;
+        ctx.globalAlpha=(1-_rip)*.35;ctx.strokeStyle='#cceeff';ctx.lineWidth=1;
+        ctx.beginPath();ctx.arc(cx,by+26+bob,15+_rip*6,0,Math.PI*2);ctx.stroke();ctx.globalAlpha=1;
     }else{
         ctx.fillStyle='#2299ee';px(cx+7,by+23+bob,5,8);px(cx+9,by+25+bob,3,6);
         ctx.fillStyle='#1a88dd';px(cx+11,by+23+bob,1,7);
@@ -1553,6 +1563,7 @@ function drawSlime(bx,by){
     ctx.globalAlpha=.5+Math.sin(t*.15)*.3;
     ctx.fillStyle='#aaeeff';ctx.beginPath();ctx.arc(cx+4,by+10+bob,4,0,Math.PI*2);ctx.fill();
     ctx.globalAlpha=1;
+    ctx.restore();
     ctx.restore();
 }
 function drawBg2(){
