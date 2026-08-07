@@ -671,6 +671,25 @@ function doAtk(){
         setCombo([20,22,28][co],46);sfx('jump');
     }
 }
+// ===== 全キャラ共通アニメーション状態（getAnimState） =====
+// 各キャラのdraw関数が個別に計算していた「攻撃フェーズ」「歩行/待機判定」「呼吸・歩行の揺れ」を
+// 1箇所に集約。スプライト画像を使わない現行のCanvas2D描画方式を維持したまま、
+// ロジックの共通化とオーバーアクション化（2〜3倍の強調）を両立する。
+function getAnimState(){
+    const t=gTick;
+    const am=P.atk>0,amax=[12,16,22][P.atkCombo]||12,ap=am?Math.min(1,P.atk/amax):0;
+    const mph=am?(ap>.6?'w':ap>.2?'s':'f'):'';
+    const walk=P.onG&&Math.abs(P.vx)>.3&&!am;
+    const idle=P.onG&&Math.abs(P.vx)<.3&&!am;
+    return {
+        t,am,ap,mph,walk,idle,
+        breath:Math.sin(t*.06)*3,        // 待機の呼吸揺れ（従来の約2倍）
+        walkBob:Math.abs(Math.sin(t*.5))*3.2, // 歩行の上下バウンド（従来の約2倍）
+        walkArm:Math.sin(t*.5)*4.5,      // 歩行の腕振り（従来の約2倍）
+        lean:walk?P.dir*3:0,              // 歩行中の前傾オフセット
+        blink:(t%210)<5,
+    };
+}
 function gainSkillExp(){
     if(skillLv>=3){score+=100;return;}
     skillExp++;
@@ -850,12 +869,12 @@ function sprDraw(bx,by,rows,pal,flip,ps){
 // ===== 勇者 =====
 function drawHero(bx,by){
     if(P.inv>0&&Math.floor(P.inv/4)%2===0)return;
-    const cx=Math.floor(bx)+18,wk=Math.floor(gTick/7)%2;
-    const _am=P.atk>0,_amax=[12,16,22][P.atkCombo]||12,_ap=_am?Math.min(1,P.atk/_amax):0,_mph=_am?(_ap>.6?'w':_ap>.2?'s':'f'):'';
-    const _walk=P.onG&&Math.abs(P.vx)>.3&&!_am;
-    const _arm=_walk?(Math.sin(gTick*.5)*2|0):0;
-    const _blink=(gTick%210)<5;
+    const cx=Math.floor(bx)+18,wk=Math.floor(gTick/7)%2,wk2=wk*2;
+    const anim=getAnimState();
+    const _am=anim.am,_mph=anim.mph,_walk=anim.walk,_blink=anim.blink;
+    const _arm=_walk?(anim.walkArm|0):0;
     ctx.save();if(P.dir<0){ctx.translate(cx*2,0);ctx.scale(-1,1);}
+    ctx.translate(P.dir<0?-anim.lean:anim.lean,0); // オーバーアクション化：歩行中の前傾（左向き時も進行方向に正しく傾く）
     // 赤いマント（首元は細く盾と重ならせず、腰から下で大きく翻る・布のシワを表現）
     const _cape=(_walk?Math.sin(gTick*.5)*3:0)+(_am?-4:0);
     ctx.fillStyle='#5c0c0c';
@@ -864,8 +883,8 @@ function drawHero(bx,by){
     ctx.beginPath();ctx.moveTo(cx-5,by+18);ctx.lineTo(cx-5,by+34);ctx.lineTo(cx-11+_cape,by+42);ctx.lineTo(cx-8+_cape,by+44);ctx.lineTo(cx-4,by+42);ctx.lineTo(cx-4,by+18);ctx.closePath();ctx.fill();
     ctx.fillStyle='#7a1010';px(cx-6,by+22,2,12);
     ctx.fillStyle='#8a6010';px(cx-8,by+16,6,2);
-    // 奥足（後方・やや浮き気味で重心を前足へ）
-    ctx.fillStyle='#1a3ab8';px(cx-5,by+35+wk,5,8-wk);
+    // 奥足（後方・やや浮き気味で重心を前足へ・足運びを強調）
+    ctx.fillStyle='#1a3ab8';px(cx-5,by+35+wk2,5,8-wk2);
     ctx.fillStyle='#7a5020';px(cx-6,by+43,5,4);
     // 体（重装鎧 + 幅広パウルドロン + 銀チェスト・角を落として丸みを付与）
     ctx.fillStyle='#9098b8';px(cx-10,by+17,7,9);ctx.fillStyle='#b0b8d8';px(cx-9,by+17,5,8);
@@ -920,9 +939,9 @@ function drawHero(bx,by){
         ctx.fillStyle='#3060e8';px(cx+6,by+22,5,10);ctx.fillStyle='#1a3ab8';px(cx+10,by+22,1,10);
         ctx.fillStyle='#c8d0f0';px(cx+7,by+31,4,3);
     }
-    // 手前足（重心・しっかり踏み込む）
-    ctx.fillStyle='#1e40c0';px(cx+1,by+33-wk,5,10+wk);
-    ctx.fillStyle='#0e2890';px(cx+5,by+33-wk,1,10+wk);
+    // 手前足（重心・しっかり踏み込む・足運びを強調）
+    ctx.fillStyle='#1e40c0';px(cx+1,by+33-wk2,5,10+wk2);
+    ctx.fillStyle='#0e2890';px(cx+5,by+33-wk2,1,10+wk2);
     ctx.fillStyle='#5a3010';px(cx+1,by+43,7,1);ctx.fillStyle='#7a5020';px(cx+1,by+44,7,3);px(cx+7,by+44,1,2);
     // 金髪の影（こめかみ・後頭部のボリューム）
     ctx.fillStyle='#5c3a18';px(cx-8,by+1,5,9);px(cx+7,by+1,4,8);
@@ -2664,12 +2683,13 @@ function draw(){
         ctx.restore();
     }else{
         var _sqX=1,_sqY=1;
-        if(P.jumpSq>0){_sqY=0.76;_sqX=1.18;}
-        else if(!P.onG){if(P.vy<-2){var _s=Math.min(0.22,Math.abs(P.vy)*0.04);_sqY=1+_s;_sqX=1-_s*0.5;}else if(P.vy>2){var _s2=Math.min(0.14,P.vy*0.028);_sqY=1+_s2;_sqX=1-_s2*0.4;}}
-        else if(P.landSq>0){var _t=P.landSq/8;_sqY=1-_t*0.22;_sqX=1+_t*0.18;}
+        // オーバーアクション化：スクワッシュ&ストレッチ・揺れ幅を従来の約2倍に拡大
+        if(P.jumpSq>0){_sqY=0.60;_sqX=1.34;}
+        else if(!P.onG){if(P.vy<-2){var _s=Math.min(0.4,Math.abs(P.vy)*0.07);_sqY=1+_s;_sqX=1-_s*0.5;}else if(P.vy>2){var _s2=Math.min(0.26,P.vy*0.05);_sqY=1+_s2;_sqX=1-_s2*0.4;}}
+        else if(P.landSq>0){var _t=P.landSq/8;_sqY=1-_t*0.4;_sqX=1+_t*0.32;}
         var _ib=0;
-        if(P.onG&&Math.abs(P.vx)<0.5)_ib=(Math.sin(gTick*0.06)*1.5|0); // 待機：呼吸のような上下揺れ
-        else if(P.onG)_ib=(Math.abs(Math.sin(gTick*0.5))*1.6|0); // 歩行：足運びの重心上下動
+        if(P.onG&&Math.abs(P.vx)<0.5)_ib=(Math.sin(gTick*0.06)*3|0); // 待機：呼吸のような上下揺れ
+        else if(P.onG)_ib=(Math.abs(Math.sin(gTick*0.5))*3.2|0); // 歩行：足運びの重心上下動
         drawWithOutline(drawFns[selectedChar],P.x-scroll,P.y+_ib-25,false,_sqX,_sqY);
     }
 
@@ -2679,8 +2699,8 @@ function draw(){
         const co=P.atkCombo;
         const maxA=[12,16,22][co]||14;
         const prog=Math.min(1,P.atk/maxA);
-        const r=[14,18,26][co]||16;
-        const lw=[2.5,3.5,5.5][co]||3;
+        const r=[22,29,42][co]||24; // オーバーアクション化：斬撃エフェクトを約1.6倍に拡大
+        const lw=[4,5.5,8.5][co]||4.5;
         const col=['#ffffff','#ffff88','#ffe840'][co]||'#ffffff';
         const ax=bxp+(P.dir>0?P.w+6:-6);
         const ay=P.y+P.h*[.6,.35,.5][co];
