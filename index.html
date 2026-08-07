@@ -159,6 +159,86 @@ const BGM2=[[N.A4,.2],[N._,.1],[N.G4,.15],[N.A4,.2],[N._,.15],[N.F4,.15],[N.G4,.
     [N.F4,.2],[N.E4,.2],[N.D4,.2],[N.E4,.4],[N.D4,.2],[N.C4,.2],[N.A4,.6],[N._,.4]];
 
 // ===== CAROUSEL CHAR SELECT =====
+// ===== SELECT SCREEN: ICON / GAUGE PRIMITIVES =====
+function drawIcon(type,x,y,s,col){
+    s=s||1;
+    ctx.save();ctx.translate(Math.floor(x),Math.floor(y));ctx.scale(s,s);
+    ctx.fillStyle=col;ctx.strokeStyle=col;
+    switch(type){
+        case 'sword':
+            ctx.save();ctx.rotate(-Math.PI/4);
+            ctx.fillStyle='#e8eef8';ctx.fillRect(-1,-6,2,8);
+            ctx.fillStyle=col;ctx.fillRect(-3,2,6,1);ctx.fillRect(-1,3,2,3);
+            ctx.restore();
+            break;
+        case 'slash':
+            ctx.lineWidth=2;ctx.beginPath();ctx.arc(0,0,5,-Math.PI*.7,-Math.PI*.1);ctx.stroke();
+            ctx.lineWidth=1;ctx.beginPath();ctx.arc(0,0,3,-Math.PI*.6,-Math.PI*.2);ctx.stroke();
+            break;
+        case 'orb':
+            ctx.globalAlpha=.35;ctx.beginPath();ctx.arc(0,0,6,0,Math.PI*2);ctx.fill();
+            ctx.globalAlpha=1;ctx.beginPath();ctx.arc(0,0,3.5,0,Math.PI*2);ctx.fill();
+            ctx.fillStyle='#fff';ctx.globalAlpha=.8;ctx.beginPath();ctx.arc(-1,-1,1,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;
+            break;
+        case 'arrow':
+            ctx.fillRect(-5,-1,7,2);
+            ctx.beginPath();ctx.moveTo(4,-3);ctx.lineTo(7,0);ctx.lineTo(4,3);ctx.closePath();ctx.fill();
+            ctx.fillRect(-6,-3,2,2);ctx.fillRect(-6,1,2,2);
+            break;
+        case 'flame':
+            ctx.beginPath();ctx.moveTo(0,-6);ctx.quadraticCurveTo(4,-2,2,3);ctx.quadraticCurveTo(4,1,3,5);
+            ctx.quadraticCurveTo(0,7,-3,5);ctx.quadraticCurveTo(-4,1,-2,3);ctx.quadraticCurveTo(-4,-2,0,-6);ctx.fill();
+            break;
+        case 'shock':
+            ctx.lineWidth=1.5;
+            ctx.beginPath();ctx.arc(0,3,3,Math.PI,0);ctx.stroke();
+            ctx.beginPath();ctx.arc(0,3,6,Math.PI,0);ctx.stroke();
+            break;
+        case 'bounce':
+            ctx.beginPath();ctx.arc(-3,3,3,0,Math.PI*2);ctx.fill();
+            ctx.globalAlpha=.5;ctx.beginPath();ctx.arc(3,-3,2,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;
+            break;
+        case 'jump1':
+            ctx.beginPath();ctx.moveTo(0,-5);ctx.lineTo(4,1);ctx.lineTo(1,1);ctx.lineTo(1,6);ctx.lineTo(-1,6);ctx.lineTo(-1,1);ctx.lineTo(-4,1);ctx.closePath();ctx.fill();
+            break;
+        case 'jump2':
+            ctx.globalAlpha=.45;
+            ctx.beginPath();ctx.moveTo(0,-7);ctx.lineTo(3,-2);ctx.lineTo(1,-2);ctx.lineTo(1,-1);ctx.lineTo(-1,-1);ctx.lineTo(-1,-2);ctx.lineTo(-3,-2);ctx.closePath();ctx.fill();
+            ctx.globalAlpha=1;
+            ctx.beginPath();ctx.moveTo(0,-1);ctx.lineTo(4,5);ctx.lineTo(1,5);ctx.lineTo(1,7);ctx.lineTo(-1,7);ctx.lineTo(-1,5);ctx.lineTo(-4,5);ctx.closePath();ctx.fill();
+            break;
+        case 'float':
+            ctx.globalAlpha=.9;
+            ctx.beginPath();ctx.ellipse(0,-1,5,2,0,0,Math.PI*2);ctx.fill();
+            ctx.globalAlpha=.6;
+            ctx.beginPath();ctx.ellipse(0,3,3,1.2,0,0,Math.PI*2);ctx.fill();
+            ctx.globalAlpha=1;
+            break;
+        case 'speed':
+            ctx.fillRect(-6,-4,10,1.5);ctx.fillRect(-6,-.5,7,1.5);ctx.fillRect(-6,3,10,1.5);
+            break;
+        case 'heavy':
+            ctx.fillRect(-4,-5,8,8);
+            ctx.fillStyle='rgba(0,0,0,.35)';ctx.fillRect(-4,-5,8,3);
+            break;
+        case 'star':{
+            ctx.beginPath();
+            for(let i=0;i<5;i++){
+                const a=-Math.PI/2+i*Math.PI*2/5,a2=a+Math.PI/5;
+                ctx.lineTo(Math.cos(a)*6,Math.sin(a)*6);
+                ctx.lineTo(Math.cos(a2)*2.5,Math.sin(a2)*2.5);
+            }
+            ctx.closePath();ctx.fill();
+            break;}
+    }
+    ctx.restore();
+}
+function drawBar(x,y,w,h,frac,col){
+    ctx.fillStyle='rgba(255,255,255,.12)';ctx.fillRect(x,y,w,h);
+    ctx.fillStyle=col;ctx.fillRect(x,y,Math.max(0,Math.min(w,w*frac)),h);
+    ctx.strokeStyle='rgba(255,255,255,.3)';ctx.lineWidth=1;ctx.strokeRect(x+.5,y+.5,w-1,h-1);
+}
+
 function drawCharPreview(idx,cx,cy,scale){
     // [bx, by, scaleMultiplier] — キャラごとのサイズ・位置調整
     const PP=[
@@ -184,43 +264,101 @@ function drawCharPreview(idx,cx,cy,scale){
     ctx.restore();
 }
 
-function drawGrid(){
-    const GTOP=42,ROWS=4,COLS=2,GAP=6,PAD=4;
-    const rowH=(158-GTOP)/ROWS;
-    const colW=(W-PAD*2-GAP)/COLS;
+// フォーカスパネル用：決定時アピールモーション付きプレビュー（振りかぶり→攻撃→フォローを自動ループ）
+function drawCharPreviewFocus(idx,cx,cy,scale){
+    const PP=[
+        [-7,-14,1.00],[-7,-11,0.88],[-7,-6,0.85],[-7,-14,1.00],
+        [-7,-14,1.00],[-7,-22,1.00],[-7,-14,0.90],[-7,-14,1.00],
+    ];
+    const [pbx,pby,pm]=PP[idx]||[-7,-5,1];
+    ctx.save();
+    ctx.translate(cx,cy);
+    ctx.scale(scale*pm,scale*pm);
+    const si=P.inv,sa=P.atk,sc=P.atkCd,sd=P.dir,sf=P.fr,sg=P.onG,svx=P.vx,sac=P.atkCombo;
+    const CYC=150,ph=gTick%CYC;
+    let atkV=0;
+    if(ph>=50&&ph<100)atkV=22*(1-(ph-50)/50);
+    P.inv=0;P.atk=atkV;P.atkCd=atkV>0?10:0;P.atkCombo=2;P.dir=1;P.fr=8;P.onG=true;P.vx=0;
+    const drawFnsP=[drawHero,drawDemonLord,drawMage,drawElf,drawDragon,drawGoblin,drawGolem,drawSlime];
+    drawWithOutline(drawFnsP[idx],pbx,pby,true);
+    P.inv=si;P.atk=sa;P.atkCd=sc;P.dir=sd;P.fr=sf;P.onG=sg;P.vx=svx;P.atkCombo=sac;
+    ctx.restore();
+    return atkV>0;
+}
+
+// ===== キャラ選択画面：一覧リスト + フォーカス詳細パネル =====
+const SEL_GTOP=42,SEL_GBOT=158,SEL_LISTX=3,SEL_LISTW=98,SEL_FX=105,SEL_FW=W-4-SEL_FX;
+function drawSelList(){
+    const rowH=(SEL_GBOT-SEL_GTOP)/CHARS.length;
     CHARS.forEach((ch,i)=>{
-        const col=i%COLS,row=Math.floor(i/COLS);
-        const cx=PAD+col*(colW+GAP),cy=GTOP+row*rowH;
-        const sel=i===selectedChar;
-        // セル背景
-        ctx.globalAlpha=sel?0.22:0.06;
+        const ry=SEL_GTOP+i*rowH,sel=i===selectedChar;
+        ctx.globalAlpha=sel?0.30:0.05;
         ctx.fillStyle=sel?ch.col:'#ffffff';
-        ctx.fillRect(cx,cy+1,colW,rowH-2);
+        ctx.fillRect(SEL_LISTX,ry+.5,SEL_LISTW,rowH-1);
         ctx.globalAlpha=1;
-        if(sel){
-            ctx.strokeStyle=ch.col;ctx.lineWidth=1.5;
-            ctx.strokeRect(cx,cy+1,colW,rowH-2);
-            ctx.globalAlpha=0.1+Math.sin(gTick*.09)*.06;
-            ctx.fillStyle=ch.col;ctx.fillRect(cx,cy+1,colW,rowH-2);
-            ctx.globalAlpha=1;
-            // 選択キャラきらめき粒子
-            for(let p=0;p<4;p++){const pang=gTick*.08+p*(Math.PI*2/4);const pr=7+Math.sin(gTick*.1+p)*2;ctx.globalAlpha=Math.max(0,.3+Math.sin(gTick*.12+p*1.5)*.25);ctx.fillStyle=ch.col;ctx.fillRect(Math.floor(cx+13+Math.cos(pang)*pr),Math.floor(cy+rowH/2+Math.sin(pang)*pr*.4),1,1);}
-            ctx.globalAlpha=1;
-        }
-        // キャラプレビュー（選択時やや拡大）
-        const _pb=(Math.sin(gTick*0.07+i*0.9)*1.5|0);drawCharPreview(i,cx+14,cy+rowH/2+_pb,sel?0.72:0.62);
-        // テキスト
-        const tx=cx+30;
-        txo(ch.name,tx,cy+rowH/2-5,sel?ch.col:'#cccccc',6,'left');
-        txo(ch.desc,tx,cy+rowH/2+5,'#778899',3.5,'left');
-        // SPD指標（■=速い □=遅い）
-        const sp5=Math.max(1,Math.min(5,Math.round((ch.spd-0.8)/2.0*5)));let spS='';for(let d=0;d<5;d++)spS+=(d<sp5?'■':'□');
-        txo(spS,cx+colW-2,cy+rowH-4,sel?'#44ff88':'#2a5540',3.2,'right',sel?.9:.45);
-        // HP（ハート記号表示）
-        const hpStr=ch.mhp<=5?'♥'.repeat(ch.mhp):'♥×'+ch.mhp;
-        txo(hpStr,tx,cy+rowH-5,sel?'#ff4466':'#553344',4,'left',sel?0.9:0.32);
-        ctx.globalAlpha=1;
+        if(sel){ctx.fillStyle=ch.col;ctx.fillRect(SEL_LISTX,ry+1,2,rowH-2);}
+        const cyMid=ry+rowH/2;
+        drawCharPreview(i,SEL_LISTX+10,cyMid,sel?0.42:0.32);
+        txo(ch.name,SEL_LISTX+19,cyMid-1,sel?ch.col:'#99a5b5',5,'left',sel?1:0.55);
+        drawIcon(ch.atkIcon,SEL_LISTX+SEL_LISTW-13,cyMid,0.62,sel?ch.col:'#5a6575');
+        drawIcon(ch.moveIcon,SEL_LISTX+SEL_LISTW-4,cyMid,0.62,sel?ch.col:'#5a6575');
     });
+}
+function drawSelFocus(){
+    const ch=CHARS[selectedChar],fx=SEL_FX,fy=SEL_GTOP,fw=SEL_FW,fh=SEL_GBOT-SEL_GTOP;
+    const pulse=.5+Math.sin(gTick*.07)*.5;
+    // パネル背景・暗転オーバーレイ（フォーカス以外を落ち着かせる）
+    ctx.fillStyle='rgba(0,0,12,.55)';ctx.fillRect(fx,fy,fw,fh);
+    ctx.globalAlpha=.55+pulse*.35;ctx.strokeStyle=ch.col;ctx.lineWidth=1;ctx.strokeRect(fx+.5,fy+.5,fw-1,fh-1);ctx.globalAlpha=1;
+    // プレビュー中心のグロー
+    const pcx=fx+42,pcy=fy+62;
+    ctx.globalAlpha=.10+pulse*.08;ctx.fillStyle=ch.col;ctx.beginPath();ctx.arc(pcx,pcy,30,0,Math.PI*2);ctx.fill();
+    ctx.globalAlpha=.18+pulse*.12;ctx.beginPath();ctx.arc(pcx,pcy,18,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;
+    // 周回きらめき
+    for(let p=0;p<6;p++){
+        const pang=gTick*.07+p*(Math.PI*2/6),pr=24+Math.sin(gTick*.09+p)*3;
+        ctx.globalAlpha=Math.max(0,.35+Math.sin(gTick*.1+p*1.4)*.25);
+        ctx.fillStyle=ch.col;
+        ctx.fillRect(Math.floor(pcx+Math.cos(pang)*pr),Math.floor(pcy+Math.sin(pang)*pr*.45),1,1);
+    }
+    ctx.globalAlpha=1;
+    // 名前
+    txo(ch.name,pcx,fy+9,ch.col,8,'center');
+    // アピールモーション付き大型プレビュー
+    drawCharPreviewFocus(selectedChar,pcx,pcy,1.05);
+    // アイコン+タグ列（攻撃・移動・必殺）
+    const ix=fx+84,iw=fw-84-6;
+    const rows=[[ch.atkIcon,ch.atk],[ch.moveIcon,ch.moveLabel],['star',ch.skill]];
+    rows.forEach((r,i)=>{
+        const ry=fy+13+i*15;
+        drawIcon(r[0],ix+7,ry,0.85,ch.col);
+        txo(r[1],ix+16,ry+1,'#dfe6f0',4.3,'left');
+    });
+    // ステータスゲージ（HP / SPD / RNG）
+    const gx=ix,gw=iw-2,gyBase=fy+62;
+    const sp5=Math.max(.15,Math.min(1,(ch.spd-0.8)/2.0));
+    const rng5=ch.rng/5;
+    const hp5=ch.mhp/8;
+    [['HP','#ff4466',hp5],['SPD','#44ff88',sp5],['RNG','#66ccff',rng5]].forEach((g,i)=>{
+        const gy=gyBase+i*11;
+        txo(g[0],gx,gy+3,'#8a95a8',3.4,'left');
+        drawBar(gx+16,gy,gw-16,5,g[2],g[1]);
+    });
+    // 内無双ゲージ（覚醒ゲージ）スロット - 全キャラ共通・右下
+    const ax=fx+fw-58,ay=fy+fh-20,aw=54,ah=14;
+    const awPulse=.4+Math.sin(gTick*.12)*.25;
+    ctx.strokeStyle=`rgba(255,220,120,${.5+awPulse*.3})`;ctx.lineWidth=1;ctx.strokeRect(ax+.5,ay+.5,aw-1,ah-1);
+    ctx.fillStyle='rgba(255,220,120,.08)';ctx.fillRect(ax,ay,aw,ah);
+    ctx.globalAlpha=.5+awPulse*.4;ctx.fillStyle='#ffe07a';
+    for(let s=0;s<3;s++)ctx.fillRect(ax+3+s*7,ay+4,4,ah-8);
+    ctx.globalAlpha=1;
+    txo('内無双',ax+aw/2,ay-3,'#ffd070',3.6,'center');
+    // 攻撃デモをループ再生中インジケータ
+    txo('● DEMO LOOP',fx+8,fy+fh-4,'rgba(255,255,255,.4)',3.2,'left');
+}
+function drawGrid(){
+    drawSelList();
+    drawSelFocus();
     const _bs=Math.floor(gTick/22)%2===0;
     if(_bs)txo('▶ 再タップでSTART ◀',W/2,H-4,'#44ff88',5.5);
     else txo('タップでキャラ選択',W/2,H-4,'#338855',4.5);
@@ -371,14 +509,14 @@ let popups=[];let stageFlash=0; // フローティングテキスト・ステー
 
 // 全キャラ定義 spd=移動速度 jmp=ジャンプ力 gr=重力倍率 dj=二段ジャンプ
 const CHARS=[
-    {name:'勇者',    desc:'剣・二段ジャンプ',atk:'近接剣撃', col:'#ffe840', mhp:5, locked:false, spd:1.8, jmp:5.8, gr:1.0,  dj:true},
-    {name:'魔王',    desc:'闇魔法・浮遊',atk:'闇オーブ',     col:'#8822ff', mhp:4, locked:false, spd:1.5, jmp:4.2, gr:0.55, dj:false},
-    {name:'魔法使い',desc:'炎魔法・遠距離',atk:'炎オーブ',   col:'#ff8820', mhp:3, locked:false, spd:1.7, jmp:5.5, gr:1.0,  dj:false},
-    {name:'エルフ',  desc:'弓・高ジャンプ',atk:'高速矢',   col:'#44ff88', mhp:4, locked:false, spd:2.2, jmp:7.0, gr:1.0,  dj:true},
-    {name:'ドラゴン',desc:'炎ブレス・飛行',atk:'炎3方向',   col:'#ff4420', mhp:6, locked:false, spd:1.6, jmp:5.2, gr:0.65, dj:true},
-    {name:'ゴブリン',desc:'素早い・ダッシュ',atk:'ダッシュ斬', col:'#60cc30', mhp:3, locked:false, spd:2.8, jmp:5.0, gr:1.0,  dj:false},
-    {name:'ゴーレム',desc:'超耐久・衝撃波',atk:'衝撃波',   col:'#b0b8c0', mhp:8, locked:false, spd:1.0, jmp:4.5, gr:1.3,  dj:false},
-    {name:'スライム',desc:'バウンド・変形',atk:'跳弾',    col:'#44aaff', mhp:4, locked:false, spd:1.9, jmp:6.2, gr:0.85, dj:true},
+    {name:'勇者',    desc:'剣・二段ジャンプ',atk:'近接剣撃', col:'#ffe840', mhp:5, locked:false, spd:1.8, jmp:5.8, gr:1.0,  dj:true,  skill:'旋風斬',     rng:2, atkIcon:'sword', moveIcon:'jump2', moveLabel:'二段ジャンプ'},
+    {name:'魔王',    desc:'闇魔法・浮遊',atk:'闇オーブ',     col:'#8822ff', mhp:4, locked:false, spd:1.5, jmp:4.2, gr:0.55, dj:false, skill:'ダークノヴァ', rng:4, atkIcon:'orb',   moveIcon:'float', moveLabel:'滞空浮遊'},
+    {name:'魔法使い',desc:'炎魔法・遠距離',atk:'炎オーブ',   col:'#ff8820', mhp:3, locked:false, spd:1.7, jmp:5.5, gr:1.0,  dj:false, skill:'メテオ',     rng:4, atkIcon:'orb',   moveIcon:'jump1', moveLabel:'単発ジャンプ'},
+    {name:'エルフ',  desc:'弓・高ジャンプ',atk:'高速矢',   col:'#44ff88', mhp:4, locked:false, spd:2.2, jmp:7.0, gr:1.0,  dj:true,  skill:'矢の雨',     rng:5, atkIcon:'arrow', moveIcon:'jump2', moveLabel:'高高度二段跳'},
+    {name:'ドラゴン',desc:'炎ブレス・飛行',atk:'炎3方向',   col:'#ff4420', mhp:6, locked:false, spd:1.6, jmp:5.2, gr:0.65, dj:true,  skill:'超炎ブレス', rng:4, atkIcon:'flame', moveIcon:'float', moveLabel:'飛行'},
+    {name:'ゴブリン',desc:'素早い・ダッシュ',atk:'ダッシュ斬', col:'#60cc30', mhp:3, locked:false, spd:2.8, jmp:5.0, gr:1.0,  dj:false, skill:'煙幕ダッシュ', rng:2, atkIcon:'slash', moveIcon:'speed', moveLabel:'高速ダッシュ'},
+    {name:'ゴーレム',desc:'超耐久・衝撃波',atk:'衝撃波',   col:'#b0b8c0', mhp:8, locked:false, spd:1.0, jmp:4.5, gr:1.3,  dj:false, skill:'大地震',     rng:3, atkIcon:'shock', moveIcon:'heavy', moveLabel:'重量級'},
+    {name:'スライム',desc:'バウンド・変形',atk:'跳弾',    col:'#44aaff', mhp:4, locked:false, spd:1.9, jmp:6.2, gr:0.85, dj:true,  skill:'跳弾分裂',   rng:3, atkIcon:'bounce', moveIcon:'bounce', moveLabel:'バウンド'},
 ];
 
 // ===== PLAYER =====
@@ -574,13 +712,15 @@ function inp(cx,cy){
     if(gs==='splash'){splashTimer=200;return;}
     if(gs==='start'){
         if(cx!==undefined){
-            const GTOP=42,rowH=(158-42)/4;
-            const col=cx<W/2?0:1;
-            const row=Math.floor((cy-GTOP)/rowH);
-            const idx=row*2+col;
-            if(idx>=0&&idx<CHARS.length&&cy>=GTOP&&row<4){
-                if(idx===selectedChar){if(!CHARS[idx].locked){gs='playing';resetGame();}}
-                else{selectedChar=idx;}
+            const rowH=(SEL_GBOT-SEL_GTOP)/CHARS.length;
+            if(cx>=SEL_LISTX&&cx<SEL_LISTX+SEL_LISTW&&cy>=SEL_GTOP&&cy<SEL_GBOT){
+                const idx=Math.floor((cy-SEL_GTOP)/rowH);
+                if(idx>=0&&idx<CHARS.length){
+                    if(idx===selectedChar){if(!CHARS[idx].locked){gs='playing';resetGame();}}
+                    else{selectedChar=idx;}
+                }
+            }else if(cx>=SEL_FX&&cx<SEL_FX+SEL_FW&&cy>=SEL_GTOP&&cy<SEL_GBOT){
+                if(!CHARS[selectedChar].locked){gs='playing';resetGame();}
             }
         }else{
             if(!CHARS[selectedChar].locked){gs='playing';resetGame();}
