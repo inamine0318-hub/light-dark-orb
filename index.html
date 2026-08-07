@@ -831,13 +831,13 @@ function drawHero(bx,by){
     const _arm=_walk?(Math.sin(gTick*.5)*2|0):0;
     const _blink=(gTick%210)<5;
     ctx.save();if(P.dir<0){ctx.translate(cx*2,0);ctx.scale(-1,1);}
-    // 赤いマント（背中から翻る・歩行や攻撃でなびく）
-    const _cape=(_walk?Math.sin(gTick*.5)*2:0)+(_am?-3:0);
+    // 赤いマント（背中に大きく翻る・歩行や攻撃でなびく）
+    const _cape=(_walk?Math.sin(gTick*.5)*3:0)+(_am?-4:0);
     ctx.fillStyle='#7a1010';
-    ctx.beginPath();ctx.moveTo(cx-8,by+17);ctx.lineTo(cx-13+_cape,by+30);ctx.lineTo(cx-10+_cape,by+42);ctx.lineTo(cx-2,by+44);ctx.lineTo(cx-3,by+18);ctx.closePath();ctx.fill();
+    ctx.beginPath();ctx.moveTo(cx-9,by+16);ctx.lineTo(cx-17+_cape,by+30);ctx.lineTo(cx-13+_cape,by+45);ctx.lineTo(cx-2,by+47);ctx.lineTo(cx-3,by+17);ctx.closePath();ctx.fill();
     ctx.fillStyle='#a81818';
-    ctx.beginPath();ctx.moveTo(cx-7,by+18);ctx.lineTo(cx-10+_cape,by+29);ctx.lineTo(cx-8+_cape,by+40);ctx.lineTo(cx-4,by+41);ctx.lineTo(cx-4,by+19);ctx.closePath();ctx.fill();
-    ctx.fillStyle='#8a6010';px(cx-8,by+17,6,2);
+    ctx.beginPath();ctx.moveTo(cx-8,by+17);ctx.lineTo(cx-13+_cape,by+29);ctx.lineTo(cx-10+_cape,by+43);ctx.lineTo(cx-4,by+44);ctx.lineTo(cx-4,by+18);ctx.closePath();ctx.fill();
+    ctx.fillStyle='#8a6010';px(cx-9,by+16,7,2);
     // 奥足（後方・やや浮き気味で重心を前足へ）
     ctx.fillStyle='#1a3ab8';px(cx-5,by+35+wk,5,8-wk);
     ctx.fillStyle='#7a5020';px(cx-6,by+43,5,4);
@@ -862,30 +862,34 @@ function drawHero(bx,by){
     ctx.fillStyle='#8a6010';px(cx-5,by+32,13,2);ctx.fillStyle='#f8c828';px(cx-1,by+32,4,1);
     // 剣 + 手前腕（攻撃フェーズ連動）
     if(_mph==='w'){
-        // 振りかぶり：剣を頭上に高く構える
-        ctx.fillStyle='#c8e8ff';px(cx+12,by-3,2,7);px(cx+10,by+4,2,6);px(cx+7,by+10,3,8);
-        ctx.fillStyle='#ffffff';px(cx+12,by-3,1,5);px(cx+10,by+4,1,5);
+        // 振りかぶり：光の大剣（聖剣）を頭上に高く構える
+        ctx.fillStyle='#3399ff';px(cx+11,by-6,3,10);px(cx+9,by+4,3,6);px(cx+6,by+10,4,8);
+        ctx.fillStyle='#bbeeff';px(cx+11,by-6,1,7);px(cx+9,by+4,1,5);
+        ctx.globalAlpha=.35;ctx.fillStyle='#66ccff';ctx.beginPath();ctx.arc(cx+12,by-4,4,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;
         ctx.fillStyle='#f0c020';px(cx+4,by+17,9,3);ctx.fillStyle='#7a4a10';px(cx+7,by+19,2,5);
         ctx.fillStyle='#3060e8';px(cx+5,by+11,5,13);ctx.fillStyle='#1a3ab8';px(cx+9,by+11,1,13);
         ctx.fillStyle='#c8d0f0';px(cx+6,by+23,4,3);
     }else if(_mph==='s'){
-        // 横一閃！剣が水平に走る
-        ctx.fillStyle='#c8e8ff';px(cx+6,by+18,9,2);px(cx+14,by+16,5,2);px(cx+18,by+14,7,2);
-        ctx.fillStyle='#ffffff';px(cx+6,by+18,9,1);px(cx+14,by+16,5,1);
+        // 横一閃！光の大剣が水平に走る
+        ctx.fillStyle='#3399ff';px(cx+5,by+17,10,3);px(cx+14,by+15,6,3);px(cx+19,by+13,8,3);
+        ctx.fillStyle='#bbeeff';px(cx+5,by+17,10,1);px(cx+14,by+15,6,1);
+        ctx.globalAlpha=.35;ctx.fillStyle='#66ccff';ctx.beginPath();ctx.arc(cx+26,by+15,4,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;
         ctx.fillStyle='#f0c020';px(cx+3,by+24,5,3);ctx.fillStyle='#7a4a10';px(cx+4,by+25,3,5);
         ctx.fillStyle='#3060e8';px(cx+4,by+17,9,9);ctx.fillStyle='#1a3ab8';px(cx+12,by+17,1,9);
         ctx.fillStyle='#c8d0f0';px(cx+11,by+24,3,3);
     }else if(_mph==='f'){
-        // フォロー：剣が斜め下へ抜ける
-        ctx.fillStyle='#c8e8ff';px(cx+9,by+22,3,5);px(cx+10,by+27,2,6);px(cx+11,by+33,2,4);
-        ctx.fillStyle='#ffffff';px(cx+9,by+22,2,4);
+        // フォロー：光の大剣が斜め下へ抜ける
+        ctx.fillStyle='#3399ff';px(cx+8,by+21,4,6);px(cx+9,by+27,3,7);px(cx+10,by+33,3,5);
+        ctx.fillStyle='#bbeeff';px(cx+8,by+21,2,5);
+        ctx.globalAlpha=.3;ctx.fillStyle='#66ccff';ctx.beginPath();ctx.arc(cx+11,by+36,3,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;
         ctx.fillStyle='#f0c020';px(cx+5,by+26,7,3);ctx.fillStyle='#7a4a10';px(cx+7,by+28,2,5);
         ctx.fillStyle='#3060e8';px(cx+6,by+22,5,10);ctx.fillStyle='#1a3ab8';px(cx+10,by+22,1,10);
         ctx.fillStyle='#c8d0f0';px(cx+7,by+31,4,3);
     }else{
-        // 通常スタンス（斜め上）
-        ctx.fillStyle='#c8e8ff';px(cx+18,by+5,2,5);px(cx+16,by+10,2,6);px(cx+13,by+16,3,6);px(cx+10,by+22,3,5);
-        ctx.fillStyle='#ffffff';px(cx+18,by+5,1,4);px(cx+16,by+10,1,5);
+        // 通常スタンス（斜め上・青く光る大剣＝聖剣）
+        ctx.fillStyle='#3399ff';px(cx+17,by+4,3,6);px(cx+15,by+9,3,7);px(cx+12,by+15,4,7);px(cx+9,by+21,4,6);
+        ctx.fillStyle='#bbeeff';px(cx+17,by+4,1,5);px(cx+15,by+9,1,6);
+        ctx.globalAlpha=.3;ctx.fillStyle='#66ccff';ctx.beginPath();ctx.arc(cx+18,by+3,3,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;
         ctx.fillStyle='#f0c020';px(cx+7,by+26,11,3);ctx.fillStyle='#7a4a10';px(cx+10,by+28,2,5);
         ctx.fillStyle='#3060e8';px(cx+6,by+22,5,10);ctx.fillStyle='#1a3ab8';px(cx+10,by+22,1,10);
         ctx.fillStyle='#c8d0f0';px(cx+7,by+31,4,3);
@@ -894,30 +898,21 @@ function drawHero(bx,by){
     ctx.fillStyle='#1e40c0';px(cx+1,by+33-wk,5,10+wk);
     ctx.fillStyle='#0e2890';px(cx+5,by+33-wk,1,10+wk);
     ctx.fillStyle='#5a3010';px(cx+1,by+43,7,1);ctx.fillStyle='#7a5020';px(cx+1,by+44,7,3);px(cx+7,by+44,1,2);
-    // こめかみの兜側面（頬当て）
-    ctx.fillStyle='#7078a0';px(cx-9,by+2,5,9);px(cx+8,by+2,4,8);
-    ctx.fillStyle='#5a6288';px(cx-10,by+9,3,3);px(cx+8,by+9,3,3);
-    // 丸い頭（radius 8, center by+10・兜の下から覗く顔）
+    // 金髪の影（こめかみ）
+    ctx.fillStyle='#d89810';px(cx-8,by+2,5,8);px(cx+7,by+2,4,7);
+    // 丸い頭（radius 8, center by+10）
     pixelCircle(cx+1,by+10,8,'#f0c888','#e0b070','#fce8c0');
-    // 西洋騎士の兜（眉の上までしっかり覆う・量産兵と差別化する赤いクレスト）
-    ctx.fillStyle='#9098b8';
-    ctx.beginPath();ctx.arc(cx+1,by+1,9,Math.PI,0,false);ctx.fill();
-    px(cx-8,by+1,18,7);
-    ctx.fillStyle='#7880a0';px(cx-8,by+5,18,3);
-    ctx.fillStyle='#c8d0f0';
-    ctx.beginPath();ctx.arc(cx-2,by-1,3,Math.PI*1.1,Math.PI*1.6);ctx.fill();
-    // 頭頂の赤いクレスト（前後に流れる羽根飾り）
-    ctx.fillStyle='#a81818';
-    ctx.beginPath();ctx.moveTo(cx-4,by-1);ctx.lineTo(cx+1,by-14);ctx.lineTo(cx+6,by-1);ctx.lineTo(cx+4,by+1);ctx.lineTo(cx+1,by-8);ctx.lineTo(cx-2,by+1);ctx.closePath();ctx.fill();
-    ctx.fillStyle='#e02020';
-    ctx.beginPath();ctx.moveTo(cx-1,by-2);ctx.lineTo(cx+1,by-11);ctx.lineTo(cx+3,by-2);ctx.closePath();ctx.fill();
-    // こめかみの金装飾（V字の額当て）
-    ctx.fillStyle='#f8c828';
-    ctx.beginPath();ctx.moveTo(cx-8,by+3);ctx.lineTo(cx+1,by+7);ctx.lineTo(cx+10,by+3);ctx.lineTo(cx+10,by+4);ctx.lineTo(cx+1,by+8);ctx.lineTo(cx-8,by+4);ctx.closePath();ctx.fill();
-    // 縁の金トリム（眉の上ライン）
-    ctx.fillStyle='#8a6010';px(cx-8,by+7,18,1);ctx.fillStyle='#f8c828';px(cx-6,by+7,4,1);
-    // ノーズガード（鼻梁を守る金属バー）
-    ctx.fillStyle='#7880a0';px(cx,by+7,2,4);
+    // 赤ハチマキ（主人公の証。額は狭めに巻いて量産兵感を排除）
+    ctx.fillStyle='#cc1818';px(cx-7,by+7,17,4);
+    ctx.fillStyle='#ee2828';px(cx-7,by+7,17,1);
+    ctx.fillStyle='#cc1818';px(cx-10,by+9,3,2);px(cx-11,by+11,3,7);
+    ctx.fillStyle='#f8c828';px(cx-1,by+7,4,1);
+    // ツンツン金髪（前面・主人公らしいスパイクヘア）
+    ctx.fillStyle='#f8c030';
+    px(cx-4,by+3,6,1);px(cx-3,by-1,4,4);px(cx-2,by-6,2,6);
+    px(cx+1,by+2,6,1);px(cx+2,by-2,4,4);px(cx+3,by-7,2,6);
+    px(cx+6,by+3,5,1);px(cx+7,by-1,3,4);px(cx+8,by-5,2,5);
+    ctx.fillStyle='#ffe060';px(cx-2,by-6,1,4);px(cx+3,by-7,1,4);px(cx+8,by-5,1,3);
     // 目（Ness風黒点・瞬き付き）
     if(_blink){
         ctx.fillStyle='#7a5030';px(cx-3,by+12,2,1);px(cx+1,by+12,3,1);
@@ -925,7 +920,7 @@ function drawHero(bx,by){
         ctx.fillStyle='#000';px(cx-3,by+11,2,3);
         ctx.fillStyle='#000';px(cx+1,by+11,3,3);
     }
-    ctx.fillStyle='#3a2a1c';px(cx-4,by+8,3,2);px(cx,by+8,4,2);
+    ctx.fillStyle='#806010';px(cx-4,by+8,3,2);px(cx,by+8,4,2);
     // 頬の赤み（親しみやすさ）
     ctx.fillStyle='rgba(255,130,130,.5)';px(cx-5,by+13,2,1);px(cx+5,by+13,2,1);
     ctx.fillStyle='#c89060';px(cx+3,by+15,2,2);
@@ -1245,14 +1240,21 @@ function drawDragon(bx,by){
     const wg=Math.sin(t*.13)*_wgAmp|0;
     // 尻尾は翼と位相をずらし、遅れてしなる
     const wt=Math.sin(t*.13-.9)*3|0;
-    // 待機中、実プレイ中のみ低頻度で鼻息の煙を漏らす
-    if(gs==='playing'&&P.onG&&Math.abs(P.vx)<.3&&P.atkCd<=0&&Math.random()<.01)spark(P.x+P.w/2-scroll+P.dir*16,P.y+8,'#5a5a5a',1);
+    // 口元から常時漏れる炎の粒子・煙（実プレイ中のみ）
+    if(gs==='playing'&&Math.random()<.04)spark(P.x+P.w/2-scroll+P.dir*20,P.y+10,Math.random()<.5?'#ff6600':'#5a5a5a',1);
     ctx.save();if(P.dir<0){ctx.translate(cx*2,0);ctx.scale(-1,1);}
+    // 前傾姿勢（腰を軸に全身を少し前へ傾け、威圧感のある野性的な構えに）
+    ctx.save();
+    const _pvX=cx-2,_pvY=by+32;
+    ctx.translate(_pvX,_pvY);ctx.rotate(.14);ctx.translate(-_pvX,-_pvY);
     // 尻尾
     ctx.fillStyle='#8a1c0e';px(cx-9,by+24+wt,5,5);px(cx-12,by+28+wt,4,5);px(cx-14,by+32+wt,3,4);
     ctx.fillStyle='#a81e10';px(cx-9,by+24+wt,3,4);px(cx-12,by+28+wt,3,4);
     ctx.fillStyle='#cc3020';px(cx-15,by+35+wt,2,3);px(cx-14,by+38+wt,3,2);
-    // 翼（羽ばたきアニメ）
+    // 翼（1.6倍に拡大した大翼・付け根を軸に拡大し羽ばたきアニメ）
+    ctx.save();
+    const _wpx=cx-3,_wpy=by+11;
+    ctx.translate(_wpx,_wpy);ctx.scale(1.6,1.6);ctx.translate(-_wpx,-_wpy);
     ctx.fillStyle='#5e0800';
     ctx.beginPath();ctx.moveTo(cx-3,by+10);ctx.lineTo(cx-22,by-4+wg);ctx.lineTo(cx-17,by+18);ctx.lineTo(cx-5,by+22);ctx.closePath();ctx.fill();
     ctx.fillStyle='#8e1200';
@@ -1260,6 +1262,7 @@ function drawDragon(bx,by){
     ctx.strokeStyle='#3e0400';ctx.lineWidth=1.5;
     ctx.beginPath();ctx.moveTo(cx-3,by+11);ctx.lineTo(cx-22,by-4+wg);ctx.stroke();
     ctx.beginPath();ctx.moveTo(cx-3,by+14);ctx.lineTo(cx-15,by+4+wg);ctx.stroke();
+    ctx.restore();
     // 後ろ足（付け根を胴体下端(by+32)に固定=隙間ゼロ、歩行の上下動は足先の長さで表現）
     ctx.fillStyle='#8a1c0e';px(cx-8,by+32,7,9-wk);ctx.fillStyle='#5e0800';px(cx-8,by+32,3,9);
     ctx.fillStyle='#ece0a0';px(cx-10,by+40,2,3);px(cx-7,by+41,2,3);px(cx-4,by+40,2,3);
@@ -1289,10 +1292,10 @@ function drawDragon(bx,by){
     ctx.fillStyle='#8a1408';px(cx-1,by+0,16,12);ctx.fillStyle='#5e0800';px(cx+11,by+0,5,12);
     ctx.fillStyle='#c02010';px(cx,by+1,12,10);ctx.fillStyle='#de3020';px(cx+1,by+1,5,5);
     ctx.clearRect(cx-1,by,2,2);ctx.clearRect(cx-1,by+10,2,2);ctx.clearRect(cx+13,by,2,1);
-    // 吻（先端を丸く）
-    ctx.fillStyle='#8a1408';px(cx+11,by+4,8,6);ctx.fillStyle='#aa1e10';px(cx+12,by+5,6,5);
-    ctx.fillStyle='#400600';px(cx+15,by+7,2,2);
-    ctx.clearRect(cx+17,by+4,1,1);ctx.clearRect(cx+17,by+9,1,1);
+    // 吻（顎を張り出させ丸く・ワイルドな存在感に）
+    ctx.fillStyle='#8a1408';px(cx+11,by+3,9,8);ctx.fillStyle='#aa1e10';px(cx+12,by+4,7,7);
+    ctx.fillStyle='#400600';px(cx+16,by+7,2,2);
+    ctx.clearRect(cx+18,by+3,1,1);ctx.clearRect(cx+18,by+10,1,1);
     // 牙
     ctx.fillStyle='#1e0404';px(cx,by+10,14,3);
     ctx.fillStyle='#f8f0d0';px(cx+1,by+10,2,4);px(cx+4,by+10,2,3);px(cx+8,by+10,2,4);px(cx+11,by+10,2,3);
@@ -1302,13 +1305,15 @@ function drawDragon(bx,by){
     // 角（金色）
     ctx.fillStyle='#c8a820';px(cx,by-5,3,7);ctx.fillStyle='#e8c030';px(cx+1,by-5,2,5);
     ctx.fillStyle='#c8a820';px(cx+8,by-6,3,8);ctx.fillStyle='#e8c030';px(cx+9,by-6,2,6);
-    // 竜眼（アーモンド型+縦スリット瞳孔で凶悪な目つきに）
+    // 竜眼（発光する三日月型・凶悪な目つき）
     ctx.fillStyle='#ff8800';
-    ctx.beginPath();ctx.moveTo(cx-1,by+4);ctx.lineTo(cx+2,by+1);ctx.lineTo(cx+6,by+3);ctx.lineTo(cx+6,by+6);ctx.lineTo(cx+2,by+9);ctx.lineTo(cx-1,by+7);ctx.closePath();ctx.fill();
+    ctx.beginPath();ctx.arc(cx+2,by+4,4,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#8a1408';
+    ctx.beginPath();ctx.arc(cx+4.5,by+2,4,0,Math.PI*2);ctx.fill();
     ctx.fillStyle='#ffcc00';
-    ctx.beginPath();ctx.moveTo(cx,by+4);ctx.lineTo(cx+2,by+2);ctx.lineTo(cx+5,by+3.5);ctx.lineTo(cx+5,by+5.5);ctx.lineTo(cx+2,by+7.5);ctx.lineTo(cx,by+6.5);ctx.closePath();ctx.fill();
-    ctx.fillStyle='#000';px(cx+2,by+3,1,5);
-    ctx.fillStyle='#fff';px(cx+1,by+3,1,1);
+    ctx.beginPath();ctx.arc(cx+1,by+4,2.2,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#8a1408';
+    ctx.beginPath();ctx.arc(cx+3,by+2.5,2.2,0,Math.PI*2);ctx.fill();
     // 炎ブレス（攻撃CD中）：吻元が熱で照らされる
     if(P.atkCd>0){
         const fi=Math.sin(t*.2)*.15;
@@ -1320,6 +1325,7 @@ function drawDragon(bx,by){
         ctx.beginPath();ctx.moveTo(cx+19,by+8);ctx.lineTo(cx+23,by+5);ctx.lineTo(cx+28,by+8);ctx.lineTo(cx+24,by+11);ctx.lineTo(cx+30,by+8);ctx.lineTo(cx+25,by+12);ctx.lineTo(cx+19,by+10);ctx.fill();
         ctx.globalAlpha=1;
     }
+    ctx.restore();
     ctx.restore();
 }
 
