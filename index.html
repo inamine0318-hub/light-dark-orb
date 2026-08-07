@@ -1102,6 +1102,10 @@ function drawElf(bx,by){
     if(P.inv>0&&Math.floor(P.inv/4)%2===0)return;
     const cx=Math.floor(bx)+18,wk=Math.floor(gTick/7)%2;
     const _am=P.atk>0,_amax=[12,16,22][P.atkCombo]||12,_ap=_am?Math.min(1,P.atk/_amax):0,_mph=_am?(_ap>.6?'w':_ap>.2?'s':'f'):'';
+    // 滑空中：矢羽根の微振動で滑空感を強調
+    const _av=!P.onG?(Math.sin(gTick*.6)*1|0):0;
+    // 二段ジャンプ上昇中：実プレイ中のみ、足元にリーフ片を舞わせる
+    if(gs==='playing'&&!P.onG&&P.dj&&P.vy<-3&&Math.random()<.15)spark(P.x+P.w/2-scroll,P.y+P.h/2,'#68a838',1);
     ctx.save();if(P.dir<0){ctx.translate(cx*2,0);ctx.scale(-1,1);}
     // 奥足
     ctx.fillStyle='#286018';px(cx-5,by+33+wk,5,10-wk);
@@ -1110,8 +1114,8 @@ function drawElf(bx,by){
     ctx.fillStyle='#7a3e10';px(cx-10,by+18,4,15);
     ctx.fillStyle='#9a5818';px(cx-9,by+18,3,15);
     ctx.fillStyle='#d8c050';px(cx-10,by+15,4,5);
-    ctx.fillStyle='#6a4010';px(cx-9,by+8,1,9);px(cx-8,by+6,1,11);px(cx-7,by+9,1,8);
-    ctx.fillStyle='#888';px(cx-9,by+5,1,4);px(cx-8,by+3,1,4);
+    ctx.fillStyle='#6a4010';px(cx-9+_av,by+8,1,9);px(cx-8+_av,by+6,1,11);px(cx-7+_av,by+9,1,8);
+    ctx.fillStyle='#888';px(cx-9+_av,by+5,1,4);px(cx-8+_av,by+3,1,4);
     // 弓（攻撃フェーズ：弦引き→矢放射）
     ctx.strokeStyle='#5a2e08';ctx.lineWidth=2;
     ctx.beginPath();ctx.arc(cx-11,by+22,12,-1.1,1.1,false);ctx.stroke();
@@ -1128,7 +1132,9 @@ function drawElf(bx,by){
         ctx.fillStyle='#c8b060';px(cx+2,by+21,18,1);ctx.fillStyle='#888';px(cx+18,by+20,2,3);
         ctx.fillStyle='#c8b060';px(cx+8,by+21,1,1);px(cx+13,by+21,1,1);
     }else if(_mph==='f'){
-        // 弦が微振動
+        // 弦が微振動+発射直後の残像ライン
+        ctx.globalAlpha=.3;ctx.strokeStyle='#e8e0a0';ctx.lineWidth=1;
+        ctx.beginPath();ctx.moveTo(cx-2,by+21);ctx.lineTo(cx+16,by+21);ctx.stroke();ctx.globalAlpha=1;
         ctx.strokeStyle='#c8b060';ctx.lineWidth=1;
         ctx.beginPath();ctx.moveTo(cx-10,by+13);ctx.lineTo(cx-7,by+22);ctx.lineTo(cx-9,by+31);ctx.stroke();
     }else{
@@ -1160,13 +1166,14 @@ function drawElf(bx,by){
     ctx.fillStyle='#c8d0a8';px(cx-8,by+10,5,20);px(cx-7,by+8,4,16);
     // 丸い頭（radius 8, center by+10）
     pixelCircle(cx+1,by+10,8,'#f0d090','#e0c080','#fef0b0');
-    // 長い尖り耳
+    // 長い尖り耳（待機中、時折ピクッと聞き耳を立てる）
+    const _ear=(P.onG&&Math.abs(P.vx)<.3&&!_am&&(gTick%170)<5)?-1:0;
     ctx.fillStyle='#f0d090';
-    ctx.beginPath();ctx.moveTo(cx+8,by+11);ctx.lineTo(cx+16,by+7);ctx.lineTo(cx+9,by+15);ctx.fill();
-    ctx.fillStyle='#d8b878';ctx.beginPath();ctx.moveTo(cx+9,by+12);ctx.lineTo(cx+14,by+8);ctx.lineTo(cx+9,by+14);ctx.fill();
+    ctx.beginPath();ctx.moveTo(cx+8,by+11);ctx.lineTo(cx+16,by+7+_ear);ctx.lineTo(cx+9,by+15);ctx.fill();
+    ctx.fillStyle='#d8b878';ctx.beginPath();ctx.moveTo(cx+9,by+12);ctx.lineTo(cx+14,by+8+_ear);ctx.lineTo(cx+9,by+14);ctx.fill();
     ctx.fillStyle='#f0d090';
-    ctx.beginPath();ctx.moveTo(cx-7,by+11);ctx.lineTo(cx-15,by+7);ctx.lineTo(cx-8,by+15);ctx.fill();
-    ctx.fillStyle='#d8b878';ctx.beginPath();ctx.moveTo(cx-7,by+12);ctx.lineTo(cx-13,by+8);ctx.lineTo(cx-7,by+14);ctx.fill();
+    ctx.beginPath();ctx.moveTo(cx-7,by+11);ctx.lineTo(cx-15,by+7+_ear);ctx.lineTo(cx-8,by+15);ctx.fill();
+    ctx.fillStyle='#d8b878';ctx.beginPath();ctx.moveTo(cx-7,by+12);ctx.lineTo(cx-13,by+8+_ear);ctx.lineTo(cx-7,by+14);ctx.fill();
     // 金ティアラ
     ctx.fillStyle='#e8c020';px(cx-6,by+7,13,3);
     ctx.fillStyle='#f8d030';px(cx-5,by+6,11,2);
