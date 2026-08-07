@@ -1196,12 +1196,18 @@ function drawElf(bx,by){
 function drawDragon(bx,by){
     if(P.inv>0&&Math.floor(P.inv/4)%2===0)return;
     const cx=Math.floor(bx)+18,t=gTick,wk=Math.floor(t/7)%2;
-    const wg=Math.sin(t*.13)*5|0;
+    // 低重力での滞空調整：上昇中は羽ばたきを大きく、降下中は小さく畳んで滑空
+    const _wgAmp=!P.onG?(P.vy<0?7:3):5;
+    const wg=Math.sin(t*.13)*_wgAmp|0;
+    // 尻尾は翼と位相をずらし、遅れてしなる
+    const wt=Math.sin(t*.13-.9)*3|0;
+    // 待機中、実プレイ中のみ低頻度で鼻息の煙を漏らす
+    if(gs==='playing'&&P.onG&&Math.abs(P.vx)<.3&&P.atkCd<=0&&Math.random()<.01)spark(P.x+P.w/2-scroll+P.dir*16,P.y+8,'#5a5a5a',1);
     ctx.save();if(P.dir<0){ctx.translate(cx*2,0);ctx.scale(-1,1);}
     // 尻尾
-    ctx.fillStyle='#8a1c0e';px(cx-9,by+24,5,5);px(cx-12,by+28,4,5);px(cx-14,by+32,3,4);
-    ctx.fillStyle='#a81e10';px(cx-9,by+24,3,4);px(cx-12,by+28,3,4);
-    ctx.fillStyle='#cc3020';px(cx-15,by+35,2,3);px(cx-14,by+38,3,2);
+    ctx.fillStyle='#8a1c0e';px(cx-9,by+24+wt,5,5);px(cx-12,by+28+wt,4,5);px(cx-14,by+32+wt,3,4);
+    ctx.fillStyle='#a81e10';px(cx-9,by+24+wt,3,4);px(cx-12,by+28+wt,3,4);
+    ctx.fillStyle='#cc3020';px(cx-15,by+35+wt,2,3);px(cx-14,by+38+wt,3,2);
     // 翼（羽ばたきアニメ）
     ctx.fillStyle='#5e0800';
     ctx.beginPath();ctx.moveTo(cx-3,by+10);ctx.lineTo(cx-22,by-4+wg);ctx.lineTo(cx-17,by+18);ctx.lineTo(cx-5,by+22);ctx.closePath();ctx.fill();
@@ -1246,9 +1252,11 @@ function drawDragon(bx,by){
     // 竜眼（縦スリット）
     ctx.fillStyle='#ff8800';px(cx+1,by+2,4,7);ctx.fillStyle='#ffcc00';px(cx+2,by+2,2,7);
     ctx.fillStyle='#000';px(cx+2,by+3,1,6);ctx.fillStyle='#fff';px(cx+1,by+2,1,1);
-    // 炎ブレス（攻撃CD中）
+    // 炎ブレス（攻撃CD中）：吻元が熱で照らされる
     if(P.atkCd>0){
         const fi=Math.sin(t*.2)*.15;
+        ctx.globalAlpha=.3+fi*.5;ctx.fillStyle='#ff8800';
+        ctx.beginPath();ctx.arc(cx+18,by+8,7,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;
         ctx.globalAlpha=.85+fi;ctx.fillStyle='#ff4400';
         ctx.beginPath();ctx.moveTo(cx+19,by+7);ctx.lineTo(cx+26,by+3);ctx.lineTo(cx+33,by+7);ctx.lineTo(cx+28,by+10);ctx.lineTo(cx+36,by+5);ctx.lineTo(cx+30,by+13);ctx.lineTo(cx+19,by+9);ctx.fill();
         ctx.globalAlpha=.6+fi;ctx.fillStyle='#ffaa00';
