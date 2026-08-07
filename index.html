@@ -966,14 +966,14 @@ function drawDemonLord(bx,by){
     ctx.fillStyle='#141028';px(cx-4,by+19,8,15);
     ctx.fillStyle='#aa8800';px(cx-6,by+18,12,2);
     ctx.fillStyle='#aa8800';px(cx-4,by+24,2,8);px(cx+2,by+24,2,8);
-    // 背中の小さな悪魔の翼（膜張り・破れ縁）
-    ctx.fillStyle='#0a0512';
+    // 背中の小さな悪魔の翼（膜張り・破れ縁・肩マントと区別できる赤黒い色調に）
+    ctx.fillStyle='#200308';
     ctx.beginPath();ctx.moveTo(cx-9,by+16);ctx.lineTo(cx-20,by+8+fl);ctx.lineTo(cx-17,by+18);ctx.lineTo(cx-19,by+22);ctx.lineTo(cx-13,by+24);ctx.closePath();ctx.fill();
-    ctx.fillStyle='#180a24';
+    ctx.fillStyle='#3a0810';
     ctx.beginPath();ctx.moveTo(cx-9,by+17);ctx.lineTo(cx-17,by+11+fl);ctx.lineTo(cx-15,by+19);ctx.closePath();ctx.fill();
-    ctx.fillStyle='#0a0512';
+    ctx.fillStyle='#200308';
     ctx.beginPath();ctx.moveTo(cx+10,by+16);ctx.lineTo(cx+21,by+8+fl);ctx.lineTo(cx+18,by+18);ctx.lineTo(cx+20,by+22);ctx.lineTo(cx+14,by+24);ctx.closePath();ctx.fill();
-    ctx.fillStyle='#180a24';
+    ctx.fillStyle='#3a0810';
     ctx.beginPath();ctx.moveTo(cx+10,by+17);ctx.lineTo(cx+18,by+11+fl);ctx.lineTo(cx+16,by+19);ctx.closePath();ctx.fill();
     // 肩マント（幅広・フレア）
     ctx.fillStyle='#0c0618';px(cx-14,by+14,9,13);ctx.fillStyle='#1a0c2e';px(cx-12,by+15,7,12);
@@ -1011,7 +1011,7 @@ function drawDemonLord(bx,by){
     px(cx-9,by+6+fl,5,14);px(cx+7,by+5+fl,5,12);
     // 丸い頭（radius 8, center by+10・人間離れした灰紫の悪魔肌）
     pixelCircle(cx+1,by+10,8,'#6a5878','#544464','#8a7898');
-    ctx.fillStyle='#0a0615';px(cx-7,by+6,3,10);
+    ctx.fillStyle='#0a0615';px(cx-7,by+6,3,10);px(cx+7,by+6,2,10);
     // こめかみの巻き角（顔の横に張り出す獣の角・野獣感を強調）
     ctx.fillStyle='#3a2a4a';
     ctx.beginPath();ctx.moveTo(cx-6,by+4);ctx.lineTo(cx-13,by+2);ctx.lineTo(cx-14,by+8);ctx.lineTo(cx-10,by+12);ctx.lineTo(cx-8,by+9);ctx.lineTo(cx-10,by+6);ctx.lineTo(cx-6,by+7);ctx.closePath();ctx.fill();
@@ -1413,9 +1413,9 @@ function drawGoblin(bx,by){
     ctx.fillStyle='#306008';ctx.beginPath();ctx.moveTo(cx+8,by+9);ctx.lineTo(cx+15,by+5);ctx.lineTo(cx+14,by+15);ctx.fill();
     // 丸い頭（radius 8, center by+10）
     pixelCircle(cx+1,by+10,8,'#6ab822','#52981c','#8ed43a');
-    // 粗末な兜（でこぼこ）
-    ctx.fillStyle='#3e3e3e';px(cx-7,by+5,15,7);
-    ctx.fillStyle='#2e2e2e';px(cx+6,by+5,4,7);
+    // 粗末な兜（でこぼこ・額の生え際まで隙間なく覆う）
+    ctx.fillStyle='#3e3e3e';px(cx-7,by+3,15,9);
+    ctx.fillStyle='#2e2e2e';px(cx+6,by+3,4,9);
     ctx.fillStyle='#505050';px(cx-5,by+5,9,5);
     ctx.fillStyle='#2a2a2a';px(cx,by+6,2,3);px(cx-4,by+5,2,2);px(cx+4,by+5,2,2);
     ctx.fillStyle='#404040';px(cx-1,by+3,3,4);ctx.fillStyle='#545454';px(cx,by+3,1,3);
