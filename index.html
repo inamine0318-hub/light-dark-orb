@@ -923,12 +923,19 @@ function drawDemonLord(bx,by){
     if(P.inv>0&&Math.floor(P.inv/4)%2===0)return;
     const cx=Math.floor(bx)+18,t=gTick,fl=Math.sin(t*.05)*2|0;
     const _am=P.atk>0,_amax=[12,16,22][P.atkCombo]||12,_ap=_am?Math.min(1,P.atk/_amax):0,_mph=_am?(_ap>.6?'w':_ap>.2?'s':'f'):'';
+    // ローブ裾：髪と位相をずらした遅延スイング(+攻撃フォロー時に鞭のように弾ける)
+    const flh=(Math.sin(t*.05-1.1)*2|0)+(_mph==='f'?-3:0);
+    // 待機中は低重力キャラらしい浮遊バイオリズムで上下に漂う
+    const _idle=P.onG&&Math.abs(P.vx)<.3&&!_am;
+    if(_idle)by+=Math.sin(t*.042)*2|0;
+    // 待機中の魔力ドリフト粒子（実プレイ中のみ・メニュープレビューでは発生させない）
+    if(gs==='playing'&&Math.random()<.02)spark(P.x+P.w/2-scroll,P.y+10,'#4a1868',1);
     ctx.save();if(P.dir<0){ctx.translate(cx*2,0);ctx.scale(-1,1);}
     // ローブ下（by+33〜by+47）
     ctx.fillStyle='#0a0618';px(cx-6,by+33,13,10);
     ctx.fillStyle='#0e0a20';px(cx-4,by+34,9,9);
     ctx.fillStyle='#1c1238';px(cx-3,by+34,4,2);
-    for(let i=0;i<5;i++){ctx.fillStyle=i%2===0?'#060410':'#0e0820';px(cx-4+i*2,by+42+(i%2),2,5);}
+    for(let i=0;i<5;i++){ctx.fillStyle=i%2===0?'#060410':'#0e0820';px(cx-4+i*2+flh,by+42+(i%2),2,5);}
     // 奥腕（エッジ影）
     ctx.fillStyle='#0e0a1e';px(cx-10,by+19,4,14);
     ctx.fillStyle='#06040c';px(cx-10,by+19,1,14);
@@ -978,11 +985,12 @@ function drawDemonLord(bx,by){
     // 丸い頭（radius 8, center by+10）
     pixelCircle(cx+1,by+10,8,'#9890c8','#8880b8','#c0bce8');
     ctx.fillStyle='#0a0615';px(cx-7,by+6,3,10);
-    // 目（悪のNess風黒点・細目 + つり上がり眉）
+    // 目（悪のNess風・細目 + つり上がり眉、威圧のグロー明滅）
     ctx.fillStyle='#0a0615';px(cx-5,by+8,2,1);px(cx-3,by+7,2,1);
     ctx.fillStyle='#0a0615';px(cx+2,by+7,2,1);px(cx+4,by+8,2,1);
-    ctx.fillStyle='#000';px(cx-4,by+9,4,2);
-    ctx.fillStyle='#000';px(cx+1,by+9,4,2);
+    const _eyeG=_mph==='w'?1:.5+Math.sin(t*.03)*.5;
+    ctx.fillStyle=_eyeG>.85?'#ff3366':'#2a1040';
+    px(cx-4,by+9,4,2);px(cx+1,by+9,4,2);
     // 鼻・牙
     ctx.fillStyle='#8880b8';px(cx-2,by+15,7,3);
     ctx.fillStyle='#f0f0e8';px(cx-1,by+15,1,4);px(cx+2,by+15,1,3);
