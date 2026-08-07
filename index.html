@@ -498,6 +498,19 @@ function popup(x,y,txt,col){
 // ===== STATE =====
 let gs='splash',gTick=0,t=0;
 let splashTimer=0,clearTimer=0;
+// ===== オープニングストーリー =====
+let storyPage=0,storyT=0;
+const STORY_HOLD=180,STORY_FADE=20,STORY_PAGE_LEN=STORY_FADE+STORY_HOLD+STORY_FADE;
+const STORY=[
+    ['王道ファンタジーの時代は、','突如として終焉を迎えた。'],
+    ['空を割り現れたのは、','星の力を秘めた「オーブ」を狙う','未知の地球外生命体（侵略者）。'],
+    ['未知の兵器と異形の生物群による','苛烈な攻撃により、圧倒的な誇りを','誇った魔王軍は壊滅寸前まで','追い込まれる。'],
+    ['同じく壊滅の危機に瀕した','人類と勇者。絶望の淵で、','魔王と勇者は断腸の思いで決断する――'],
+    ['「生き残るため、そして','この世界を取り戻すため、','一時同盟を結ぶ」'],
+    ['光と闇の力が今、ひとつになる。','地球外生命体を打ち払い、','世界を奪還せよ！'],
+];
+function startStory(){gs='story';storyPage=0;storyT=0;}
+function skipStory(){resetGame();gs='playing';}
 let scroll=0,stage=1,score=0;
 let best=parseInt(localStorage.getItem('ldo_best')||'0');
 let shake=0,flash=0,hitStop=0;
@@ -544,6 +557,7 @@ cv.addEventListener('touchstart',e=>{
     for(const tc of e.changedTouches){
         const[x,y]=cvCoords(tc.clientX,tc.clientY);
         if(gs==='start'){inp(x,y);continue;}
+        if(gs==='story'){inp(x,y);continue;}
         if(gs==='stageclear'||gs==='gameover'){inp(x,y);continue;}
         if(inBtn(x,y,BTN.L)){keys.L=true;tids.L=tc.identifier;}
         else if(inBtn(x,y,BTN.R)){keys.R=true;tids.R=tc.identifier;}
@@ -567,7 +581,7 @@ document.addEventListener('keydown',e=>{
     if(gs==='start'){
         if(e.key==='ArrowUp'&&selectedChar>0){selectedChar--;return;}
         if(e.key==='ArrowDown'&&selectedChar+1<CHARS.length){selectedChar++;return;}
-        if(e.key==='Enter'||e.key==='ArrowRight'){if(!CHARS[selectedChar].locked){gs='playing';resetGame();}return;}
+        if(e.key==='Enter'||e.key==='ArrowRight'){if(!CHARS[selectedChar].locked){startStory();}return;}
         return;
     }
     if(e.key==='ArrowLeft')keys.L=true;
@@ -714,20 +728,24 @@ function doSkill(){
 }
 function inp(cx,cy){
     if(gs==='splash'){splashTimer=200;return;}
+    if(gs==='story'){
+        if(cx===undefined||(cx>=W-44&&cy>=H-16)){skipStory();}
+        return;
+    }
     if(gs==='start'){
         if(cx!==undefined){
             const rowH=(SEL_GBOT-SEL_GTOP)/CHARS.length;
             if(cx>=SEL_LISTX&&cx<SEL_LISTX+SEL_LISTW&&cy>=SEL_GTOP&&cy<SEL_GBOT){
                 const idx=Math.floor((cy-SEL_GTOP)/rowH);
                 if(idx>=0&&idx<CHARS.length){
-                    if(idx===selectedChar){if(!CHARS[idx].locked){gs='playing';resetGame();}}
+                    if(idx===selectedChar){if(!CHARS[idx].locked){startStory();}}
                     else{selectedChar=idx;}
                 }
             }else if(cx>=SEL_FX&&cx<SEL_FX+SEL_FW&&cy>=SEL_GTOP&&cy<SEL_GBOT){
-                if(!CHARS[selectedChar].locked){gs='playing';resetGame();}
+                if(!CHARS[selectedChar].locked){startStory();}
             }
         }else{
-            if(!CHARS[selectedChar].locked){gs='playing';resetGame();}
+            if(!CHARS[selectedChar].locked){startStory();}
         }
         return;
     }
@@ -1899,27 +1917,38 @@ function drawItem(it){
 }
 
 // ===== drawGrub (近接虫型敵, 18x24) =====
+// 地球外生命体（バイオメカ・エイリアン）：発光する単眼センサーと触手を持つ侵略生体兵器
 function drawGrub(en){
     const x=Math.floor(en.sx-scroll),y=Math.floor(en.sy);
     if(en.dead){ctx.globalAlpha=Math.max(0,1-en.fr/20);ctx.fillStyle='#44aa22';ctx.fillRect(x+2,y+10,14,8);ctx.globalAlpha=1;return;}
-    const ph=Math.floor(en.fr/8)%2,cx=x+9;
+    const ph=Math.floor(en.fr/8)%2,cx=x+9,tw=Math.sin(en.fr*.2)*2;
     ctx.save();if(en.dir>0){ctx.translate(cx*2,0);ctx.scale(-1,1);}
-    // 胴体セグメント
+    // 触手（触角の代わり・SF的な発光する生体触手）
+    ctx.strokeStyle='#2a6e10';ctx.lineWidth=1.5;
+    ctx.beginPath();ctx.moveTo(x+14,y+2);ctx.quadraticCurveTo(x+12+tw,y-4,x+11+tw*1.5,y-8);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(x+18,y+3);ctx.quadraticCurveTo(x+20-tw,y-3,x+21-tw*1.5,y-7);ctx.stroke();
+    ctx.fillStyle='#aaffcc';ctx.globalAlpha=.6+Math.sin(en.fr*.25)*.3;
+    ctx.beginPath();ctx.arc(x+11+tw*1.5,y-8,1.5,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.arc(x+21-tw*1.5,y-7,1.5,0,Math.PI*2);ctx.fill();
+    ctx.globalAlpha=1;
+    // 胴体セグメント（バイオメカ質感の発光ラインを追加）
     ctx.fillStyle='#44aa22';ctx.fillRect(x+2,y+10,14,12);
     ctx.fillStyle='#338818';ctx.fillRect(x+2,y+16,14,6);
     ctx.fillStyle='#2a6e10';for(let i=0;i<3;i++)ctx.fillRect(x+3+i*5,y+10,1,12);
+    ctx.globalAlpha=.7+Math.sin(en.fr*.18)*.3;ctx.fillStyle='#66ffcc';
+    for(let i=0;i<3;i++)ctx.fillRect(x+5+i*5,y+13,3,1);
+    ctx.globalAlpha=1;
     // 足
     ctx.fillStyle='#1a4408';
     for(let i=0;i<3;i++){ctx.fillRect(x+3+i*5,y+22+ph,2,2);ctx.fillRect(x+3+i*5,y+22-ph,2,2);}
-    // 頭部
+    // 頭部（異星生体らしい非対称な甲殻）
     ctx.fillStyle='#55cc33';ctx.fillRect(x+12,y+4,8,10);
     ctx.fillStyle='#44aa22';ctx.fillRect(x+16,y+4,4,10);
-    // 目
-    ctx.fillStyle='#000';ctx.fillRect(x+14,y+6,2,2);ctx.fillRect(x+17,y+6,2,2);
-    ctx.fillStyle='#ff2200';ctx.fillRect(x+14,y+6,1,1);
-    // 触角
-    ctx.fillStyle='#338818';ctx.fillRect(x+14,y+1,1,4);ctx.fillRect(x+17,y+2,1,3);
-    ctx.fillStyle='#ff6600';ctx.fillRect(x+13,y,2,2);ctx.fillRect(x+16,y+1,2,2);
+    // 発光する単眼センサー（赤紫・スキャンするように明滅）
+    const eg=.6+Math.sin(en.fr*.22)*.4;
+    ctx.globalAlpha=.3;ctx.fillStyle='#ff2288';ctx.beginPath();ctx.arc(x+16,y+8,4,0,Math.PI*2);ctx.fill();
+    ctx.globalAlpha=eg;ctx.fillStyle='#ff2288';ctx.beginPath();ctx.arc(x+16,y+8,2.2,0,Math.PI*2);ctx.fill();
+    ctx.globalAlpha=1;ctx.fillStyle='#ffccee';ctx.beginPath();ctx.arc(x+16,y+8,1,0,Math.PI*2);ctx.fill();
     ctx.restore();
 }
 
@@ -1985,6 +2014,11 @@ function drawUFO(en){
 function update(){
     gTick++;
     if(gs==='splash'){splashTimer++;if(splashTimer>=180)gs='start';return;}
+    if(gs==='story'){
+        storyT++;
+        if(storyT>STORY_PAGE_LEN){storyT=0;storyPage++;if(storyPage>=STORY.length)skipStory();}
+        return;
+    }
     if(gs==='stageclear'){clearTimer++;return;}
     if(gs==='ending'){clearTimer++;if(clearTimer>260)location.reload();return;}
     if(gs==='pdeath'){
@@ -2435,6 +2469,24 @@ function draw(){
             ctx.fillText('PRESENTS',W/2,H/2+12);
             ctx.restore();
         }
+        ctx.restore();return;
+    }
+    // オープニングストーリー（ページ送りフェードイン）
+    if(gs==='story'){
+        ctx.fillStyle='#000';ctx.fillRect(0,0,W,H);
+        for(let i=0;i<40;i++){
+            const stb=.1+Math.sin(gTick*.02+i)*.08;
+            const stx=(i*53+7)%W,sty=(i*31+11)%H;
+            ctx.fillStyle=`rgba(255,255,255,${stb})`;ctx.fillRect(stx,sty,1,1);
+        }
+        let _storyAlpha=1;
+        if(storyT<STORY_FADE)_storyAlpha=storyT/STORY_FADE;
+        else if(storyT>STORY_FADE+STORY_HOLD)_storyAlpha=Math.max(0,1-(storyT-STORY_FADE-STORY_HOLD)/STORY_FADE);
+        const lines=STORY[storyPage]||[];
+        const ly0=H/2-(lines.length-1)*7;
+        lines.forEach((ln,i)=>txo(ln,W/2,ly0+i*14,'#ffffff',6.5,undefined,_storyAlpha));
+        // SKIPボタン（常時表示・いつでもメインゲームへ）
+        txo('SKIP ▶',W-6,H-6,'#88ccff',5.5,'right',.7+Math.sin(gTick*.1)*.15);
         ctx.restore();return;
     }
 
