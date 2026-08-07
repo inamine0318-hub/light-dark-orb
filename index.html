@@ -1271,7 +1271,14 @@ function drawGoblin(bx,by){
     if(P.inv>0&&Math.floor(P.inv/4)%2===0)return;
     const cx=Math.floor(bx)+18,wk=Math.floor(gTick/6)%2;
     const _am=P.atk>0,_amax=[12,16,22][P.atkCombo]||12,_ap=_am?Math.min(1,P.atk/_amax):0,_mph=_am?(_ap>.6?'w':_ap>.2?'s':'f'):'';
+    // 待機中、時折耳・鼻がピクつく小悪党らしさ
+    const _tw=(P.onG&&Math.abs(P.vx)<.3&&!_am&&(gTick%150)<4)?1:0;
+    // 高速移動中：頭を前傾させ速さを強調＋実プレイ中のみ砂埃を追加噴射
+    const _fast=Math.abs(P.vx)>2.2;
+    const _lean=_fast?P.dir*2:0;
+    if(gs==='playing'&&_fast&&P.onG&&Math.random()<.5)spark(P.x+P.w/2-scroll-P.dir*6,GY-2,'#c8b898',1);
     ctx.save();if(P.dir<0){ctx.translate(cx*2,0);ctx.scale(-1,1);}
+    ctx.translate(_lean,0);
 
     // 奥足（後方・浮き気味）
     ctx.fillStyle='#509018';px(cx-5,by+35+wk,5,8-wk);
@@ -1302,13 +1309,20 @@ function drawGoblin(bx,by){
         ctx.fillStyle='#7e5a28';px(cx+7,by-6,4,4);ctx.fillStyle='#484828';px(cx+5,by-8,2,2);px(cx+12,by-8,2,2);px(cx+5,by-3,2,2);px(cx+12,by-3,2,2);
         ctx.fillStyle='#aaaaaa';px(cx+5,by-9,2,2);px(cx+12,by-9,2,2);
     }else if(_mph==='s'){
-        // 棍棒を前方に叩きつける！
+        // 棍棒を前方に叩きつける！(コンボ最終段は飛び蹴りダッシュ：残像モーションラインを追加)
+        if(P.atkCombo===2){
+            ctx.globalAlpha=.4;ctx.strokeStyle='#c8e070';ctx.lineWidth=1;
+            for(let li=0;li<3;li++){ctx.beginPath();ctx.moveTo(cx-6-li*4,by+20+li*4);ctx.lineTo(cx-14-li*4,by+20+li*4);ctx.stroke();}
+            ctx.globalAlpha=1;
+            if(gs==='playing'&&Math.random()<.6)spark(P.x+P.w/2-scroll-P.dir*8,GY-2,'#c8b898',2);
+        }
         ctx.fillStyle='#509018';px(cx+5,by+19,5,8);px(cx+9,by+13,8,5);ctx.fillStyle='#307008';px(cx+13,by+17,1,5);
         ctx.fillStyle='#5a3010';px(cx+13,by+11,9,3);ctx.fillStyle='#6e4a20';px(cx+16,by+9,7,7);
         ctx.fillStyle='#7e5a28';px(cx+17,by+10,4,4);ctx.fillStyle='#484828';px(cx+15,by+8,2,2);px(cx+22,by+8,2,2);px(cx+15,by+13,2,2);px(cx+22,by+13,2,2);
         ctx.fillStyle='#aaaaaa';px(cx+15,by+7,2,2);px(cx+22,by+7,2,2);
     }else if(_mph==='f'){
-        // 振り抜け（棍棒が下に）
+        // 振り抜け（棍棒が下に）+ ブレの残像
+        ctx.globalAlpha=.25;ctx.fillStyle='#7e5a28';px(cx+15,by+13,4,4);ctx.globalAlpha=1;
         ctx.fillStyle='#509018';px(cx+6,by+20,5,8);px(cx+10,by+15,6,6);ctx.fillStyle='#307008';px(cx+13,by+19,1,5);
         ctx.fillStyle='#5a3010';px(cx+12,by+22,9,3);ctx.fillStyle='#6e4a20';px(cx+16,by+24,7,7);
         ctx.fillStyle='#7e5a28';px(cx+17,by+25,4,4);ctx.fillStyle='#484828';px(cx+15,by+23,2,2);px(cx+22,by+23,2,2);px(cx+15,by+28,2,2);px(cx+22,by+28,2,2);
@@ -1323,12 +1337,12 @@ function drawGoblin(bx,by){
     ctx.fillStyle='#509018';px(cx+1,by+33-wk,5,10+wk);
     ctx.fillStyle='#304808';px(cx+5,by+33-wk,1,10+wk);
     ctx.fillStyle='#382010';px(cx+1,by+43,7,4);
-    // 大きな耳（バットイヤー）
+    // 大きな耳（バットイヤー・待機中は時折ピクッと動く）
     ctx.fillStyle='#488012';
-    ctx.beginPath();ctx.moveTo(cx-5,by+8);ctx.lineTo(cx-14,by+3);ctx.lineTo(cx-12,by+16);ctx.fill();
+    ctx.beginPath();ctx.moveTo(cx-5,by+8);ctx.lineTo(cx-14-_tw,by+3-_tw);ctx.lineTo(cx-12,by+16);ctx.fill();
     ctx.fillStyle='#306008';ctx.beginPath();ctx.moveTo(cx-5,by+9);ctx.lineTo(cx-12,by+5);ctx.lineTo(cx-11,by+15);ctx.fill();
     ctx.fillStyle='#488012';
-    ctx.beginPath();ctx.moveTo(cx+8,by+8);ctx.lineTo(cx+17,by+3);ctx.lineTo(cx+15,by+16);ctx.fill();
+    ctx.beginPath();ctx.moveTo(cx+8,by+8);ctx.lineTo(cx+17+_tw,by+3-_tw);ctx.lineTo(cx+15,by+16);ctx.fill();
     ctx.fillStyle='#306008';ctx.beginPath();ctx.moveTo(cx+8,by+9);ctx.lineTo(cx+15,by+5);ctx.lineTo(cx+14,by+15);ctx.fill();
     // 丸い頭（radius 8, center by+10）
     pixelCircle(cx+1,by+10,8,'#6ab822','#52981c','#8ed43a');
