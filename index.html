@@ -1989,7 +1989,7 @@ function update(){
     if(gs==='ending'){clearTimer++;if(clearTimer>260)location.reload();return;}
     if(gs==='pdeath'){
         P.deathT++;P.vy+=GR*.6;P.y+=P.vy;P.x+=P.vx;P.vx*=.98;
-        shake=Math.max(0,shake-1);flash=Math.max(0,flash-1);
+        shake*=.85;if(shake<.4)shake=0;flash=Math.max(0,flash-1);
         parts.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.vy+=.08;p.life++;});
         parts=parts.filter(p=>p.life<p.maxLife);
         if(P.deathT>50)gs='gameover';
@@ -2061,7 +2061,7 @@ function update(){
             if(en.dead||en.inv>0)return;
             const ex=en.sx;
             if(ax<ex+en.w&&ax+aw>ex&&P.y<en.sy+en.h&&P.y+P.h>en.sy){
-                en.hp-=dmgMul;en.inv=20;hitStop=3;
+                en.hp-=dmgMul;en.inv=20;hitStop=3+P.atkCombo*2;
                 combo++;comboTimer=150;if(combo>comboMax)comboMax=combo;
                 spark(ex+en.w/2,en.sy+en.h/2,'#ffaa44',10);spark(ex+en.w/2,en.sy+en.h/2,'#ffffff',5);
                 snd(260,.08,.6);
@@ -2304,7 +2304,7 @@ function update(){
             if(en.dead||en.inv>0)return;
             const ex=en.sx,ox=ob.sx;
             if(ox<ex+en.w&&ox+osz>ex&&ob.sy<en.sy+en.h&&ob.sy+osz>en.sy){
-                en.hp-=(ob.dmg||1);en.inv=20;if(!ob.lv)ob.life=999;hitStop=3;
+                en.hp-=(ob.dmg||1);en.inv=20;if(!ob.lv)ob.life=999;hitStop=Math.min(8,2+(ob.dmg||1));
                 combo++;comboTimer=120;if(combo>comboMax)comboMax=combo;
                 spark(ex+en.w/2,en.sy+en.h/2,'#8822ff',10);spark(ex+en.w/2,en.sy+en.h/2,'#ffffff',4);snd(180,.08,.6);
                 if(en.hp<=0){en.dead=true;sfx('kill');const pts6=100*(1+Math.floor(combo/3));score+=pts6;spark(ex+5,en.sy+4,'#6600cc',18);spark(ex+5,en.sy+4,'#ff88ff',8);popup(en.sx-scroll+en.w/2,en.sy-6,'+'+pts6,combo>=5?'#ff44ff':'#cc88ff');if(P.hp<=2&&Math.random()<.15)items.push({sx:en.sx,y:en.sy,w:8,h:8,type:'heart',life:400});}
@@ -2333,7 +2333,7 @@ function update(){
     parts=parts.filter(p=>p.life<p.maxLife);
 
     if(skillCd>0)skillCd--;
-    shake=Math.max(0,shake-1);flash=Math.max(0,flash-1);
+    shake*=.85;if(shake<.4)shake=0;flash=Math.max(0,flash-1);
     if(stageFlash>0)stageFlash--;
     popups.forEach(pp=>{pp.y+=pp.vy;pp.life++;});
     popups=popups.filter(pp=>pp.life<pp.maxLife);
