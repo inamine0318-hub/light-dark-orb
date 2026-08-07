@@ -538,8 +538,8 @@ const CHAR_SCALE=0.78; // スマホ実機QA対応：キャラ表示サイズを7
 let P={x:60,y:GY-PH,w:PW,h:PH,vx:0,vy:0,onG:false,dj:false,hp:5,mhp:5,inv:0,fr:0,dir:1,atk:0,atkCd:0,atkCombo:0,comboWin:0,comboSkillWin:0,landSq:0,prevOnG:false,coyote:0,jumpBufT:0,jumpSq:0,deathT:0};
 
 // ===== ENEMIES / OBJECTS =====
-let enemies=[],items=[],arrows=[],platforms=[],bombs=[];
-let spawnCd=60,platSpawnCd=120;
+let enemies=[],items=[],arrows=[],platforms=[],bombs=[],hazards=[];
+let spawnCd=60,platSpawnCd=120,hazSpawnCd=200;
 let boss=null,bossActive=false,bossDefeated=false;
 const BOSS_TRIGGER=2800; // scrollがこの値を超えたらボス出現
 
@@ -785,8 +785,8 @@ function resetGame(){
     P.x=60;P.y=GY-P.h;P.vx=0;P.vy=0;P.onG=true;P.dj=false;P.landSq=0;P.prevOnG=true;
     P.mhp=CHARS[selectedChar].mhp;P.hp=P.mhp;P.inv=0;P.fr=0;P.atk=0;P.atkCd=0;P.dir=1;P.atkCombo=0;P.comboWin=0;P.comboSkillWin=0;
     P.coyote=0;P.jumpBufT=0;P.jumpSq=0;P.deathT=0;
-    enemies=[];items=[];arrows=[];platforms=[];orbs=[];parts=[];bombs=[];
-    scroll=0;score=0;shake=0;flash=0;t=0;spawnCd=60;platSpawnCd=120;
+    enemies=[];items=[];arrows=[];platforms=[];orbs=[];parts=[];bombs=[];hazards=[];
+    scroll=0;score=0;shake=0;flash=0;t=0;spawnCd=60;platSpawnCd=120;hazSpawnCd=200;
     boss=null;bossActive=false;bossDefeated=false;clearTimer=0;
     skillLv=0;skillExp=0;skillCd=0;pwrupSpawnCd=220;combo=0;comboTimer=0;comboMax=0;hitStop=0;
     popups=[];stageFlash=0;
@@ -2021,6 +2021,28 @@ function drawPlatforms(){
 
 
 // ===== drawItem =====
+function drawHazard(hz){
+    const hx=Math.floor(hz.sx-scroll),hy=GY-hz.h;
+    if(hz.type==='spike'){
+        ctx.fillStyle='#3a3a3a';ctx.fillRect(hx,hy+hz.h-2,hz.w,2);
+        const n=Math.max(2,Math.floor(hz.w/6));
+        for(let i=0;i<n;i++){
+            const sxp=hx+i*(hz.w/n),sw=hz.w/n;
+            ctx.fillStyle='#8a8a92';
+            ctx.beginPath();ctx.moveTo(sxp,hy+hz.h);ctx.lineTo(sxp+sw/2,hy);ctx.lineTo(sxp+sw,hy+hz.h);ctx.closePath();ctx.fill();
+            ctx.fillStyle='#c8c8d0';ctx.beginPath();ctx.moveTo(sxp+sw/2-1,hy+hz.h);ctx.lineTo(sxp+sw/2,hy);ctx.lineTo(sxp+sw/2+1,hy+hz.h);ctx.closePath();ctx.fill();
+        }
+    }else{
+        // 酸の沼：ぶくぶくと泡立つ緑の液面
+        ctx.globalAlpha=.8;ctx.fillStyle='#3a8a1a';ctx.fillRect(hx,hy+2,hz.w,hz.h-2);
+        ctx.globalAlpha=1;ctx.fillStyle='#5ec430';ctx.fillRect(hx,hy+2,hz.w,2);
+        for(let i=0;i<3;i++){
+            const bx3=hx+((i*7+Math.floor(gTick*.05))%hz.w),by3=hy+3+Math.sin(gTick*.1+i)*1.5;
+            ctx.globalAlpha=.6;ctx.fillStyle='#aaff66';ctx.beginPath();ctx.arc(bx3,by3,1.3,0,Math.PI*2);ctx.fill();
+        }
+        ctx.globalAlpha=1;
+    }
+}
 function drawItem(it){
     const ix=Math.floor(it.sx-scroll),iy=Math.floor(it.sy);
     const bob=Math.abs(Math.sin(gTick*.08+(it.sx*.01)))*3|0;
@@ -2149,6 +2171,58 @@ function drawUFO(en){
     ctx.fillStyle='#3311aa';ctx.fillRect(x+5,y+13,20,2);
 }
 
+function drawSniper(en){
+    const x=Math.floor(en.sx-scroll),y=Math.floor(en.sy);
+    if(x<-30||x>W+30)return;
+    const cx=x+9,fl=en.dir<0;
+    ctx.save();
+    if(fl){ctx.translate(cx*2,0);ctx.scale(-1,1);}
+    // 触手のような台座（足場に張り付く）
+    ctx.fillStyle='#2a6e10';ctx.fillRect(cx-7,y+15,14,5);
+    ctx.fillStyle='#1a4408';ctx.fillRect(cx-7,y+19,14,2);
+    // 甲殻の丸い胴体
+    ctx.fillStyle='#338818';ctx.beginPath();ctx.arc(cx,y+11,8,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#44aa22';ctx.beginPath();ctx.arc(cx,y+10,7,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#66cc33';ctx.beginPath();ctx.arc(cx-2,y+8,3,0,Math.PI*2);ctx.fill();
+    // 単眼の照準器（赤く明滅）
+    const aim=.55+Math.sin(en.fr*.15)*.4;
+    ctx.fillStyle='#0a1a04';ctx.beginPath();ctx.arc(cx+3,y+10,4,0,Math.PI*2);ctx.fill();
+    ctx.globalAlpha=aim;ctx.fillStyle='#ff2222';ctx.beginPath();ctx.arc(cx+3,y+10,2.3,0,Math.PI*2);ctx.fill();
+    ctx.globalAlpha=1;
+    // 照準レーザー（狙っている方向を示す）
+    ctx.globalAlpha=.35+Math.sin(en.fr*.3)*.2;ctx.strokeStyle='#ff4444';ctx.lineWidth=.7;
+    ctx.beginPath();ctx.moveTo(cx+9,y+10);ctx.lineTo(cx+42,y+10);ctx.stroke();
+    ctx.globalAlpha=1;
+    ctx.restore();
+}
+
+function drawIDrone(en){
+    const x=Math.floor(en.sx-scroll),y=Math.floor(en.sy);
+    if(x<-30||x>W+30)return;
+    const cx=x+10,fl=en.dir<0;
+    ctx.save();
+    if(fl){ctx.translate(cx*2,0);ctx.scale(-1,1);}
+    // ローター（左右2基、高速回転を線でブラー表現）
+    const rot=Math.cos(en.fr*.9);
+    [[-9,0],[9,0]].forEach(([ox,oy])=>{
+        ctx.strokeStyle='#8899aa';ctx.lineWidth=1.4;
+        ctx.beginPath();ctx.moveTo(cx+ox-6*rot,y+oy-1);ctx.lineTo(cx+ox+6*rot,y+oy-1);ctx.stroke();
+        ctx.fillStyle='#333a44';ctx.beginPath();ctx.arc(cx+ox,y+oy-1,2,0,Math.PI*2);ctx.fill();
+        ctx.fillStyle='#1c2026';ctx.fillRect(cx+ox-1,y+oy-1,2,4);
+    });
+    // 本体（装甲筐体）
+    ctx.fillStyle='#2a3038';ctx.fillRect(cx-8,y+3,16,10);
+    ctx.fillStyle='#454e58';ctx.fillRect(cx-7,y+4,14,7);
+    ctx.fillStyle='#1c2026';ctx.fillRect(cx-8,y+11,16,2);
+    // 中央のセンサー目（明滅）
+    ctx.globalAlpha=.65+Math.sin(en.fr*.2)*.35;ctx.fillStyle='#ff3333';
+    ctx.beginPath();ctx.arc(cx,y+7,3,0,Math.PI*2);ctx.fill();
+    ctx.globalAlpha=1;ctx.fillStyle='#ffaaaa';ctx.beginPath();ctx.arc(cx-1,y+6,1,0,Math.PI*2);ctx.fill();
+    // 下部の爆弾投下ハッチ
+    ctx.fillStyle='#111418';ctx.fillRect(cx-3,y+13,6,3);
+    ctx.restore();
+}
+
 // ===== UPDATE =====
 function update(){
     gTick++;
@@ -2275,6 +2349,18 @@ function update(){
     });
     items=items.filter(it=>it.life>0&&it.sx>scroll-40);
 
+    // 地形ハザード（トゲ床・酸の沼）接触ダメージ：踏むと弾かれる
+    if(P.inv<=0&&P.onG){
+        hazards.forEach(hz=>{
+            const hx=hz.sx;
+            if(P.x+P.w>hx&&P.x<hx+hz.w){
+                P.hp--;P.inv=55;shake=6;flash=14;sfx('hit');P.vy=-3.5;
+                spark(P.x+P.w/2-scroll,GY-4,hz.type==='acid'?'#66cc22':'#cc4422',8);
+                if(P.hp<=0)killPlayer();
+            }
+        });
+    }
+
     // Update enemies
     enemies.forEach(en=>{
         if(en.dead){en.fr++;return;}
@@ -2320,6 +2406,27 @@ function update(){
                 bombs.push({sx:en.sx+en.w/2-3,sy:en.sy+en.h,vy:0,life:0,maxLife:140});
                 snd(180,.06,.3);
             }
+        }else if(en.type==='sniper'){
+            // バイオ・スナイパー：足場に居座り動かず直線弾を狙撃
+            en.dir=pdx>0?1:-1;
+            en.shotCd=Math.max(0,(en.shotCd||70)-1);
+            if(en.shotCd<=0&&Math.abs(pdx)<220){
+                en.shotCd=95+Math.floor(Math.random()*35);
+                arrows.push({sx:en.sx+(en.dir>0?en.w:0),sy:en.sy+9,vx:en.dir*4.4,life:0,maxLife:100});
+                snd(340,.07,.45);
+            }
+        }else if(en.type==='idrone'){
+            // 侵略ドローン：上空を浮遊し斜め下へ弾丸を落とす
+            const targetY2=(en.floatBase||GY-90)+Math.sin(en.fr*.05)*6;
+            en.sy+=(targetY2-en.sy)*.05;
+            en.dir=pdx>0?1:-1;
+            en.sx+=en.dir*.7;
+            en.shotCd=Math.max(0,(en.shotCd||100)-1);
+            if(en.shotCd<=0&&Math.abs(pdx)<180){
+                en.shotCd=130+Math.floor(Math.random()*40);
+                bombs.push({sx:en.sx+en.w/2-3,sy:en.sy+en.h,vx:en.dir*1.8,vy:1,life:0,maxLife:120});
+                snd(200,.06,.35);
+            }
         }
     });
     enemies=enemies.filter(en=>(!en.dead||en.fr<25)&&en.sx>scroll-100&&en.sx<scroll+W+100);
@@ -2340,7 +2447,7 @@ function update(){
 
     // UFO爆弾 update
     bombs.forEach(bm=>{
-        bm.vy+=0.38;bm.sy+=bm.vy;bm.life++;
+        bm.vy+=0.38;bm.sy+=bm.vy;if(bm.vx)bm.sx+=bm.vx;bm.life++;
         // プレイヤー当たり
         if(P.inv<=0&&P.x<bm.sx+8&&P.x+P.w>bm.sx&&P.y<bm.sy+8&&P.y+P.h>bm.sy){
             bm.life=999;P.hp--;P.inv=50;shake=7;flash=14;sfx('hit');P.vy=-2;
@@ -2446,8 +2553,21 @@ function update(){
         const stone=Math.random()<.5;
         platforms.push({sx:scroll+W+8,y:ph,w:pw,h:6,stone});
         if(Math.random()<.3)items.push({sx:scroll+W+8+pw/2-4,y:ph-10,w:8,h:8,type:Math.random()<.5?'coin':'heart',life:500});
+        // バイオ・スナイパー：高所の足場に居座り直線弾を撃つ遠距離敵
+        else if(t>150&&Math.random()<.3)enemies.push({sx:scroll+W+8+pw/2-9,sy:ph-20,w:18,h:20,hp:2,maxHp:2,vx:0,vy:0,dir:-1,fr:0,inv:0,dead:false,type:'sniper',shotCd:70});
     }
     platforms=platforms.filter(pl=>pl.sx>scroll-60&&pl.sx<scroll+W+200);
+
+    // 地形ハザード（トゲ床・酸の沼）：平地の単調さ解消、ジャンプ/足場の価値を上げる
+    if(!bossActive){
+        hazSpawnCd--;
+        if(hazSpawnCd<=0){
+            hazSpawnCd=170+Math.floor(Math.random()*90);
+            const hw=14+Math.floor(Math.random()*10);
+            hazards.push({sx:scroll+W+16,w:hw,h:8,type:Math.random()<.5?'spike':'acid'});
+        }
+    }
+    hazards=hazards.filter(hz=>hz.sx>scroll-60&&hz.sx<scroll+W+200);
 
     // Spawn（ステージ進行で種類増加）
     if(!bossActive){
@@ -2485,6 +2605,13 @@ function update(){
             const ufoOnScreen=enemies.some(e=>e.type==='ufo'&&!e.dead);
             if(!ufoOnScreen&&Math.random()<.004){
                 enemies.push({sx:scroll+W+20,sy:GY-72,w:30,h:16,hp:5,maxHp:5,vx:-.4,vy:0,dir:-1,fr:0,inv:0,dead:false,type:'ufo',shotCd:90,floatBase:GY-72});
+            }
+        }
+        // 侵略ドローンスポーン（ステージ序盤から出現し空の脅威を早期に提示）
+        if(!bossActive&&scroll>300){
+            const droneOnScreen=enemies.some(e=>e.type==='idrone'&&!e.dead);
+            if(!droneOnScreen&&Math.random()<.005){
+                enemies.push({sx:scroll+W+20,sy:GY-90,w:20,h:16,hp:3,maxHp:3,vx:-.5,vy:0,dir:-1,fr:0,inv:0,dead:false,type:'idrone',shotCd:100,floatBase:GY-90});
             }
         }
     }
@@ -2693,6 +2820,7 @@ function draw(){
 
     // Items
     items.forEach(it=>{const ix=it.sx-scroll;if(ix<-10||ix>W+10)return;drawItem(it);});
+    hazards.forEach(hz=>{const hx=hz.sx-scroll;if(hx<-20||hx>W+20)return;drawHazard(hz);});
 
     // Arrows (ドロイドのエネルギービーム)
     arrows.forEach(ar=>{
@@ -2730,6 +2858,8 @@ function draw(){
         else if(en.type==='droid')drawDroid(en);
         else if(en.type==='hunter')drawHunter(en);
         else if(en.type==='ufo')drawUFO(en);
+        else if(en.type==='sniper')drawSniper(en);
+        else if(en.type==='idrone')drawIDrone(en);
         if(en.inv>0&&!en.dead&&Math.floor(en.inv/4)%2!==0){
             ctx.globalAlpha=0.48;ctx.fillStyle='#ff2222';
             ctx.fillRect(ex-1,en.sy-1,en.w+2,en.h+2);
