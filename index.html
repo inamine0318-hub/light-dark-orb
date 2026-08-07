@@ -521,7 +521,7 @@ const CHARS=[
 
 // ===== PLAYER =====
 const GR=0.42,JMP=5.8,PW=14,PH=22;
-let P={x:60,y:GY-PH,w:PW,h:PH,vx:0,vy:0,onG:false,dj:false,hp:5,mhp:5,inv:0,fr:0,dir:1,atk:0,atkCd:0,atkCombo:0,comboWin:0,comboSkillWin:0,landSq:0,prevOnG:false};
+let P={x:60,y:GY-PH,w:PW,h:PH,vx:0,vy:0,onG:false,dj:false,hp:5,mhp:5,inv:0,fr:0,dir:1,atk:0,atkCd:0,atkCombo:0,comboWin:0,comboSkillWin:0,landSq:0,prevOnG:false,coyote:0,jumpBufT:0,jumpSq:0,deathT:0};
 
 // ===== ENEMIES / OBJECTS =====
 let enemies=[],items=[],arrows=[],platforms=[],bombs=[];
@@ -584,11 +584,17 @@ document.addEventListener('keyup',e=>{
     if(e.key==='ArrowRight')keys.R=false;
 });
 
+function killPlayer(){
+    if(score>best){best=score;localStorage.setItem('ldo_best',best);}
+    gs='pdeath';P.deathT=0;P.vy=-4.5;P.vx=P.dir*-1.8;shake=10;flash=18;sfx('hit');stopBgm();
+    spark(P.x+P.w/2-scroll,P.y+P.h/2,'#ff4466',20);spark(P.x+P.w/2-scroll,P.y+P.h/2,'#ffffff',10);
+}
 function doJump(){
     if(gs!=='playing')return;
     const cj=CHARS[selectedChar].jmp;
-    if(P.onG){P.vy=-cj;P.onG=false;P.dj=false;sfx('jump');}
-    else if(!P.dj&&CHARS[selectedChar].dj){P.vy=-cj*.82;P.dj=true;sfx('jump');}
+    if(P.onG||P.coyote>0){P.vy=-cj;P.onG=false;P.dj=false;P.coyote=0;P.jumpSq=4;sfx('jump');}
+    else if(!P.dj&&CHARS[selectedChar].dj){P.vy=-cj*.82;P.dj=true;P.jumpSq=4;sfx('jump');}
+    else{P.jumpBufT=8;} // 先行入力バッファ：着地した瞬間に自動発動
 }
 function doAtk(){
     if(gs!=='playing'||P.atkCd>0)return;
@@ -735,6 +741,7 @@ function inp(cx,cy){
 function resetGame(){
     P.x=60;P.y=GY-P.h;P.vx=0;P.vy=0;P.onG=true;P.dj=false;P.landSq=0;P.prevOnG=true;
     P.mhp=CHARS[selectedChar].mhp;P.hp=P.mhp;P.inv=0;P.fr=0;P.atk=0;P.atkCd=0;P.dir=1;P.atkCombo=0;P.comboWin=0;P.comboSkillWin=0;
+    P.coyote=0;P.jumpBufT=0;P.jumpSq=0;P.deathT=0;
     enemies=[];items=[];arrows=[];platforms=[];orbs=[];parts=[];bombs=[];
     scroll=0;score=0;shake=0;flash=0;t=0;spawnCd=60;platSpawnCd=120;
     boss=null;bossActive=false;bossDefeated=false;clearTimer=0;
@@ -822,20 +829,24 @@ function drawHero(bx,by){
     if(P.inv>0&&Math.floor(P.inv/4)%2===0)return;
     const cx=Math.floor(bx)+18,wk=Math.floor(gTick/7)%2;
     const _am=P.atk>0,_amax=[12,16,22][P.atkCombo]||12,_ap=_am?Math.min(1,P.atk/_amax):0,_mph=_am?(_ap>.6?'w':_ap>.2?'s':'f'):'';
+    const _walk=P.onG&&Math.abs(P.vx)>.3&&!_am;
+    const _arm=_walk?(Math.sin(gTick*.5)*2|0):0;
+    const _blink=(gTick%210)<5;
     ctx.save();if(P.dir<0){ctx.translate(cx*2,0);ctx.scale(-1,1);}
     // 奥足（後方・やや浮き気味で重心を前足へ）
     ctx.fillStyle='#1a3ab8';px(cx-5,by+35+wk,5,8-wk);
     ctx.fillStyle='#7a5020';px(cx-6,by+43,5,4);
-    // 盾（前に突き出した左腕）
-    ctx.fillStyle='#c8aa10';px(cx-16,by+20,6,14);
-    ctx.fillStyle='#e0cc20';px(cx-16,by+20,6,2);
-    ctx.fillStyle='#cc1818';px(cx-15,by+24,4,7);
-    ctx.fillStyle='#f8e050';px(cx-14,by+25,2,2);
+    // 盾（前に突き出した左腕・歩行中は腕振りで上下）
+    ctx.fillStyle='#c8aa10';px(cx-16,by+20+_arm,6,14);
+    ctx.fillStyle='#e0cc20';px(cx-16,by+20+_arm,6,2);
+    ctx.fillStyle='#cc1818';px(cx-15,by+24+_arm,4,7);
+    ctx.fillStyle='#f8e050';px(cx-14,by+25+_arm,2,2);
     // 奥腕（盾腕・前方へ伸ばす）
-    ctx.fillStyle='#2248c8';px(cx-11,by+21,4,12);
-    // 体（重装鎧 + 幅広パウルドロン + 銀チェスト）
+    ctx.fillStyle='#2248c8';px(cx-11,by+21+_arm,4,12);
+    // 体（重装鎧 + 幅広パウルドロン + 銀チェスト・角を落として丸みを付与）
     ctx.fillStyle='#9098b8';px(cx-10,by+17,7,9);ctx.fillStyle='#b0b8d8';px(cx-9,by+17,5,8);
     ctx.fillStyle='#9098b8';px(cx+5,by+17,8,9);ctx.fillStyle='#7880a0';px(cx+10,by+17,3,9);
+    ctx.clearRect(cx-10,by+17,1,1);ctx.clearRect(cx+12,by+17,1,1);
     ctx.fillStyle='#3060e8';
     px(cx-5,by+18,3,15);px(cx-2,by+18,9,15);px(cx+7,by+18,1,15);
     ctx.fillStyle='#1e4ed0';px(cx+5,by+18,3,15);
@@ -892,10 +903,16 @@ function drawHero(bx,by){
     px(cx-3,by+3,5,1);px(cx-2,by+1,3,2);px(cx-1,by-2,1,4);
     px(cx+2,by+2,5,1);px(cx+3,by+0,3,2);px(cx+4,by-3,1,4);
     px(cx+6,by+3,4,1);px(cx+7,by+1,2,2);px(cx+8,by-1,1,3);
-    // 目（Ness風黒点）
-    ctx.fillStyle='#000';px(cx-3,by+11,2,3);
-    ctx.fillStyle='#000';px(cx+1,by+11,3,3);
+    // 目（Ness風黒点・瞬き付き）
+    if(_blink){
+        ctx.fillStyle='#7a5030';px(cx-3,by+12,2,1);px(cx+1,by+12,3,1);
+    }else{
+        ctx.fillStyle='#000';px(cx-3,by+11,2,3);
+        ctx.fillStyle='#000';px(cx+1,by+11,3,3);
+    }
     ctx.fillStyle='#806010';px(cx-4,by+8,3,2);px(cx,by+8,4,2);
+    // 頬の赤み（親しみやすさ）
+    ctx.fillStyle='rgba(255,130,130,.5)';px(cx-5,by+13,2,1);px(cx+5,by+13,2,1);
     ctx.fillStyle='#c89060';px(cx+3,by+15,2,2);
     ctx.fillStyle='#d0a060';px(cx,by+14,1,2);
     ctx.fillStyle='#9a6040';px(cx-1,by+16,2,1);
@@ -1814,6 +1831,14 @@ function update(){
     if(gs==='splash'){splashTimer++;if(splashTimer>=180)gs='start';return;}
     if(gs==='stageclear'){clearTimer++;return;}
     if(gs==='ending'){clearTimer++;if(clearTimer>260)location.reload();return;}
+    if(gs==='pdeath'){
+        P.deathT++;P.vy+=GR*.6;P.y+=P.vy;P.x+=P.vx;P.vx*=.98;
+        shake=Math.max(0,shake-1);flash=Math.max(0,flash-1);
+        parts.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.vy+=.08;p.life++;});
+        parts=parts.filter(p=>p.life<p.maxLife);
+        if(P.deathT>50)gs='gameover';
+        return;
+    }
     if(gs!=='playing')return;
     if(hitStop>0){hitStop--;return;}
     t++;
@@ -1847,9 +1872,19 @@ function update(){
     }
 
     // Squash landing detection
-    if(!P.prevOnG&&P.onG)P.landSq=8;
+    if(!P.prevOnG&&P.onG){
+        P.landSq=8;
+        spark(P.x+P.w/2-scroll,GY-1,'#d8c8a0',5);
+        if(P.jumpBufT>0){P.jumpBufT=0;doJump();}
+    }
     if(P.landSq>0)P.landSq--;
+    if(P.jumpSq>0)P.jumpSq--;
     P.prevOnG=P.onG;
+    // コヨーテタイム：足場を離れても数フレームはジャンプ猶予
+    if(P.onG)P.coyote=6;else if(P.coyote>0)P.coyote--;
+    if(P.jumpBufT>0)P.jumpBufT--;
+    // 歩行フットダスト
+    if(P.onG&&Math.abs(P.vx)>0.4&&gTick%7===0)spark(P.x+P.w/2-scroll,GY-1,'#c8b898',2);
 
     // Bounds
     if(P.x<scroll)P.x=scroll;
@@ -1888,7 +1923,7 @@ function update(){
             const ex=en.sx;
             if(P.x<ex+en.w&&P.x+P.w>ex&&P.y<en.sy+en.h&&P.y+P.h>en.sy){
                 P.hp--;P.inv=55;shake=6;flash=14;sfx('hit');P.vy=-3;
-                if(P.hp<=0){if(score>best){best=score;localStorage.setItem('ldo_best',best);}gs='gameover';}
+                if(P.hp<=0){killPlayer();}
             }
         });
     }
@@ -1962,7 +1997,7 @@ function update(){
             if(P.x<ax+4&&P.x+P.w>ax&&P.y<ar.sy+3&&P.y+P.h>ar.sy){
                 ar.life=999;
                 P.hp--;P.inv=50;shake=5;flash=12;sfx('hit');P.vy=-2;
-                if(P.hp<=0){if(score>best){best=score;localStorage.setItem('ldo_best',best);}gs='gameover';}
+                if(P.hp<=0){killPlayer();}
             }
         });
     }
@@ -1975,7 +2010,7 @@ function update(){
         if(P.inv<=0&&P.x<bm.sx+8&&P.x+P.w>bm.sx&&P.y<bm.sy+8&&P.y+P.h>bm.sy){
             bm.life=999;P.hp--;P.inv=50;shake=7;flash=14;sfx('hit');P.vy=-2;
             spark(bm.sx+4,bm.sy,'#ff8820',12);
-            if(P.hp<=0){if(score>best){best=score;localStorage.setItem('ldo_best',best);}gs='gameover';}
+            if(P.hp<=0){killPlayer();}
         }
         // 着地爆発
         if(bm.sy>GY-4&&bm.life<999){
@@ -2014,7 +2049,7 @@ function update(){
             const bx=boss.sx;
             if(P.x<bx+boss.w&&P.x+P.w>bx&&P.y<boss.sy+boss.h&&P.y+P.h>boss.sy){
                 P.hp--;P.inv=60;shake=8;flash=18;sfx('hit');P.vy=-4;
-                if(P.hp<=0){if(score>best){best=score;localStorage.setItem('ldo_best',best);}gs='gameover';}
+                if(P.hp<=0){killPlayer();}
             }
         }
         // Player attack on boss
@@ -2366,10 +2401,23 @@ function draw(){
 
     // Player
     const drawFns=[drawHero,drawDemonLord,drawMage,drawElf,drawDragon,drawGoblin,drawGolem,drawSlime];
-    var _sqX=1,_sqY=1;
-    if(!P.onG){if(P.vy<-2){var _s=Math.min(0.22,Math.abs(P.vy)*0.04);_sqY=1+_s;_sqX=1-_s*0.5;}else if(P.vy>2){var _s2=Math.min(0.14,P.vy*0.028);_sqY=1+_s2;_sqX=1-_s2*0.4;}}else if(P.landSq>0){var _t=P.landSq/8;_sqY=1-_t*0.22;_sqX=1+_t*0.18;}
-    var _ib=(P.onG&&Math.abs(P.vx)<0.5)?(Math.sin(gTick*0.06)*1.5|0):0;
-    drawWithOutline(drawFns[selectedChar],P.x-scroll,P.y+_ib-25,false,_sqX,_sqY);
+    if(gs==='pdeath'){
+        const dt=P.deathT||0,cxp=P.x-scroll+P.w/2,cyp=P.y+P.h/2;
+        ctx.save();
+        ctx.globalAlpha=Math.max(0,1-dt/50);
+        ctx.translate(cxp,cyp);ctx.rotate(dt*.16*-P.dir);ctx.translate(-cxp,-cyp);
+        drawWithOutline(drawFns[selectedChar],P.x-scroll,P.y-25,false,1,1);
+        ctx.restore();
+    }else{
+        var _sqX=1,_sqY=1;
+        if(P.jumpSq>0){_sqY=0.76;_sqX=1.18;}
+        else if(!P.onG){if(P.vy<-2){var _s=Math.min(0.22,Math.abs(P.vy)*0.04);_sqY=1+_s;_sqX=1-_s*0.5;}else if(P.vy>2){var _s2=Math.min(0.14,P.vy*0.028);_sqY=1+_s2;_sqX=1-_s2*0.4;}}
+        else if(P.landSq>0){var _t=P.landSq/8;_sqY=1-_t*0.22;_sqX=1+_t*0.18;}
+        var _ib=0;
+        if(P.onG&&Math.abs(P.vx)<0.5)_ib=(Math.sin(gTick*0.06)*1.5|0); // 待機：呼吸のような上下揺れ
+        else if(P.onG)_ib=(Math.abs(Math.sin(gTick*0.5))*1.6|0); // 歩行：足運びの重心上下動
+        drawWithOutline(drawFns[selectedChar],P.x-scroll,P.y+_ib-25,false,_sqX,_sqY);
+    }
 
     // 3段コンボ斬撃エフェクト（勇者・ゴブリン）
     if(gs==='playing'&&P.atk>0&&(selectedChar===0||selectedChar===5)){
