@@ -831,13 +831,14 @@ function drawHero(bx,by){
     const _arm=_walk?(Math.sin(gTick*.5)*2|0):0;
     const _blink=(gTick%210)<5;
     ctx.save();if(P.dir<0){ctx.translate(cx*2,0);ctx.scale(-1,1);}
-    // 赤いマント（背中に大きく翻る・歩行や攻撃でなびく）
+    // 赤いマント（首元は細く盾と重ならせず、腰から下で大きく翻る・布のシワを表現）
     const _cape=(_walk?Math.sin(gTick*.5)*3:0)+(_am?-4:0);
-    ctx.fillStyle='#7a1010';
-    ctx.beginPath();ctx.moveTo(cx-9,by+16);ctx.lineTo(cx-17+_cape,by+30);ctx.lineTo(cx-13+_cape,by+45);ctx.lineTo(cx-2,by+47);ctx.lineTo(cx-3,by+17);ctx.closePath();ctx.fill();
+    ctx.fillStyle='#5c0c0c';
+    ctx.beginPath();ctx.moveTo(cx-8,by+16);ctx.lineTo(cx-7,by+34);ctx.lineTo(cx-16+_cape,by+44);ctx.lineTo(cx-12+_cape,by+47);ctx.lineTo(cx-3,by+44);ctx.lineTo(cx-4,by+34);ctx.lineTo(cx-3,by+17);ctx.closePath();ctx.fill();
     ctx.fillStyle='#a81818';
-    ctx.beginPath();ctx.moveTo(cx-8,by+17);ctx.lineTo(cx-13+_cape,by+29);ctx.lineTo(cx-10+_cape,by+43);ctx.lineTo(cx-4,by+44);ctx.lineTo(cx-4,by+18);ctx.closePath();ctx.fill();
-    ctx.fillStyle='#8a6010';px(cx-9,by+16,7,2);
+    ctx.beginPath();ctx.moveTo(cx-5,by+18);ctx.lineTo(cx-5,by+34);ctx.lineTo(cx-11+_cape,by+42);ctx.lineTo(cx-8+_cape,by+44);ctx.lineTo(cx-4,by+42);ctx.lineTo(cx-4,by+18);ctx.closePath();ctx.fill();
+    ctx.fillStyle='#7a1010';px(cx-6,by+22,2,12);
+    ctx.fillStyle='#8a6010';px(cx-8,by+16,6,2);
     // 奥足（後方・やや浮き気味で重心を前足へ）
     ctx.fillStyle='#1a3ab8';px(cx-5,by+35+wk,5,8-wk);
     ctx.fillStyle='#7a5020';px(cx-6,by+43,5,4);
@@ -898,21 +899,24 @@ function drawHero(bx,by){
     ctx.fillStyle='#1e40c0';px(cx+1,by+33-wk,5,10+wk);
     ctx.fillStyle='#0e2890';px(cx+5,by+33-wk,1,10+wk);
     ctx.fillStyle='#5a3010';px(cx+1,by+43,7,1);ctx.fillStyle='#7a5020';px(cx+1,by+44,7,3);px(cx+7,by+44,1,2);
-    // 金髪の影（こめかみ）
-    ctx.fillStyle='#d89810';px(cx-8,by+2,5,8);px(cx+7,by+2,4,7);
+    // 金髪の影（こめかみ・後頭部のボリューム）
+    ctx.fillStyle='#d89810';px(cx-8,by+1,5,9);px(cx+7,by+1,4,8);
     // 丸い頭（radius 8, center by+10）
     pixelCircle(cx+1,by+10,8,'#f0c888','#e0b070','#fce8c0');
+    // 金髪の地（頭頂を隙間なく覆うボリューム・ハゲを見せない下地）
+    ctx.fillStyle='#f8c030';px(cx-7,by+1,17,7);
+    ctx.fillStyle='#e8b020';px(cx-7,by+1,17,2);
     // 赤ハチマキ（主人公の証。額は狭めに巻いて量産兵感を排除）
     ctx.fillStyle='#cc1818';px(cx-7,by+7,17,4);
     ctx.fillStyle='#ee2828';px(cx-7,by+7,17,1);
     ctx.fillStyle='#cc1818';px(cx-10,by+9,3,2);px(cx-11,by+11,3,7);
     ctx.fillStyle='#f8c828';px(cx-1,by+7,4,1);
-    // ツンツン金髪（前面・主人公らしいスパイクヘア）
+    // ツンツン金髪スパイク（頭髪の地から立ち上がる・主人公らしいボリューム）
     ctx.fillStyle='#f8c030';
-    px(cx-4,by+3,6,1);px(cx-3,by-1,4,4);px(cx-2,by-6,2,6);
-    px(cx+1,by+2,6,1);px(cx+2,by-2,4,4);px(cx+3,by-7,2,6);
-    px(cx+6,by+3,5,1);px(cx+7,by-1,3,4);px(cx+8,by-5,2,5);
-    ctx.fillStyle='#ffe060';px(cx-2,by-6,1,4);px(cx+3,by-7,1,4);px(cx+8,by-5,1,3);
+    px(cx-4,by+2,6,2);px(cx-3,by-2,4,5);px(cx-2,by-7,2,6);
+    px(cx+1,by+1,6,2);px(cx+2,by-3,4,5);px(cx+3,by-8,2,6);
+    px(cx+6,by+2,5,2);px(cx+7,by-2,3,5);px(cx+8,by-6,2,5);
+    ctx.fillStyle='#ffe060';px(cx-2,by-7,1,4);px(cx+3,by-8,1,4);px(cx+8,by-6,1,3);
     // 目（Ness風黒点・瞬き付き）
     if(_blink){
         ctx.fillStyle='#7a5030';px(cx-3,by+12,2,1);px(cx+1,by+12,3,1);
