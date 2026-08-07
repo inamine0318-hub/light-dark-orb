@@ -534,6 +534,7 @@ const CHARS=[
 
 // ===== PLAYER =====
 const GR=0.42,JMP=5.8,PW=14,PH=22;
+const CHAR_SCALE=0.78; // スマホ実機QA対応：キャラ表示サイズを78%に縮小し視界を広げる（当たり判定PW/PHは変更しない）
 let P={x:60,y:GY-PH,w:PW,h:PH,vx:0,vy:0,onG:false,dj:false,hp:5,mhp:5,inv:0,fr:0,dir:1,atk:0,atkCd:0,atkCombo:0,comboWin:0,comboSkillWin:0,landSq:0,prevOnG:false,coyote:0,jumpBufT:0,jumpSq:0,deathT:0};
 
 // ===== ENEMIES / OBJECTS =====
@@ -683,10 +684,10 @@ function getAnimState(){
     const idle=P.onG&&Math.abs(P.vx)<.3&&!am;
     return {
         t,am,ap,mph,walk,idle,
-        breath:Math.sin(t*.06)*3,        // 待機の呼吸揺れ（従来の約2倍）
-        walkBob:Math.abs(Math.sin(t*.5))*3.2, // 歩行の上下バウンド（従来の約2倍）
-        walkArm:Math.sin(t*.5)*4.5,      // 歩行の腕振り（従来の約2倍）
-        lean:walk?P.dir*3:0,              // 歩行中の前傾オフセット
+        breath:Math.sin(t*.06)*4,        // 待機の呼吸揺れ（スマホ実機QAで劇的強化指示）
+        walkBob:Math.abs(Math.sin(t*.5))*5, // 歩行の上下バウンド（劇的強化）
+        walkArm:Math.sin(t*.5)*7,        // 歩行の腕振り（劇的強化）
+        lean:walk?P.dir*5:0,              // 歩行中の前傾オフセット（劇的強化）
         blink:(t%210)<5,
     };
 }
@@ -982,15 +983,24 @@ function drawHero(bx,by){
 function drawDemonLord(bx,by){
     if(P.inv>0&&Math.floor(P.inv/4)%2===0)return;
     const cx=Math.floor(bx)+18,t=gTick,fl=Math.sin(t*.05)*2|0;
-    const _am=P.atk>0,_amax=[12,16,22][P.atkCombo]||12,_ap=_am?Math.min(1,P.atk/_amax):0,_mph=_am?(_ap>.6?'w':_ap>.2?'s':'f'):'';
+    const anim=getAnimState();
+    const _am=anim.am,_ap=anim.ap,_mph=anim.mph;
     // ローブ裾：髪と位相をずらした遅延スイング(+攻撃フォロー時に鞭のように弾ける)
     const flh=(Math.sin(t*.05-1.1)*2|0)+(_mph==='f'?-3:0);
-    // 待機中は低重力キャラらしい浮遊バイオリズムで上下に漂う
-    const _idle=P.onG&&Math.abs(P.vx)<.3&&!_am;
-    if(_idle)by+=Math.sin(t*.042)*2|0;
+    // 待機中は低重力キャラらしい浮遊バイオリズムで上下に漂う（オーバーアクション化：約2倍）
+    if(anim.idle)by+=Math.sin(t*.042)*4|0;
     // 待機中の魔力ドリフト粒子（実プレイ中のみ・メニュープレビューでは発生させない）
     if(gs==='playing'&&Math.random()<.02)spark(P.x+P.w/2-scroll,P.y+10,'#4a1868',1);
     ctx.save();if(P.dir<0){ctx.translate(cx*2,0);ctx.scale(-1,1);}
+    // 詠唱中の闇オーラ揺らぎ（脈動する紫のグロー）
+    if(_am){
+        const _auraP=.3+Math.sin(t*.35)*.22;
+        ctx.globalAlpha=_auraP;ctx.fillStyle='#8822ff';
+        ctx.beginPath();ctx.arc(cx+1,by+22,15+Math.sin(t*.5)*2,0,Math.PI*2);ctx.fill();
+        ctx.globalAlpha=_auraP*.5;ctx.fillStyle='#cc44ff';
+        ctx.beginPath();ctx.arc(cx+1,by+22,21+Math.sin(t*.5)*2,0,Math.PI*2);ctx.fill();
+        ctx.globalAlpha=1;
+    }
     // ローブ下（by+33〜by+47）
     ctx.fillStyle='#0a0618';px(cx-6,by+33,13,10);
     ctx.fillStyle='#0e0a20';px(cx-4,by+34,9,9);
@@ -1087,9 +1097,11 @@ function drawDemonLord(bx,by){
 function drawMage(bx,by){
     if(P.inv>0&&Math.floor(P.inv/4)%2===0)return;
     const cx=Math.floor(bx)+18,wk=Math.floor(gTick/8)%2,t=gTick;
-    const _am=P.atk>0,_amax=[12,16,22][P.atkCombo]||12,_ap=_am?Math.min(1,P.atk/_amax):0,_mph=_am?(_ap>.6?'w':_ap>.2?'s':'f'):'';
-    // 足運びに連動した幅広袖のはためき
-    const _sleeve=wk?1:0;
+    const anim=getAnimState();
+    const _am=anim.am,_ap=anim.ap,_mph=anim.mph;
+    // 足運びに連動した幅広袖のはためき（オーバーアクション化：約2倍）+ 常時ゆれる裾
+    const _sleeve=(wk?2:0)+Math.sin(t*.07)|0;
+    const _hem=Math.sin(t*.06)*2|0;
     // 実プレイ中のみ：着地の余り火（メニュープレビューでは発生させない）
     if(gs==='playing'&&P.onG&&Math.abs(P.vx)>.4&&gTick%14===0)spark(P.x+P.w/2-scroll,GY-2,'#ff8020',1);
     ctx.save();if(P.dir<0){ctx.translate(cx*2,0);ctx.scale(-1,1);}
@@ -1124,8 +1136,8 @@ function drawMage(bx,by){
     ctx.fillStyle='#f07030';px(cx-2,by+21,2,5);
     ctx.globalAlpha=1;
     ctx.fillStyle='#281808';px(cx-5,by+32,13,2);
-    ctx.fillStyle='#1c4880';px(cx-5,by+33,13,10);
-    ctx.fillStyle='#2868a8';px(cx-3,by+34,6,9);
+    ctx.fillStyle='#1c4880';px(cx-5+_hem,by+33,13,10);
+    ctx.fillStyle='#2868a8';px(cx-3+_hem,by+34,6,9);
     // 炎（手前手・攻撃フェーズ）
     if(_mph==='w'){
         ctx.fillStyle='#c03810';px(cx+4,by+21,5,10);ctx.fillStyle='#801806';px(cx+8,by+21,1,10);
@@ -1186,12 +1198,18 @@ function drawMage(bx,by){
 function drawElf(bx,by){
     if(P.inv>0&&Math.floor(P.inv/4)%2===0)return;
     const cx=Math.floor(bx)+18,wk=Math.floor(gTick/7)%2;
-    const _am=P.atk>0,_amax=[12,16,22][P.atkCombo]||12,_ap=_am?Math.min(1,P.atk/_amax):0,_mph=_am?(_ap>.6?'w':_ap>.2?'s':'f'):'';
+    const anim=getAnimState();
+    const _am=anim.am,_mph=anim.mph;
     // 滑空中：矢羽根の微振動で滑空感を強調
     const _av=!P.onG?(Math.sin(gTick*.6)*1|0):0;
     // 二段ジャンプ上昇中：実プレイ中のみ、足元にリーフ片を舞わせる
     if(gs==='playing'&&!P.onG&&P.dj&&P.vy<-3&&Math.random()<.15)spark(P.x+P.w/2-scroll,P.y+P.h/2,'#68a838',1);
     ctx.save();if(P.dir<0){ctx.translate(cx*2,0);ctx.scale(-1,1);}
+    // 跳躍時の身軽なフォーム：上昇中は前のめり、落下中は少し反るストリームラインの傾き
+    if(!P.onG){
+        const _jlean=Math.max(-.12,Math.min(.12,-P.vy*.02));
+        ctx.translate(cx,by+22);ctx.rotate(P.dir<0?-_jlean:_jlean);ctx.translate(-cx,-(by+22));
+    }
     // 奥足
     ctx.fillStyle='#286018';px(cx-5,by+33+wk,5,10-wk);
     ctx.fillStyle='#3e2808';px(cx-6,by+43,6,4);
@@ -1223,8 +1241,11 @@ function drawElf(bx,by){
         ctx.strokeStyle='#c8b060';ctx.lineWidth=1;
         ctx.beginPath();ctx.moveTo(cx-10,by+13);ctx.lineTo(cx-7,by+22);ctx.lineTo(cx-9,by+31);ctx.stroke();
     }else{
+        // 待機中も弓をつがえた構え（呼吸に合わせわずかに弦を引き込む）
+        const _nock=anim.idle?Math.sin(anim.t*.06)*.8:0;
         ctx.strokeStyle='#c8b060';ctx.lineWidth=1;
-        ctx.beginPath();ctx.moveTo(cx-10,by+13);ctx.lineTo(cx-9,by+31);ctx.stroke();
+        ctx.beginPath();ctx.moveTo(cx-10,by+13);ctx.lineTo(cx-8-_nock,by+22);ctx.lineTo(cx-9,by+31);ctx.stroke();
+        ctx.fillStyle='#c8b060';px(cx-9-_nock,by+21,3,1);
     }
     // 奥腕
     ctx.fillStyle='#307828';px(cx-9,by+19,4,13);
@@ -1322,8 +1343,10 @@ function drawDragon(bx,by){
     ctx.clearRect(cx-5,by+12,2,2);ctx.clearRect(cx+6,by+12,2,2);
     ctx.fillStyle='#cc2810';px(cx-3,by+13,10,18);ctx.fillStyle='#e03828';px(cx-2,by+13,5,7);
     for(let si=0;si<4;si++)for(let sj=0;sj<2;sj++){ctx.fillStyle=(si+sj)%2===0?'#881408':'#a41c10';px(cx-2+sj*5,by+13+si*4,4,3);}
-    // 黄金腹
-    ctx.fillStyle='#d8b820';px(cx-1,by+16,5,14);ctx.fillStyle='#f0d030';px(cx,by+16,3,7);ctx.fillStyle='#b89818';px(cx+2,by+22,2,8);
+    // 黄金腹（ブレス放射中は熱で膨らみ発光する）
+    const _breathing=P.atkCd>0,_bulge=_breathing?2:0;
+    ctx.fillStyle='#d8b820';px(cx-1-_bulge*.5,by+16,5+_bulge,14);ctx.fillStyle='#f0d030';px(cx,by+16,3+_bulge,7);ctx.fillStyle='#b89818';px(cx+2,by+22,2,8);
+    if(_breathing){ctx.globalAlpha=.4+Math.sin(gTick*.3)*.2;ctx.fillStyle='#ffee88';ctx.beginPath();ctx.arc(cx+1,by+22,7,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;}
     // 前腕（左・奥）
     ctx.fillStyle='#8a1c0e';px(cx-11,by+16,5,11);ctx.fillStyle='#5e0800';px(cx-11,by+16,2,11);
     ctx.fillStyle='#ece0a0';px(cx-13,by+26,2,3);px(cx-10,by+27,2,3);px(cx-7,by+26,2,3);
@@ -1394,16 +1417,20 @@ function drawDragon(bx,by){
 // ===== ゴブリン（醜い小男）=====
 function drawGoblin(bx,by){
     if(P.inv>0&&Math.floor(P.inv/4)%2===0)return;
-    const cx=Math.floor(bx)+18,wk=Math.floor(gTick/6)%2;
-    const _am=P.atk>0,_amax=[12,16,22][P.atkCombo]||12,_ap=_am?Math.min(1,P.atk/_amax):0,_mph=_am?(_ap>.6?'w':_ap>.2?'s':'f'):'';
-    // 待機中、時折耳・鼻がピクつく小悪党らしさ
-    const _tw=(P.onG&&Math.abs(P.vx)<.3&&!_am&&(gTick%150)<4)?1:0;
-    // 高速移動中：頭を前傾させ速さを強調＋実プレイ中のみ砂埃を追加噴射
     const _fast=Math.abs(P.vx)>2.2;
+    const wk=Math.floor(gTick/(_fast?3:6))%2; // 高速移動中は足踏み周期を2倍に速める
+    const anim=getAnimState();
+    const _am=anim.am,_mph=anim.mph;
+    // 待機中、時折耳・鼻がピクつく小悪党らしさ
+    const _tw=(anim.idle&&(gTick%150)<4)?1:0;
+    // 高速移動中：頭を前傾させ体を低く構え速さを強調＋実プレイ中のみ砂埃を追加噴射
     const _lean=_fast?P.dir*2:0;
+    const _crouch=_fast?2:0;
     if(gs==='playing'&&_fast&&P.onG&&Math.random()<.5)spark(P.x+P.w/2-scroll-P.dir*6,GY-2,'#c8b898',1);
+    const cx=Math.floor(bx)+18;
+    by+=_crouch; // 低姿勢化（重心を落として超高速感を出す）
     ctx.save();if(P.dir<0){ctx.translate(cx*2,0);ctx.scale(-1,1);}
-    ctx.translate(_lean,0);
+    ctx.translate(P.dir<0?-_lean:_lean,0);
 
     // 奥足（後方・浮き気味）
     ctx.fillStyle='#509018';px(cx-5,by+35+wk,5,8-wk);
@@ -1499,7 +1526,8 @@ function drawGoblin(bx,by){
 function drawGolem(bx,by){
     if(P.inv>0&&Math.floor(P.inv/4)%2===0)return;
     const cx=Math.floor(bx)+18,wk=Math.floor(gTick/10)%2,gw=.6+Math.sin(gTick*.07)*.4;
-    const _am=P.atk>0,_amax=[12,16,22][P.atkCombo]||12,_ap=_am?Math.min(1,P.atk/_amax):0,_mph=_am?(_ap>.6?'w':_ap>.2?'s':'f'):'';
+    const anim=getAnimState();
+    const _am=anim.am,_ap=anim.ap,_mph=anim.mph;
     // 着地直後(landSq発火から数フレーム)：地面のひび割れ+大きめの砂埃
     const _justLanded=P.onG&&P.landSq>5;
     if(_justLanded){
@@ -1507,8 +1535,11 @@ function drawGolem(bx,by){
         ctx.beginPath();ctx.moveTo(cx-2,by+47);ctx.lineTo(cx-8,by+50);ctx.moveTo(cx+4,by+47);ctx.lineTo(cx+10,by+50);ctx.stroke();
         if(gs==='playing')spark(P.x+P.w/2-scroll,GY-1,'#a89878',2);
     }
-    // 一歩ごと(足の切替瞬間)：実プレイ中のみ重量感のある砂埃を追加
-    if(gs==='playing'&&P.onG&&Math.abs(P.vx)>.3&&gTick%20===0)spark(P.x+P.w/2-scroll,GY-1,'#8a7a5a',2);
+    // 一歩ごと(足の切替瞬間)：実プレイ中のみ重量感のある砂埃+「ドスン」という1pxの画面微振動を追加
+    if(gs==='playing'&&P.onG&&Math.abs(P.vx)>.3&&gTick%20===0){
+        spark(P.x+P.w/2-scroll,GY-1,'#8a7a5a',2);
+        shake=Math.max(shake,1.2);
+    }
     ctx.save();if(P.dir<0){ctx.translate(cx*2,0);ctx.scale(-1,1);}
     // 奥足（太い石柱）
     ctx.fillStyle='#874530';px(cx-7,by+33+wk*2,7,10-wk*2);
@@ -1617,10 +1648,13 @@ function drawGolem(bx,by){
 function drawSlime(bx,by){
     if(P.inv>0&&Math.floor(P.inv/4)%2===0)return;
     const cx=Math.floor(bx)+18,t=gTick,bob=Math.abs(Math.sin(t*.09))*4|0;
-    const _am=P.atk>0,_amax=[12,16,22][P.atkCombo]||12,_ap=_am?Math.min(1,P.atk/_amax):0,_mph=_am?(_ap>.6?'w':_ap>.2?'s':'f'):'';
+    const anim=getAnimState();
+    const _am=anim.am,_ap=anim.ap,_mph=anim.mph;
     // 二段ジャンプ上昇中は「ぐにょーん」と縦に伸びる
     const _djStretch=(!P.onG&&P.dj&&P.vy<-2)?.14:0;
-    const _wob=Math.sin(t*.18)*.04+_djStretch;
+    // 移動中は進行方向にイージングで伸び縮みするプロポーション変化を追加
+    const _moveStretch=(P.onG&&Math.abs(P.vx)>.3)?Math.sin(t*.35)*.09:0;
+    const _wob=Math.sin(t*.18)*.04+_djStretch+_moveStretch;
     ctx.save();if(P.dir<0){ctx.translate(cx*2,0);ctx.scale(-1,1);}
     // 常時プルプルとしたゼリーの揺れ（本体中心を軸に伸縮）
     ctx.save();ctx.translate(cx,by+26);ctx.scale(1-_wob,1+_wob);ctx.translate(-cx,-(by+26));
@@ -2107,8 +2141,8 @@ function update(){
     // コヨーテタイム：足場を離れても数フレームはジャンプ猶予
     if(P.onG)P.coyote=6;else if(P.coyote>0)P.coyote--;
     if(P.jumpBufT>0)P.jumpBufT--;
-    // 歩行フットダスト
-    if(P.onG&&Math.abs(P.vx)>0.4&&gTick%7===0)spark(P.x+P.w/2-scroll,GY-1,'#c8b898',2);
+    // 歩行フットダスト（スマホ実機QA対応：接地感を明確にするため頻度・量を強化）
+    if(P.onG&&Math.abs(P.vx)>0.4&&gTick%5===0)spark(P.x+P.w/2-scroll,GY-1,'#c8b898',4);
 
     // Bounds
     if(P.x<scroll)P.x=scroll;
@@ -2679,7 +2713,7 @@ function draw(){
         ctx.save();
         ctx.globalAlpha=Math.max(0,1-dt/50);
         ctx.translate(cxp,cyp);ctx.rotate(dt*.16*-P.dir);ctx.translate(-cxp,-cyp);
-        drawWithOutline(drawFns[selectedChar],P.x-scroll,P.y-25,false,1,1);
+        drawWithOutline(drawFns[selectedChar],P.x-scroll,P.y-25,false,CHAR_SCALE,CHAR_SCALE);
         ctx.restore();
     }else{
         var _sqX=1,_sqY=1;
@@ -2688,9 +2722,9 @@ function draw(){
         else if(!P.onG){if(P.vy<-2){var _s=Math.min(0.4,Math.abs(P.vy)*0.07);_sqY=1+_s;_sqX=1-_s*0.5;}else if(P.vy>2){var _s2=Math.min(0.26,P.vy*0.05);_sqY=1+_s2;_sqX=1-_s2*0.4;}}
         else if(P.landSq>0){var _t=P.landSq/8;_sqY=1-_t*0.4;_sqX=1+_t*0.32;}
         var _ib=0;
-        if(P.onG&&Math.abs(P.vx)<0.5)_ib=(Math.sin(gTick*0.06)*3|0); // 待機：呼吸のような上下揺れ
-        else if(P.onG)_ib=(Math.abs(Math.sin(gTick*0.5))*3.2|0); // 歩行：足運びの重心上下動
-        drawWithOutline(drawFns[selectedChar],P.x-scroll,P.y+_ib-25,false,_sqX,_sqY);
+        if(P.onG&&Math.abs(P.vx)<0.5)_ib=(Math.sin(gTick*0.06)*4|0); // 待機：呼吸のような上下揺れ
+        else if(P.onG)_ib=(Math.abs(Math.sin(gTick*0.5))*5|0); // 歩行：足運びの重心上下動（スマホ実機QAで劇的強化指示）
+        drawWithOutline(drawFns[selectedChar],P.x-scroll,P.y+_ib-25,false,_sqX*CHAR_SCALE,_sqY*CHAR_SCALE);
     }
 
     // 3段コンボ斬撃エフェクト（勇者・ゴブリン）
