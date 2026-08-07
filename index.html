@@ -625,6 +625,7 @@ function doAtk(){
             orbs.push({sx:ox,sy:oy+3,vx:P.dir*sp,vy:.5,life:0,maxLife:ml,type:'dark',dmg:dm,size:sz});
         }else{
             orbs.push({sx:ox,sy:oy,vx:P.dir*sp,vy:0,life:0,maxLife:ml,type:'dark',dmg:dm,size:sz});
+            if(co===2){spark(ox,oy,'#8822ff',14);spark(ox,oy,'#ffffff',6);flash=6;} // 闇の小爆発（見た目強化）
         }
         setCombo([24,26,30][co],50);sfx('darkorb');
     }else if(selectedChar===2){// 魔法使い：1→2連→大型炎
@@ -634,6 +635,7 @@ function doAtk(){
             orbs.push({sx:ox,sy:oy+2,vx:P.dir*sp,vy:.3,life:0,maxLife:ml,type:'fire',dmg:dm,size:sz});
         }else{
             orbs.push({sx:ox,sy:oy,vx:P.dir*sp,vy:0,life:0,maxLife:ml,type:'fire',dmg:dm,size:sz});
+            if(co===2){spark(ox,oy,'#ff8820',14);spark(ox,oy,'#ffee44',6);flash=6;} // 火柱の噴き上がり（見た目強化）
         }
         setCombo([18,20,25][co],48);sfx('darkorb');
     }else if(selectedChar===3){// エルフ：速射→2連→貫通矢
@@ -641,25 +643,30 @@ function doAtk(){
         orbs.push({sx:ox,sy:P.y+5,vx:P.dir*sp,vy:co===2?-.4:0,life:0,maxLife:55,type:'arrow',dmg:dm,size:sz,lv});
         if(co===1)orbs.push({sx:ox,sy:P.y+8,vx:P.dir*9,vy:.3,life:0,maxLife:50,type:'arrow',dmg:1,size:3});
         setCombo([18,18,22][co],46);sfx('swing');
-    }else if(selectedChar===4){// ドラゴン：1→2→3方向炎
-        const cnt=[1,2,3][co],sz=[4,5,7][co],dm=[1,1,2][co];
-        for(let i=0;i<cnt;i++){
-            const vy=cnt===1?0:(i-Math.floor(cnt/2))*.9;
-            orbs.push({sx:ox,sy:oy,vx:P.dir*(3+i*1.6),vy,life:0,maxLife:38+co*8,type:'flame',dmg:dm,size:sz});
+    }else if(selectedChar===4){// ドラゴン：ブレス→爪の近接引っかき→3方向ブレス
+        if(co===1){
+            P.atk=14;sfx('swing'); // 近接爪（Hero/Goblinと同じ共有ヒットボックス処理を使用）
+        }else{
+            const cnt=co===0?1:3,sz=co===0?4:7,dm=co===0?1:2;
+            for(let i=0;i<cnt;i++){
+                const vy=cnt===1?0:(i-1)*.9;
+                orbs.push({sx:ox,sy:oy,vx:P.dir*(3+i*1.6),vy,life:0,maxLife:38+co*8,type:'flame',dmg:dm,size:sz});
+            }
+            sfx('darkorb');
         }
-        setCombo([28,30,38][co],52);sfx('darkorb');
-    }else if(selectedChar===5){// ゴブリン：速爪→2連→飛び蹴り
+        setCombo([28,30,38][co],52);
+    }else if(selectedChar===5){// ゴブリン：速爪→2連→飛び蹴り+毒煙幕
         P.atk=[8,11,15][co];
         if(co===1)P.vx=P.dir*4;
-        else if(co===2){P.vx=P.dir*9;P.vy=-2.8;}
+        else if(co===2){P.vx=P.dir*9;P.vy=-2.8;orbs.push({sx:ox,sy:P.y+P.h-6,vx:P.dir*1.5,vy:0,life:0,maxLife:90,type:'poison',dmg:1,size:14});}
         setCombo([14,16,20][co],42);sfx('swing');
     }else if(selectedChar===6){// ゴーレム：衝撃波3段（広さ増大）
         const sz=[16,26,40][co],sp=[2,2.5,3][co],dm=[1,1,2][co];
         orbs.push({sx:ox,sy:GY-7,vx:P.dir*sp,vy:0,life:0,maxLife:50+co*18,type:'shock',dmg:dm,size:sz});
         setCombo([44,46,52][co],56);sfx('darkorb');
-    }else if(selectedChar===7){// スライム：1→2連→大型跳弾
+    }else if(selectedChar===7){// スライム：1→2連→大型跳弾（ヒット時に分裂）
         const sz=[4,5,8][co],dm=[1,1,2][co];
-        orbs.push({sx:ox,sy:P.y+8,vx:P.dir*(3.5+co*.5),vy:[-3,-2.8,-5.5][co],life:0,maxLife:70+co*18,type:'bounce',dmg:dm,size:sz});
+        orbs.push({sx:ox,sy:P.y+8,vx:P.dir*(3.5+co*.5),vy:[-3,-2.8,-5.5][co],life:0,maxLife:70+co*18,type:'bounce',dmg:dm,size:sz,split:co===2});
         if(co===1)orbs.push({sx:ox,sy:P.y+10,vx:P.dir*3.8,vy:-2.2,life:0,maxLife:65,type:'bounce',dmg:1,size:4});
         setCombo([20,22,28][co],46);sfx('jump');
     }
@@ -1308,6 +1315,14 @@ function drawDragon(bx,by){
     ctx.beginPath();ctx.moveTo(cx+13,by+12);ctx.lineTo(cx+20,by+7);ctx.lineTo(cx+15,by+15);ctx.closePath();ctx.fill();ctx.stroke();
     ctx.beginPath();ctx.moveTo(cx+14,by+15);ctx.lineTo(cx+22,by+11);ctx.lineTo(cx+16,by+18);ctx.closePath();ctx.fill();ctx.stroke();
     ctx.beginPath();ctx.moveTo(cx+14,by+18);ctx.lineTo(cx+21,by+17);ctx.lineTo(cx+15,by+21);ctx.closePath();ctx.fill();ctx.stroke();
+    // 攻撃中（近接引っかき）：爪の振り抜きモーションラインを追加描画
+    if(P.atk>0){
+        const _cp=1-P.atk/14;
+        ctx.globalAlpha=.55*(1-_cp);ctx.strokeStyle='#ffccaa';ctx.lineWidth=2;
+        ctx.beginPath();ctx.moveTo(cx+13,by+12);ctx.lineTo(cx+13+10*_cp,by+8-4*_cp);ctx.stroke();
+        ctx.beginPath();ctx.moveTo(cx+14,by+18);ctx.lineTo(cx+14+12*_cp,by+22-2*_cp);ctx.stroke();
+        ctx.globalAlpha=1;
+    }
     // 首
     ctx.fillStyle='#aa1e10';px(cx+1,by+8,7,6);ctx.fillStyle='#d0b818';px(cx+2,by+10,3,4);
     // 手前足（胴体下端に密着させたまま短く・隙間を作らない）
@@ -2095,7 +2110,7 @@ function update(){
             if(en.dead||en.inv>0)return;
             const ex=en.sx;
             if(ax<ex+en.w&&ax+aw>ex&&P.y<en.sy+en.h&&P.y+P.h>en.sy){
-                en.hp-=dmgMul;en.inv=20;hitStop=3+P.atkCombo*2;
+                en.hp-=dmgMul;en.inv=20;hitStop=2+P.atkCombo;en.knockX=P.dir*[4,6,8][P.atkCombo];
                 combo++;comboTimer=150;if(combo>comboMax)comboMax=combo;
                 spark(ex+en.w/2,en.sy+en.h/2,'#ffaa44',10);spark(ex+en.w/2,en.sy+en.h/2,'#ffffff',5);
                 snd(260,.08,.6);
@@ -2136,6 +2151,8 @@ function update(){
     enemies.forEach(en=>{
         if(en.dead){en.fr++;return;}
         en.fr++;en.inv=Math.max(0,en.inv-1);
+        // ノックバック（既存のboss.knockXと同じ減衰方式を通常敵にも適用）
+        if(en.knockX&&en.inv>10){en.sx+=en.knockX*(en.inv/20);}if(en.inv<=0)en.knockX=0;
         const pdx=(P.x+scroll)-(en.sx+en.w/2);
 
         if(en.type==='grub'){
@@ -2338,17 +2355,37 @@ function update(){
             if(en.dead||en.inv>0)return;
             const ex=en.sx,ox=ob.sx;
             if(ox<ex+en.w&&ox+osz>ex&&ob.sy<en.sy+en.h&&ob.sy+osz>en.sy){
-                en.hp-=(ob.dmg||1);en.inv=20;if(!ob.lv)ob.life=999;hitStop=Math.min(8,2+(ob.dmg||1));
-                combo++;comboTimer=120;if(combo>comboMax)comboMax=combo;
-                spark(ex+en.w/2,en.sy+en.h/2,'#8822ff',10);spark(ex+en.w/2,en.sy+en.h/2,'#ffffff',4);snd(180,.08,.6);
+                if(ob.type==='poison'){
+                    // 毒煙幕：消滅させず、通常より少し長いinvで継続ダメージ量を抑えた設置型ゾーン
+                    en.hp-=(ob.dmg||1);en.inv=24;hitStop=1;
+                    spark(ex+en.w/2,en.sy+en.h/2,'#66cc22',4);
+                }else{
+                    // アーキタイプ別のhitStop/ノックバック（リサーチ次長のバランス表に基づく）
+                    const _hb={dark:{hs:5,kb:6},fire:{hs:5,kb:6},arrow:{hs:3,kb:3},flame:{hs:6,kb:9},shock:{hs:6,kb:10},bounce:{hs:4,kb:5}}[ob.type]||{hs:3,kb:4};
+                    en.hp-=(ob.dmg||1);en.inv=20;if(!ob.lv)ob.life=999;hitStop=Math.min(8,_hb.hs);en.knockX=(ob.vx>0?1:-1)*_hb.kb;
+                    combo++;comboTimer=120;if(combo>comboMax)comboMax=combo;
+                    spark(ex+en.w/2,en.sy+en.h/2,'#8822ff',10);spark(ex+en.w/2,en.sy+en.h/2,'#ffffff',4);snd(180,.08,.6);
+                    if(ob.type==='bounce'&&ob.split&&!ob._didSplit){
+                        ob._didSplit=true;
+                        for(let i=0;i<2;i++){
+                            const a=i===0?-.6:.6;
+                            orbs.push({sx:ob.sx,sy:ob.sy,vx:Math.cos(a)*4*(ob.vx>=0?1:-1),vy:Math.sin(a)*4-1.5,life:0,maxLife:60,type:'bounce',dmg:1,size:4});
+                        }
+                    }
+                }
                 if(en.hp<=0){en.dead=true;sfx('kill');const pts6=100*(1+Math.floor(combo/3));score+=pts6;spark(ex+5,en.sy+4,'#6600cc',18);spark(ex+5,en.sy+4,'#ff88ff',8);popup(en.sx-scroll+en.w/2,en.sy-6,'+'+pts6,combo>=5?'#ff44ff':'#cc88ff');if(P.hp<=2&&Math.random()<.15)items.push({sx:en.sx,y:en.sy,w:8,h:8,type:'heart',life:400});}
             }
         });
         if(boss&&!bossDefeated&&boss.inv<=0){
             const bx=boss.sx,ox=ob.sx;
             if(ox<bx+boss.w&&ox+osz>bx&&ob.sy<boss.sy+boss.h&&ob.sy+osz>boss.sy){
-                boss.hp-=(ob.dmg||1);boss.inv=16;boss.knockX=(ob.vx>0?1:-1)*4;if(!ob.lv)ob.life=999;
-                spark(bx+11,boss.sy+10,'#8822ff',10);snd(180,.08,.7);
+                if(ob.type==='poison'){
+                    boss.hp-=(ob.dmg||1);boss.inv=20;
+                    spark(bx+11,boss.sy+10,'#66cc22',4);
+                }else{
+                    boss.hp-=(ob.dmg||1);boss.inv=16;boss.knockX=(ob.vx>0?1:-1)*4;if(!ob.lv)ob.life=999;
+                    spark(bx+11,boss.sy+10,'#8822ff',10);snd(180,.08,.7);
+                }
                 if(boss.hp<=0){
                     bossDefeated=true;boss=null;score+=1000;
                     spark(scroll+W/2,GY-40,'#ffe840',30);spark(scroll+W/2,GY-40,'#8822ff',30);
@@ -2579,6 +2616,15 @@ function draw(){
             const r=ob.size||5;
             ctx.fillStyle='#44aaff';ctx.beginPath();ctx.arc(ox+r,oy+r,r,0,Math.PI*2);ctx.fill();
             ctx.globalAlpha=.5;ctx.fillStyle='#88ddff';ctx.beginPath();ctx.arc(ox+r,oy+r,r*.65,0,Math.PI*2);ctx.fill();
+        }else if(ob.type==='poison'){
+            // 毒煙幕：もくもくと漂う緑のガス（寿命が近づくと薄くなる）
+            const r=ob.size||14,fade=Math.max(0,1-ob.life/(ob.maxLife||150));
+            for(let i=0;i<3;i++){
+                const pa=gTick*.05+i*2.1,pr=r*.5+Math.sin(gTick*.07+i)*3;
+                ctx.globalAlpha=.28*fade;ctx.fillStyle='#66cc22';
+                ctx.beginPath();ctx.arc(ox+r/2+Math.cos(pa)*3,oy+Math.sin(pa)*2,pr,0,Math.PI*2);ctx.fill();
+            }
+            ctx.globalAlpha=.15*fade;ctx.fillStyle='#aaff66';ctx.beginPath();ctx.arc(ox+r/2,oy,r,0,Math.PI*2);ctx.fill();
         }else if(ob.type==='skill'){
             const lv=ob.lv||1;
             const r=4+lv*2;
