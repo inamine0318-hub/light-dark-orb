@@ -522,14 +522,14 @@ let popups=[];let stageFlash=0; // フローティングテキスト・ステー
 
 // 全キャラ定義 spd=移動速度 jmp=ジャンプ力 gr=重力倍率 dj=二段ジャンプ
 const CHARS=[
-    {name:'勇者',    desc:'剣・二段ジャンプ',atk:'近接剣撃', col:'#ffe840', mhp:5, locked:false, spd:1.8, jmp:5.8, gr:1.0,  dj:true,  skill:'旋風斬',     rng:2, atkIcon:'sword', moveIcon:'jump2', moveLabel:'二段ジャンプ'},
-    {name:'魔王',    desc:'闇魔法・浮遊',atk:'闇オーブ',     col:'#8822ff', mhp:4, locked:false, spd:1.5, jmp:4.2, gr:0.55, dj:false, skill:'ダークノヴァ', rng:4, atkIcon:'orb',   moveIcon:'float', moveLabel:'滞空浮遊'},
-    {name:'魔法使い',desc:'炎魔法・遠距離',atk:'炎オーブ',   col:'#ff8820', mhp:3, locked:false, spd:1.7, jmp:5.5, gr:1.0,  dj:false, skill:'メテオ',     rng:4, atkIcon:'orb',   moveIcon:'jump1', moveLabel:'単発ジャンプ'},
-    {name:'エルフ',  desc:'弓・高ジャンプ',atk:'高速矢',   col:'#44ff88', mhp:4, locked:false, spd:2.2, jmp:7.0, gr:1.0,  dj:true,  skill:'矢の雨',     rng:5, atkIcon:'arrow', moveIcon:'jump2', moveLabel:'高高度二段跳'},
-    {name:'ドラゴン',desc:'炎ブレス・飛行',atk:'炎3方向',   col:'#ff4420', mhp:6, locked:false, spd:1.6, jmp:5.2, gr:0.65, dj:true,  skill:'超炎ブレス', rng:4, atkIcon:'flame', moveIcon:'float', moveLabel:'飛行'},
-    {name:'ゴブリン',desc:'素早い・ダッシュ',atk:'ダッシュ斬', col:'#60cc30', mhp:3, locked:false, spd:2.8, jmp:5.0, gr:1.0,  dj:false, skill:'煙幕ダッシュ', rng:2, atkIcon:'slash', moveIcon:'speed', moveLabel:'高速ダッシュ'},
-    {name:'ゴーレム',desc:'超耐久・衝撃波',atk:'衝撃波',   col:'#b0b8c0', mhp:8, locked:false, spd:1.0, jmp:4.5, gr:1.3,  dj:false, skill:'大地震',     rng:3, atkIcon:'shock', moveIcon:'heavy', moveLabel:'重量級'},
-    {name:'スライム',desc:'バウンド・変形',atk:'跳弾',    col:'#44aaff', mhp:4, locked:false, spd:1.9, jmp:6.2, gr:0.85, dj:true,  skill:'跳弾分裂',   rng:3, atkIcon:'bounce', moveIcon:'bounce', moveLabel:'バウンド'},
+    {name:'勇者',    desc:'剣・二段ジャンプ',atk:'近接剣撃', col:'#ffe840', mhp:5, locked:false, spd:1.8, jmp:7.02, gr:1.0,  dj:true,  skill:'旋風斬',     rng:2, atkIcon:'sword', moveIcon:'jump2', moveLabel:'二段ジャンプ'},
+    {name:'魔王',    desc:'闇魔法・浮遊',atk:'闇オーブ',     col:'#8822ff', mhp:4, locked:false, spd:1.5, jmp:6.3, gr:0.55, dj:false, skill:'ダークノヴァ', rng:4, atkIcon:'orb',   moveIcon:'float', moveLabel:'滞空浮遊'},
+    {name:'魔法使い',desc:'炎魔法・遠距離',atk:'炎オーブ',   col:'#ff8820', mhp:3, locked:false, spd:1.7, jmp:8.25, gr:1.0,  dj:false, skill:'メテオ',     rng:4, atkIcon:'orb',   moveIcon:'jump1', moveLabel:'単発ジャンプ'},
+    {name:'エルフ',  desc:'弓・高ジャンプ',atk:'高速矢',   col:'#44ff88', mhp:4, locked:false, spd:2.2, jmp:7.02, gr:1.0,  dj:true,  skill:'矢の雨',     rng:5, atkIcon:'arrow', moveIcon:'jump2', moveLabel:'高高度二段跳'},
+    {name:'ドラゴン',desc:'炎ブレス・飛行',atk:'炎3方向',   col:'#ff4420', mhp:6, locked:false, spd:1.6, jmp:5.66, gr:0.65, dj:true,  skill:'超炎ブレス', rng:4, atkIcon:'flame', moveIcon:'float', moveLabel:'飛行'},
+    {name:'ゴブリン',desc:'素早い・ダッシュ',atk:'ダッシュ斬', col:'#60cc30', mhp:3, locked:false, spd:2.8, jmp:7.5, gr:1.0,  dj:false, skill:'煙幕ダッシュ', rng:2, atkIcon:'slash', moveIcon:'speed', moveLabel:'高速ダッシュ'},
+    {name:'ゴーレム',desc:'超耐久・衝撃波',atk:'衝撃波',   col:'#b0b8c0', mhp:8, locked:false, spd:1.0, jmp:6.75, gr:1.3,  dj:false, skill:'大地震',     rng:3, atkIcon:'shock', moveIcon:'heavy', moveLabel:'重量級'},
+    {name:'スライム',desc:'バウンド・変形',atk:'跳弾',    col:'#44aaff', mhp:4, locked:false, spd:1.9, jmp:6.47, gr:0.85, dj:true,  skill:'跳弾分裂',   rng:3, atkIcon:'bounce', moveIcon:'bounce', moveLabel:'バウンド'},
 ];
 
 // ===== PLAYER =====
@@ -2975,14 +2975,30 @@ function draw(){
         ctx.globalAlpha=1;
     });
 
+    // 接地影（楕円シャドウ）：空中では小さく薄く離れ、着地(地面/浮遊足場問わず)では足元に密着する
+    if(gs==='playing'||gs==='pdeath'){
+        let _shadowY=GY;
+        platforms.forEach(pl=>{
+            const px_=pl.sx-scroll;
+            if(P.x+P.w>px_&&P.x<px_+pl.w&&pl.y<_shadowY&&pl.y>=P.y+P.h-2){_shadowY=pl.y;}
+        });
+        const _shGap=Math.max(0,_shadowY-(P.y+P.h));
+        const _shScale=Math.max(.35,1-_shGap/60);
+        ctx.globalAlpha=.30*_shScale;ctx.fillStyle='#000000';
+        ctx.beginPath();ctx.ellipse(P.x-scroll+P.w/2,_shadowY-1,10*_shScale,2.6*_shScale,0,0,Math.PI*2);ctx.fill();
+        ctx.globalAlpha=1;
+    }
+
     // Player
     const drawFns=[drawHero,drawDemonLord,drawMage,drawElf,drawDragon,drawGoblin,drawGolem,drawSlime];
+    // 各キャラの足裏ローカル座標が共通ピボット(by+47)からズレている分の補正(px)。ドラゴン・スライムのみ非0
+    const FOOT_ADJ=[0,0,0,0,2.34,0,0,0.78];
     if(gs==='pdeath'){
         const dt=P.deathT||0,cxp=P.x-scroll+P.w/2,cyp=P.y+P.h/2;
         ctx.save();
         ctx.globalAlpha=Math.max(0,1-dt/50);
         ctx.translate(cxp,cyp);ctx.rotate(dt*.16*-P.dir);ctx.translate(-cxp,-cyp);
-        drawWithOutline(drawFns[selectedChar],P.x-scroll,P.y-25,false,CHAR_SCALE,CHAR_SCALE);
+        drawWithOutline(drawFns[selectedChar],P.x-scroll,P.y-25+FOOT_ADJ[selectedChar],false,CHAR_SCALE,CHAR_SCALE);
         ctx.restore();
     }else{
         var _sqX=1,_sqY=1;
@@ -2991,9 +3007,9 @@ function draw(){
         else if(!P.onG){if(P.vy<-2){var _s=Math.min(0.4,Math.abs(P.vy)*0.07);_sqY=1+_s;_sqX=1-_s*0.5;}else if(P.vy>2){var _s2=Math.min(0.26,P.vy*0.05);_sqY=1+_s2;_sqX=1-_s2*0.4;}}
         else if(P.landSq>0){var _t=P.landSq/8;_sqY=1-_t*0.4;_sqX=1+_t*0.32;}
         var _ib=0;
-        if(P.onG&&Math.abs(P.vx)<0.5)_ib=(Math.sin(gTick*0.06)*4|0); // 待機：呼吸のような上下揺れ
+        if(P.onG&&Math.abs(P.vx)<0.5)_ib=(Math.abs(Math.sin(gTick*0.06))*4|0); // 待機：呼吸のような上下揺れ（接地アンカー優先で浮き上がり方向は排除、沈み込みのみ）
         else if(P.onG)_ib=(Math.abs(Math.sin(gTick*0.5))*5|0); // 歩行：足運びの重心上下動（スマホ実機QAで劇的強化指示）
-        drawWithOutline(drawFns[selectedChar],P.x-scroll,P.y+_ib-25,false,_sqX*CHAR_SCALE,_sqY*CHAR_SCALE);
+        drawWithOutline(drawFns[selectedChar],P.x-scroll,P.y+_ib-25+FOOT_ADJ[selectedChar],false,_sqX*CHAR_SCALE,_sqY*CHAR_SCALE);
     }
 
     // 3段コンボ斬撃エフェクト（勇者・ゴブリン）
