@@ -535,11 +535,11 @@ const CHARS=[
 // ===== PLAYER =====
 const GR=0.42,JMP=5.8,PW=14,PH=22;
 const CHAR_SCALE=0.78; // スマホ実機QA対応：キャラ表示サイズを78%に縮小し視界を広げる（当たり判定PW/PHは変更しない）
-let P={x:60,y:GY-PH,w:PW,h:PH,vx:0,vy:0,onG:false,dj:false,hp:5,mhp:5,inv:0,fr:0,dir:1,atk:0,atkCd:0,atkCombo:0,comboWin:0,comboSkillWin:0,landSq:0,prevOnG:false,coyote:0,jumpBufT:0,jumpSq:0,deathT:0};
+let P={x:60,y:GY-PH,w:PW,h:PH,vx:0,vy:0,onG:false,dj:false,hp:5,mhp:5,inv:0,fr:0,dir:1,atk:0,atkCd:0,atkCombo:0,comboWin:0,comboSkillWin:0,landSq:0,prevOnG:false,coyote:0,jumpBufT:0,jumpSq:0,deathT:0,vampT:0,overT:0,magnetT:0};
 
 // ===== ENEMIES / OBJECTS =====
 let enemies=[],items=[],arrows=[],platforms=[],bombs=[],hazards=[];
-let spawnCd=60,platSpawnCd=120,hazSpawnCd=200;
+let spawnCd=60,platSpawnCd=120,hazSpawnCd=200,capsuleSpawnCd=400;
 let boss=null,bossActive=false,bossDefeated=false;
 const BOSS_TRIGGER=2800; // scrollがこの値を超えたらボス出現
 
@@ -786,7 +786,8 @@ function resetGame(){
     P.mhp=CHARS[selectedChar].mhp;P.hp=P.mhp;P.inv=0;P.fr=0;P.atk=0;P.atkCd=0;P.dir=1;P.atkCombo=0;P.comboWin=0;P.comboSkillWin=0;
     P.coyote=0;P.jumpBufT=0;P.jumpSq=0;P.deathT=0;
     enemies=[];items=[];arrows=[];platforms=[];orbs=[];parts=[];bombs=[];hazards=[];
-    scroll=0;score=0;shake=0;flash=0;t=0;spawnCd=60;platSpawnCd=120;hazSpawnCd=200;
+    scroll=0;score=0;shake=0;flash=0;t=0;spawnCd=60;platSpawnCd=120;hazSpawnCd=200;capsuleSpawnCd=400;
+    P.vampT=0;P.overT=0;P.magnetT=0;
     boss=null;bossActive=false;bossDefeated=false;clearTimer=0;
     skillLv=0;skillExp=0;skillCd=0;pwrupSpawnCd=220;combo=0;comboTimer=0;comboMax=0;hitStop=0;
     popups=[];stageFlash=0;
@@ -2044,7 +2045,7 @@ function drawHazard(hz){
     }
 }
 function drawItem(it){
-    const ix=Math.floor(it.sx-scroll),iy=Math.floor(it.sy);
+    const ix=Math.floor(it.sx-scroll),iy=Math.floor(it.y);
     const bob=Math.abs(Math.sin(gTick*.08+(it.sx*.01)))*3|0;
     if(it.type==='coin'){
         ctx.fillStyle='#f8d800';ctx.fillRect(ix+1,iy+1-bob,7,8);
@@ -2074,6 +2075,13 @@ function drawItem(it){
         for(let i=0;i<5;i++){const a=i*Math.PI*.4-Math.PI*.5;const r=i%2===0?6:3;ctx.lineTo(ix+5+Math.cos(a)*r,iy+5-bob+Math.sin(a)*r);}
         ctx.closePath();ctx.fill();
         ctx.globalAlpha=1;ctx.fillStyle='#ffe840';ctx.fillRect(ix+3,iy+3-bob,4,4);
+    }else if(it.type==='capsule'){
+        const kcol={vamp:['#8a0022','#ff2255','#ff88aa'],over:['#8a5a00','#ffaa00','#ffee66'],magnet:['#004a6a','#22aadd','#aaeeff']}[it.kind];
+        const gl2=.75+Math.sin(gTick*.15)*.25;
+        ctx.fillStyle=kcol[0];ctx.fillRect(ix,iy+1-bob,10,9);
+        ctx.globalAlpha=gl2;ctx.fillStyle=kcol[1];ctx.fillRect(ix+1,iy+2-bob,8,7);
+        ctx.globalAlpha=1;ctx.fillStyle=kcol[2];ctx.fillRect(ix+3,iy+3-bob,2,2);
+        ctx.strokeStyle='#ffffff';ctx.globalAlpha=.4;ctx.lineWidth=1;ctx.strokeRect(ix+0.5,iy+1.5-bob,9,8);ctx.globalAlpha=1;
     }
 }
 
@@ -2301,12 +2309,13 @@ function update(){
     }
 
     P.fr++;P.inv=Math.max(0,P.inv-1);P.atkCd=Math.max(0,P.atkCd-1);P.comboWin=Math.max(0,P.comboWin-1);P.comboSkillWin=Math.max(0,P.comboSkillWin-1);
+    P.vampT=Math.max(0,P.vampT-1);P.overT=Math.max(0,P.overT-1);P.magnetT=Math.max(0,P.magnetT-1);
     if(P.atk>0)P.atk--;
 
     // Attack hit
     if(P.atk>6){
         const aw=[18,22,32][P.atkCombo]||21;
-        const dmgMul=[1,1,2][P.atkCombo]||1;
+        const dmgMul=([1,1,2][P.atkCombo]||1)*(P.overT>0?1.5:1);
         const ax=P.dir>0?P.x+P.w:P.x-aw;
         enemies.forEach(en=>{
             if(en.dead||en.inv>0)return;
@@ -2314,6 +2323,7 @@ function update(){
             if(ax<ex+en.w&&ax+aw>ex&&P.y<en.sy+en.h&&P.y+P.h>en.sy){
                 en.hp-=dmgMul;en.inv=20;hitStop=2+P.atkCombo;en.knockX=P.dir*[4,6,8][P.atkCombo];
                 combo++;comboTimer=150;if(combo>comboMax)comboMax=combo;
+                if(P.vampT>0&&P.hp<P.mhp&&Math.random()<.35){P.hp=Math.min(P.mhp,P.hp+1);spark(P.x+P.w/2-scroll,P.y+P.h/2,'#ff4466',4);}
                 spark(ex+en.w/2,en.sy+en.h/2,'#ffaa44',10);spark(ex+en.w/2,en.sy+en.h/2,'#ffffff',5);
                 snd(260,.08,.6);
                 if(en.hp<=0){en.dead=true;sfx('kill');const pts5=100*(1+Math.floor(combo/3));score+=pts5;spark(ex+5,en.sy+4,'#ff8820',18);spark(ex+5,en.sy+4,'#ffff44',8);
@@ -2338,13 +2348,24 @@ function update(){
     // Items
     items.forEach(it=>{
         it.life--;
+        if(P.magnetT>0&&it.type!=='capsule'){
+            const mdx=(P.x+P.w/2)-it.sx,mdy=(P.y+P.h/2)-it.y;
+            const md=Math.sqrt(mdx*mdx+mdy*mdy);
+            if(md<70&&md>1){const pull=Math.min(6,140/md);it.sx+=mdx/md*pull;it.y+=mdy/md*pull;}
+        }
         const ix=it.sx;
         if(P.x<ix+it.w&&P.x+P.w>ix&&P.y<it.y+it.h&&P.y+P.h>it.y){
             it.life=0;
-            if(it.type==='heart'){P.hp=Math.min(P.mhp,P.hp+1);spark(ix+4,it.y,'#ff4466',10);snd(660,.15);popup(ix+4-scroll,it.y-8,'HEAL!','#ff4466');}
-            else if(it.type==='coin'){score+=50;spark(ix+4,it.y,'#ffe840',8);sfx('coin');popup(ix+4-scroll,it.y-8,'+50','#ffe840');}
-            else if(it.type==='orbfrag'){score+=500;spark(ix+5,it.y,'#ffe840',20);spark(ix+5,it.y,'#8822ff',16);snd(880,.5);popup(ix+5-scroll,it.y-10,'+500!','#ff88ff');}
-            else if(it.type==='pwrup'){gainSkillExp();spark(ix+5,it.y,'#ffe840',14);spark(ix+5,it.y,'#ff8800',10);snd(660,.22);}
+            if(it.type==='heart'){P.hp=Math.min(P.mhp,P.hp+1);spark(ix+4-scroll,it.y,'#ff4466',10);snd(660,.15);popup(ix+4-scroll,it.y-8,'HEAL!','#ff4466');}
+            else if(it.type==='coin'){score+=50;spark(ix+4-scroll,it.y,'#ffe840',8);sfx('coin');popup(ix+4-scroll,it.y-8,'+50','#ffe840');}
+            else if(it.type==='orbfrag'){score+=500;spark(ix+5-scroll,it.y,'#ffe840',20);spark(ix+5-scroll,it.y,'#8822ff',16);snd(880,.5);popup(ix+5-scroll,it.y-10,'+500!','#ff88ff');}
+            else if(it.type==='pwrup'){gainSkillExp();spark(ix+5-scroll,it.y,'#ffe840',14);spark(ix+5-scroll,it.y,'#ff8800',10);snd(660,.22);}
+            else if(it.type==='capsule'){
+                const dur=600;
+                if(it.kind==='vamp'){P.vampT=dur;spark(ix+5-scroll,it.y,'#ff2255',16);spark(ix+5-scroll,it.y,'#ff88aa',10);snd(180,.3);snd(260,.2);popup(ix+5-scroll,it.y-10,'吸血!','#ff4466');}
+                else if(it.kind==='over'){P.overT=dur;spark(ix+5-scroll,it.y,'#ffcc00',16);spark(ix+5-scroll,it.y,'#ffffff',10);snd(880,.15);snd(1100,.15);popup(ix+5-scroll,it.y-10,'過負荷!','#ffcc00');}
+                else{P.magnetT=dur;spark(ix+5-scroll,it.y,'#33ccff',16);spark(ix+5-scroll,it.y,'#aaffff',10);snd(440,.1);snd(660,.15);popup(ix+5-scroll,it.y-10,'磁力!','#33ccff');}
+            }
         }
     });
     items=items.filter(it=>it.life>0&&it.sx>scroll-40);
@@ -2528,11 +2549,12 @@ function update(){
         // Player attack on boss
         if(P.atk>6){
             const aw=[18,22,32][P.atkCombo]||PW;
-            const dmgMul=[1,1,2][P.atkCombo]||1;
+            const dmgMul=([1,1,2][P.atkCombo]||1)*(P.overT>0?1.5:1);
             const ax=P.dir>0?P.x+P.w:P.x-aw;
             const bx=boss.sx;
             if(boss.inv<=0&&ax<bx+boss.w&&ax+aw>bx&&P.y<boss.sy+boss.h&&P.y+P.h>boss.sy){
                 boss.hp-=dmgMul;boss.inv=16;boss.knockX=P.dir*5;spark(bx+11,boss.sy+10,'#ffaa44',10);snd(200,.08,.7);
+                if(P.vampT>0&&P.hp<P.mhp&&Math.random()<.35){P.hp=Math.min(P.mhp,P.hp+1);spark(P.x+P.w/2-scroll,P.y+P.h/2,'#ff4466',4);}
                 if(boss.hp<=0){
                     bossDefeated=true;boss=null;
                     score+=1000;spark(scroll+W/2,GY-40,'#ffe840',30);spark(scroll+W/2,GY-40,'#8822ff',30);
@@ -2623,6 +2645,17 @@ function update(){
             pwrupSpawnCd=200+Math.floor(Math.random()*140);
             const py=GY-10-Math.floor(Math.random()*55);
             items.push({sx:scroll+W+20,y:py,w:12,h:12,type:'pwrup',life:700});
+        }
+    }
+
+    // 消費カプセル（吸血/過負荷/磁力）スポーン：強力な時限バフをランダムで1種ドロップ
+    if(!bossActive){
+        capsuleSpawnCd--;
+        if(capsuleSpawnCd<=0){
+            capsuleSpawnCd=500+Math.floor(Math.random()*260);
+            const py2=GY-10-Math.floor(Math.random()*55);
+            const kinds=['vamp','over','magnet'];
+            items.push({sx:scroll+W+20,y:py2,w:12,h:12,type:'capsule',kind:kinds[Math.floor(Math.random()*3)],life:700});
         }
     }
 
@@ -3057,6 +3090,13 @@ function draw(){
         for(let i=0;i<P.mhp;i++)txo(i<P.hp?'♥':'♡',22+i*10,9,i<P.hp?'#ff4466':'#442233',6);
         txo('SCORE '+score,W-4,9,'#ffee44',6,'right');
         txo('ST.'+stage,W/2,9,'#88ccff',4.5);
+        // 消費カプセルの効果時間バフ表示（ボス戦中は非表示にしHPバーと衝突させない）
+        if(!bossActive){
+            let _buffY=19;
+            if(P.vampT>0){txo('吸血 '+Math.ceil(P.vampT/60)+'s',4,_buffY,'#ff6688',3.2,'left');_buffY+=5;}
+            if(P.overT>0){txo('過負荷 '+Math.ceil(P.overT/60)+'s',4,_buffY,'#ffcc44',3.2,'left');_buffY+=5;}
+            if(P.magnetT>0){txo('磁力 '+Math.ceil(P.magnetT/60)+'s',4,_buffY,'#44ccff',3.2,'left');_buffY+=5;}
+        }
         // コンボ表示
         if(combo>=2){
             const ct=comboTimer/120;
