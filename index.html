@@ -1801,6 +1801,35 @@ function drawBg2(){
     }
 }
 
+// ===== ボス戦エリアロック：左右の魔導障壁バリア（見た目）=====
+// カメラ固定・見えない壁と連動する視覚表現。ボス戦中(bossActive&&!bossDefeated)のみ両端に表示
+function drawArenaBarrier(){
+    if(!(bossActive&&!bossDefeated))return;
+    const t=gTick,pulse=.5+Math.sin(t*.09)*.25;
+    [{x:1,dir:1},{x:W-1,dir:-1}].forEach(s=>{
+        // 外側の紫の光暈
+        const grd=ctx.createLinearGradient(s.x-14*s.dir,0,s.x+14*s.dir,0);
+        grd.addColorStop(0,'rgba(136,34,255,0)');
+        grd.addColorStop(.55,`rgba(170,68,255,${(0.28*pulse).toFixed(3)})`);
+        grd.addColorStop(1,'rgba(136,34,255,0)');
+        ctx.fillStyle=grd;ctx.fillRect(Math.min(s.x-14*s.dir,s.x+14*s.dir),0,28,GY);
+        // 中心の明るいコアライン
+        ctx.globalAlpha=.7+pulse*.3;ctx.fillStyle='#cc88ff';ctx.fillRect(s.x-1,0,2,GY);
+        ctx.globalAlpha=1;
+        // 縦に流れるエネルギー粒子
+        for(let i=0;i<5;i++){
+            const yy=(t*1.5+i*(GY/5))%GY;
+            ctx.globalAlpha=.5*pulse;ctx.fillStyle='#eeccff';
+            ctx.fillRect(s.x-1,Math.floor(yy),2,4);
+        }
+        ctx.globalAlpha=1;
+        // 地面との接続部（発光リング）
+        ctx.globalAlpha=.4*pulse;ctx.fillStyle='#8822ff';
+        ctx.beginPath();ctx.ellipse(s.x,GY,10,3,0,0,Math.PI*2);ctx.fill();
+        ctx.globalAlpha=1;
+    });
+}
+
 // ===== DRAW SKELETON =====
 function drawDroid(en){
     const x=Math.floor(en.sx-scroll),y=Math.floor(en.sy);
@@ -2847,6 +2876,9 @@ function draw(){
     }
 
     if(stage===1)drawBg();else drawBg2();
+
+    // ボス戦エリアロックの魔導障壁（見た目）
+    drawArenaBarrier();
 
     // Platforms
     drawPlatforms();
