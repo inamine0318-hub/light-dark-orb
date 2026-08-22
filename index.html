@@ -917,33 +917,37 @@ function drawHero(bx,by){
     // 剣 + 手前腕（攻撃フェーズ連動）
     if(_mph==='w'){
         // 振りかぶり：光の大剣（聖剣）を頭上に高く構える
-        ctx.fillStyle='#3399ff';px(cx+11,by-6,3,10);px(cx+9,by+4,3,6);px(cx+6,by+10,4,8);
-        ctx.fillStyle='#bbeeff';px(cx+11,by-6,1,7);px(cx+9,by+4,1,5);
-        ctx.globalAlpha=.35;ctx.fillStyle='#66ccff';ctx.beginPath();ctx.arc(cx+12,by-4,4,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;
+        ctx.fillStyle=NEON.cyan;px(cx+11,by-6,3,10);px(cx+9,by+4,3,6);px(cx+6,by+10,4,8);
+        ctx.fillStyle=NEON.glow;px(cx+11,by-6,1,7);px(cx+9,by+4,1,5);
+        ctx.globalAlpha=.35;ctx.fillStyle=NEON.cyan;ctx.beginPath();ctx.arc(cx+12,by-4,4,0,Math.PI*2);ctx.fill();
+        ctx.globalAlpha=.22;ctx.fillStyle=NEON.magenta;ctx.beginPath();ctx.arc(cx+12,by-4,7,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;
         ctx.fillStyle='#f0c020';px(cx+4,by+17,9,3);ctx.fillStyle='#7a4a10';px(cx+7,by+19,2,5);
         ctx.fillStyle='#3060e8';px(cx+5,by+11,5,13);ctx.fillStyle='#1a3ab8';px(cx+9,by+11,1,13);
         ctx.fillStyle='#c8d0f0';px(cx+6,by+23,4,3);
     }else if(_mph==='s'){
         // 横一閃！光の大剣が水平に走る
-        ctx.fillStyle='#3399ff';px(cx+5,by+17,10,3);px(cx+14,by+15,6,3);px(cx+19,by+13,8,3);
-        ctx.fillStyle='#bbeeff';px(cx+5,by+17,10,1);px(cx+14,by+15,6,1);
-        ctx.globalAlpha=.35;ctx.fillStyle='#66ccff';ctx.beginPath();ctx.arc(cx+26,by+15,4,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;
+        ctx.fillStyle=NEON.cyan;px(cx+5,by+17,10,3);px(cx+14,by+15,6,3);px(cx+19,by+13,8,3);
+        ctx.fillStyle=NEON.glow;px(cx+5,by+17,10,1);px(cx+14,by+15,6,1);
+        ctx.globalAlpha=.35;ctx.fillStyle=NEON.cyan;ctx.beginPath();ctx.arc(cx+26,by+15,4,0,Math.PI*2);ctx.fill();
+        ctx.globalAlpha=.22;ctx.fillStyle=NEON.magenta;ctx.beginPath();ctx.arc(cx+26,by+15,7,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;
         ctx.fillStyle='#f0c020';px(cx+3,by+24,5,3);ctx.fillStyle='#7a4a10';px(cx+4,by+25,3,5);
         ctx.fillStyle='#3060e8';px(cx+4,by+17,9,9);ctx.fillStyle='#1a3ab8';px(cx+12,by+17,1,9);
         ctx.fillStyle='#c8d0f0';px(cx+11,by+24,3,3);
     }else if(_mph==='f'){
         // フォロー：光の大剣が斜め下へ抜ける
-        ctx.fillStyle='#3399ff';px(cx+8,by+21,4,6);px(cx+9,by+27,3,7);px(cx+10,by+33,3,5);
-        ctx.fillStyle='#bbeeff';px(cx+8,by+21,2,5);
-        ctx.globalAlpha=.3;ctx.fillStyle='#66ccff';ctx.beginPath();ctx.arc(cx+11,by+36,3,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;
+        ctx.fillStyle=NEON.cyan;px(cx+8,by+21,4,6);px(cx+9,by+27,3,7);px(cx+10,by+33,3,5);
+        ctx.fillStyle=NEON.glow;px(cx+8,by+21,2,5);
+        ctx.globalAlpha=.3;ctx.fillStyle=NEON.cyan;ctx.beginPath();ctx.arc(cx+11,by+36,3,0,Math.PI*2);ctx.fill();
+        ctx.globalAlpha=.18;ctx.fillStyle=NEON.magenta;ctx.beginPath();ctx.arc(cx+11,by+36,5.5,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;
         ctx.fillStyle='#f0c020';px(cx+5,by+26,7,3);ctx.fillStyle='#7a4a10';px(cx+7,by+28,2,5);
         ctx.fillStyle='#3060e8';px(cx+6,by+22,5,10);ctx.fillStyle='#1a3ab8';px(cx+10,by+22,1,10);
         ctx.fillStyle='#c8d0f0';px(cx+7,by+31,4,3);
     }else{
         // 通常スタンス（斜め上・青く光る大剣＝聖剣）
-        ctx.fillStyle='#3399ff';px(cx+17,by+4,3,6);px(cx+15,by+9,3,7);px(cx+12,by+15,4,7);px(cx+9,by+21,4,6);
-        ctx.fillStyle='#bbeeff';px(cx+17,by+4,1,5);px(cx+15,by+9,1,6);
-        ctx.globalAlpha=.3;ctx.fillStyle='#66ccff';ctx.beginPath();ctx.arc(cx+18,by+3,3,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;
+        ctx.fillStyle=NEON.cyan;px(cx+17,by+4,3,6);px(cx+15,by+9,3,7);px(cx+12,by+15,4,7);px(cx+9,by+21,4,6);
+        ctx.fillStyle=NEON.glow;px(cx+17,by+4,1,5);px(cx+15,by+9,1,6);
+        ctx.globalAlpha=.3;ctx.fillStyle=NEON.cyan;ctx.beginPath();ctx.arc(cx+18,by+3,3,0,Math.PI*2);ctx.fill();
+        ctx.globalAlpha=.18;ctx.fillStyle=NEON.magenta;ctx.beginPath();ctx.arc(cx+18,by+3,5.5,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;
         ctx.fillStyle='#f0c020';px(cx+7,by+26,11,3);ctx.fillStyle='#7a4a10';px(cx+10,by+28,2,5);
         ctx.fillStyle='#3060e8';px(cx+6,by+22,5,10);ctx.fillStyle='#1a3ab8';px(cx+10,by+22,1,10);
         ctx.fillStyle='#c8d0f0';px(cx+7,by+31,4,3);
