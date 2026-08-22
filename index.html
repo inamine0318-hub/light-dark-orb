@@ -448,8 +448,13 @@ function drawWithOutline(fn,bx,by,forceVisible,sqX,sqY){
             if(src[i+3]>30)continue;
             const u=((y-1)*_OFC_W+x)*4,d=((y+1)*_OFC_W+x)*4;
             const l=(y*_OFC_W+x-1)*4,r2=(y*_OFC_W+x+1)*4;
-            if(src[u+3]>50||src[d+3]>50||src[l+3]>50||src[r2+3]>50){
-                out[i]=4;out[i+1]=4;out[i+2]=16;out[i+3]=235;
+            // Neon-Gothic太アウトライン（NIMS-DIR-2026-050）：1px先に加え2px先の近傍も見て約2pxのインクラインにする
+            const u2=y>=2?((y-2)*_OFC_W+x)*4:-1,d2=y<_OFC_H-2?((y+2)*_OFC_W+x)*4:-1;
+            const l2=x>=2?(y*_OFC_W+x-2)*4:-1,r3=x<_OFC_W-2?(y*_OFC_W+x+2)*4:-1;
+            const near=src[u+3]>50||src[d+3]>50||src[l+3]>50||src[r2+3]>50||
+                (u2>=0&&src[u2+3]>50)||(d2>=0&&src[d2+3]>50)||(l2>=0&&src[l2+3]>50)||(r3>=0&&src[r3+3]>50);
+            if(near){
+                out[i]=14;out[i+1]=8;out[i+2]=24;out[i+3]=240;
             }
         }
     }
@@ -535,6 +540,8 @@ const CHARS=[
 // ===== PLAYER =====
 const GR=0.42,JMP=5.8,PW=14,PH=22;
 const CHAR_SCALE=0.78; // スマホ実機QA対応：キャラ表示サイズを78%に縮小し視界を広げる（当たり判定PW/PHは変更しない）
+// Neon-Gothic Fusion 統一パレット（NIMS-DIR-2026-050：アートディレクション刷新の共通トークン）
+const NEON={bg:'#0a0612',ink:'#0e0818',magenta:'#ff2d95',cyan:'#00e5ff',purple:'#4a0e6b',glow:'#f0e6ff',danger:'#ff1744'};
 let P={x:60,y:GY-PH,w:PW,h:PH,vx:0,vy:0,onG:false,dj:false,hp:5,mhp:5,inv:0,fr:0,dir:1,atk:0,atkCd:0,atkCombo:0,comboWin:0,comboSkillWin:0,landSq:0,prevOnG:false,coyote:0,jumpBufT:0,jumpSq:0,deathT:0,vampT:0,overT:0,magnetT:0};
 
 // ===== ENEMIES / OBJECTS =====
@@ -3307,14 +3314,15 @@ function draw(){
     // HUD
     if(gs==='playing'){
         const hudGrd=ctx.createLinearGradient(0,0,0,14);
-        hudGrd.addColorStop(0,'rgba(0,0,28,.92)');hudGrd.addColorStop(1,'rgba(0,0,10,.48)');
+        hudGrd.addColorStop(0,'rgba(10,6,18,.94)');hudGrd.addColorStop(1,'rgba(10,6,18,.5)');
         ctx.fillStyle=hudGrd;ctx.fillRect(0,0,W,14);
-        ctx.fillStyle='rgba(255,255,255,.07)';ctx.fillRect(0,0,W,1);
-        ctx.fillStyle='rgba(0,0,0,.30)';ctx.fillRect(0,13,W,1);
-        txo('HP',9,9,'#88aaff',5,'left');
+        // Neon-Gothic トリムライン（上=マゼンタ、下=シアン、ごく薄く）
+        ctx.fillStyle='rgba(255,45,149,.28)';ctx.fillRect(0,0,W,1);
+        ctx.fillStyle='rgba(0,229,255,.22)';ctx.fillRect(0,13,W,1);
+        txo('HP',9,9,NEON.cyan,5,'left');
         for(let i=0;i<P.mhp;i++)txo(i<P.hp?'♥':'♡',22+i*10,9,i<P.hp?'#ff4466':'#442233',6);
         txo('SCORE '+score,W-4,9,'#ffee44',6,'right');
-        txo('ST.'+stage,W/2,9,'#88ccff',4.5);
+        txo('ST.'+stage,W/2,9,NEON.cyan,4.5);
         // 消費カプセルの効果時間バフ表示（ボス戦中は非表示にしHPバーと衝突させない）
         if(!bossActive){
             let _buffY=19;
@@ -3343,8 +3351,9 @@ function draw(){
         // ボスHPバー（大型HUD）
         if(bossActive&&boss&&!bossDefeated){
             const bw=Math.floor(W*0.62);const bx2=Math.floor((W-bw)/2);
-            ctx.fillStyle='rgba(0,0,0,.85)';ctx.fillRect(bx2-2,14,bw+4,11);
-            ctx.fillStyle='#220000';ctx.fillRect(bx2,15,bw,9);
+            ctx.fillStyle='rgba(10,6,18,.9)';ctx.fillRect(bx2-2,14,bw+4,11);
+            ctx.strokeStyle='rgba(0,229,255,.5)';ctx.lineWidth=1;ctx.strokeRect(bx2-1.5,14.5,bw+3,10);
+            ctx.fillStyle='#1a0018';ctx.fillRect(bx2,15,bw,9);
             const hpFrac=boss.hp/boss.maxHp;
             const bCol=hpFrac>0.5?'#cc2222':hpFrac>0.25?'#ff8800':'#ff2222';
             ctx.fillStyle=bCol;ctx.fillRect(bx2,15,Math.floor(bw*hpFrac),9);
