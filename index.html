@@ -542,6 +542,7 @@ const GR=0.42,JMP=5.8,PW=14,PH=22;
 const CHAR_SCALE=0.78; // スマホ実機QA対応：キャラ表示サイズを78%に縮小し視界を広げる（当たり判定PW/PHは変更しない）
 // Neon-Gothic Fusion 統一パレット（NIMS-DIR-2026-050：アートディレクション刷新の共通トークン）
 const NEON={bg:'#0a0612',ink:'#0e0818',magenta:'#ff2d95',cyan:'#00e5ff',purple:'#4a0e6b',glow:'#f0e6ff',danger:'#ff1744'};
+const PARTS_MAX=180; // パーティクル上限（低スペック端末での処理負荷対策、古いものから間引く）
 let P={x:60,y:GY-PH,w:PW,h:PH,vx:0,vy:0,onG:false,dj:false,hp:5,mhp:5,inv:0,fr:0,dir:1,atk:0,atkCd:0,atkCombo:0,comboWin:0,comboSkillWin:0,landSq:0,prevOnG:false,coyote:0,jumpBufT:0,jumpSq:0,deathT:0,vampT:0,overT:0,magnetT:0};
 
 // ===== ENEMIES / OBJECTS =====
@@ -633,7 +634,7 @@ function doAtk(){
             orbs.push({sx:ox,sy:oy+3,vx:P.dir*sp,vy:.5,life:0,maxLife:ml,type:'dark',dmg:dm,size:sz});
         }else{
             orbs.push({sx:ox,sy:oy,vx:P.dir*sp,vy:0,life:0,maxLife:ml,type:'dark',dmg:dm,size:sz});
-            if(co===2){spark(ox,oy,'#8822ff',14);spark(ox,oy,'#ffffff',6);flash=6;} // 闇の小爆発（見た目強化）
+            if(co===2){spark(ox-scroll,oy,'#8822ff',14);spark(ox-scroll,oy,'#ffffff',6);flash=6;} // 闇の小爆発（見た目強化）
         }
         setCombo([24,26,30][co],50);sfx('darkorb');
     }else if(selectedChar===2){// 魔法使い：1→2連→大型炎
@@ -643,7 +644,7 @@ function doAtk(){
             orbs.push({sx:ox,sy:oy+2,vx:P.dir*sp,vy:.3,life:0,maxLife:ml,type:'fire',dmg:dm,size:sz});
         }else{
             orbs.push({sx:ox,sy:oy,vx:P.dir*sp,vy:0,life:0,maxLife:ml,type:'fire',dmg:dm,size:sz});
-            if(co===2){spark(ox,oy,'#ff8820',14);spark(ox,oy,'#ffee44',6);flash=6;} // 火柱の噴き上がり（見た目強化）
+            if(co===2){spark(ox-scroll,oy,'#ff8820',14);spark(ox-scroll,oy,'#ffee44',6);flash=6;} // 火柱の噴き上がり（見た目強化）
         }
         setCombo([18,20,25][co],48);sfx('darkorb');
     }else if(selectedChar===3){// エルフ：速射→2連→貫通矢
@@ -703,8 +704,8 @@ function gainSkillExp(){
     skillExp++;
     if(skillExp>=3){
         skillLv++;skillExp=0;
-        spark(P.x+P.w/2,P.y+P.h/2,'#ffe840',24);
-        spark(P.x+P.w/2,P.y+P.h/2,'#ff8800',16);
+        spark(P.x+P.w/2-scroll,P.y+P.h/2,'#ffe840',24);
+        spark(P.x+P.w/2-scroll,P.y+P.h/2,'#ff8800',16);
         snd(880,.35);flash=8;
         if(skillLv>=3){popup(P.x-scroll+P.w/2,P.y-12,'SKILL MAX!!','#ff44ff');snd(1100,.3);}else{popup(P.x-scroll+P.w/2,P.y-12,'SKILL LV'+skillLv+' UP!','#ff8820');}
     }
@@ -722,42 +723,42 @@ function doSkill(){
     if(selectedChar===0){// 勇者：旋風斬 LV別
         const cnt=[8,8,12,16][lv],spd=[6,6.5,7,7.5][lv],dm=[4,5,5,7][lv],sz=[6,7,7,8][lv];
         for(let i=0;i<cnt;i++){const a=i*Math.PI*2/cnt;orbs.push({sx:scx,sy:scy,vx:Math.cos(a)*spd,vy:Math.sin(a)*spd,life:0,maxLife:55,type:'skill',dmg:dm,lv:lv>0?2:1,size:sz});}
-        flash=10+lv*4;shake=8+lv*3;snd(440,.3);spark(scx,scy,lvCol,20+lv*8);spark(scx,scy,'#ffffff',12);
-        if(lv===3){spark(scx,scy,'#ff8800',20);snd(660,.25);}
+        flash=10+lv*4;shake=8+lv*3;snd(440,.3);spark(scx-scroll,scy,lvCol,20+lv*8);spark(scx-scroll,scy,'#ffffff',12);
+        if(lv===3){spark(scx-scroll,scy,'#ff8800',20);snd(660,.25);}
     }else if(selectedChar===1){// 魔王：ダークノヴァ
         const cnt=[8,8,12,16][lv],spd=[6.5,7,7,7.5][lv],dm=[5,6,6,8][lv],sz=[6,7,7,9][lv];
         for(let i=0;i<cnt;i++){const a=i*Math.PI*2/cnt;orbs.push({sx:scx,sy:scy,vx:Math.cos(a)*spd,vy:Math.sin(a)*spd,life:0,maxLife:65,type:'dark',dmg:dm,size:sz});}
-        flash=20+lv*4;shake=14+lv*3;snd(220,.45);snd(110,.35);spark(scx,scy,'#8822ff',28+lv*8);spark(scx,scy,lvCol,16);
+        flash=20+lv*4;shake=14+lv*3;snd(220,.45);snd(110,.35);spark(scx-scroll,scy,'#8822ff',28+lv*8);spark(scx-scroll,scy,lvCol,16);
     }else if(selectedChar===2){// 魔法使い：メテオ
         const cnt=[3,4,5,7][lv],dm=[4,5,5,7][lv],sz=[7,8,9,11][lv];
         for(let i=0;i<cnt;i++){orbs.push({sx:scx+(i-(cnt-1)/2)*18,sy:P.y-55,vx:(i-(cnt-1)/2)*.5,vy:6.5+i*.3,life:0,maxLife:50,type:'fire',dmg:dm,size:sz});}
-        flash=12+lv*3;snd(330,.3);snd(550,.2);spark(scx,scy,lvCol,16+lv*6);
-        if(lv>=2)spark(scx,scy,'#ffaa44',12);
+        flash=12+lv*3;snd(330,.3);snd(550,.2);spark(scx-scroll,scy,lvCol,16+lv*6);
+        if(lv>=2)spark(scx-scroll,scy,'#ffaa44',12);
     }else if(selectedChar===3){// エルフ：矢の雨
         const cnt=[5,7,9,12][lv],dm=[3,3,4,5][lv],lv2=lv>0?1:0,sz=[3,4,4,5][lv];
         for(let i=0;i<cnt;i++){
             const t=cnt===1?0:(i/(cnt-1)-.5);
             orbs.push({sx:ox,sy:P.y+5,vx:P.dir*(7+Math.abs(t)*2),vy:t*2-1,life:0,maxLife:60,type:'arrow',dmg:dm,size:sz,lv:lv2});
         }
-        flash=8+lv*3;snd(520,.2);snd(660,.15);spark(scx,scy,lvCol,14+lv*5);
+        flash=8+lv*3;snd(520,.2);snd(660,.15);spark(scx-scroll,scy,lvCol,14+lv*5);
     }else if(selectedChar===4){// ドラゴン：超炎ブレス
         const cnt=[5,7,9,12][lv],dm=[5,5,6,8][lv],sz=[5,6,7,8][lv];
         for(let i=0;i<cnt;i++){const vy=(i-Math.floor(cnt/2))*1.0;orbs.push({sx:ox,sy:scy,vx:P.dir*(7+i*.4),vy,life:0,maxLife:55,type:'flame',dmg:dm,size:sz});}
-        flash=18+lv*4;shake=12+lv*3;snd(180,.4);spark(scx,scy,lvCol,22+lv*8);spark(scx,scy,'#ffaa44',14);
+        flash=18+lv*4;shake=12+lv*3;snd(180,.4);spark(scx-scroll,scy,lvCol,22+lv*8);spark(scx-scroll,scy,'#ffaa44',14);
     }else if(selectedChar===5){// ゴブリン：煙幕ダッシュ
         const spd=[16,18,20,22][lv],inv=[90,90,120,150][lv];
         P.vx=P.dir*spd;P.inv=inv;
         if(lv>=1){for(let i=0;i<4;i++)orbs.push({sx:P.x+P.dir*i*10,sy:GY-10,vx:P.dir*.5,vy:0,life:0,maxLife:30,type:'shock',dmg:2,size:10});}
-        spark(scx,scy,lvCol,18+lv*5);spark(scx,scy,'#aaffaa',12);
+        spark(scx-scroll,scy,lvCol,18+lv*5);spark(scx-scroll,scy,'#aaffaa',12);
         snd(380,.15);snd(560,.12);
     }else if(selectedChar===6){// ゴーレム：大地震
         const cnt=[3,4,5,6][lv],dm=[8,9,10,12][lv],sz=[40,50,60,70][lv];
         for(let i=0;i<cnt;i++)orbs.push({sx:P.x+(i-(cnt-1)/2)*18,sy:GY-8,vx:P.dir*(1.5+i*.5),vy:0,life:0,maxLife:90+i*18,type:'shock',dmg:dm,size:sz});
-        flash=24+lv*5;shake=20+lv*5;snd(80,.55);snd(120,.45);spark(scx,scy,lvCol,28+lv*8);
+        flash=24+lv*5;shake=20+lv*5;snd(80,.55);snd(120,.45);spark(scx-scroll,scy,lvCol,28+lv*8);
     }else if(selectedChar===7){// スライム：跳弾分裂
         const cnt=[6,8,10,12][lv],dm=[3,3,4,5][lv],sz=[5,6,6,7][lv];
         for(let i=0;i<cnt;i++){const a=i*Math.PI*2/cnt;orbs.push({sx:scx,sy:scy,vx:Math.cos(a)*4.5,vy:Math.sin(a)*4.5-1,life:0,maxLife:95,type:'bounce',dmg:dm,size:sz});}
-        flash=10+lv*3;snd(480,.25);snd(640,.2);spark(scx,scy,lvCol,18+lv*7);
+        flash=10+lv*3;snd(480,.25);snd(640,.2);spark(scx-scroll,scy,lvCol,18+lv*7);
     }
 }
 function inp(cx,cy){
@@ -2420,6 +2421,7 @@ function update(){
         shake*=.85;if(shake<.4)shake=0;flash=Math.max(0,flash-1);
         parts.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.vy+=.08;p.life++;});
         parts=parts.filter(p=>p.life<p.maxLife);
+        if(parts.length>PARTS_MAX)parts.splice(0,parts.length-PARTS_MAX); // 低スペック端末対策：古いものから間引き
         if(P.deathT>50)gs='gameover';
         return;
     }
@@ -2497,9 +2499,9 @@ function update(){
                 en.hp-=dmgMul;en.inv=20;hitStop=2+P.atkCombo;en.knockX=P.dir*[4,6,8][P.atkCombo];
                 combo++;comboTimer=150;if(combo>comboMax)comboMax=combo;
                 if(P.vampT>0&&P.hp<P.mhp&&Math.random()<.35){P.hp=Math.min(P.mhp,P.hp+1);spark(P.x+P.w/2-scroll,P.y+P.h/2,'#ff4466',4);}
-                spark(ex+en.w/2,en.sy+en.h/2,'#ffaa44',10);spark(ex+en.w/2,en.sy+en.h/2,'#ffffff',5);
+                spark(ex+en.w/2-scroll,en.sy+en.h/2,'#ffaa44',10);spark(ex+en.w/2-scroll,en.sy+en.h/2,'#ffffff',5);
                 snd(260,.08,.6);
-                if(en.hp<=0){en.dead=true;sfx('kill');const pts5=100*(1+Math.floor(combo/3));score+=pts5;spark(ex+5,en.sy+4,'#ff8820',18);spark(ex+5,en.sy+4,'#ffff44',8);
+                if(en.hp<=0){en.dead=true;sfx('kill');const pts5=100*(1+Math.floor(combo/3));score+=pts5;spark(ex+5-scroll,en.sy+4,'#ff8820',18);spark(ex+5-scroll,en.sy+4,'#ffff44',8);
                     popup(en.sx-scroll+en.w/2,en.sy-6,'+'+pts5,combo>=5?'#ff4420':combo>=3?'#ff8820':'#ffee44');
                     if(Math.random()<.5)items.push({sx:en.sx,y:en.sy,w:8,h:8,type:'coin',life:300});}
             }
@@ -2645,12 +2647,12 @@ function update(){
         // プレイヤー当たり
         if(P.inv<=0&&P.x<bm.sx+8&&P.x+P.w>bm.sx&&P.y<bm.sy+8&&P.y+P.h>bm.sy){
             bm.life=999;P.hp--;P.inv=50;shake=7;flash=14;sfx('hit');P.vy=-2;
-            spark(bm.sx+4,bm.sy,'#ff8820',12);
+            spark(bm.sx+4-scroll,bm.sy,'#ff8820',12);
             if(P.hp<=0){killPlayer();}
         }
         // 着地爆発
         if(bm.sy>GY-4&&bm.life<999){
-            bm.life=999;spark(bm.sx+4,GY-4,'#ff6600',14);spark(bm.sx+4,GY-4,'#ffaa44',8);snd(200,.1,.5);
+            bm.life=999;spark(bm.sx+4-scroll,GY-4,'#ff6600',14);spark(bm.sx+4-scroll,GY-4,'#ffaa44',8);snd(200,.1,.5);
         }
     });
     bombs=bombs.filter(bm=>bm.life<bm.maxLife&&bm.sx>scroll-20&&bm.sx<scroll+W+20);
@@ -2770,7 +2772,7 @@ function update(){
             const ax=P.dir>0?P.x+P.w:P.x-aw;
             const bx=boss.sx;
             if(boss.inv<=0&&ax<bx+boss.w&&ax+aw>bx&&P.y<boss.sy+boss.h&&P.y+P.h>boss.sy){
-                boss.hp-=dmgMul;boss.inv=16;boss.knockX=P.dir*5;spark(bx+11,boss.sy+10,'#ffaa44',10);snd(200,.08,.7);
+                boss.hp-=dmgMul;boss.inv=16;boss.knockX=P.dir*5;spark(bx+11-scroll,boss.sy+10,'#ffaa44',10);snd(200,.08,.7);
                 if(P.vampT>0&&P.hp<P.mhp&&Math.random()<.35){P.hp=Math.min(P.mhp,P.hp+1);spark(P.x+P.w/2-scroll,P.y+P.h/2,'#ff4466',4);}
                 if(boss.hp<=0){
                     bossDefeated=true;boss=null;
@@ -2894,13 +2896,13 @@ function update(){
                 if(ob.type==='poison'){
                     // 毒煙幕：消滅させず、通常より少し長いinvで継続ダメージ量を抑えた設置型ゾーン
                     en.hp-=(ob.dmg||1);en.inv=24;hitStop=1;
-                    spark(ex+en.w/2,en.sy+en.h/2,'#66cc22',4);
+                    spark(ex+en.w/2-scroll,en.sy+en.h/2,'#66cc22',4);
                 }else{
                     // アーキタイプ別のhitStop/ノックバック（リサーチ次長のバランス表に基づく）
                     const _hb={dark:{hs:5,kb:6},fire:{hs:5,kb:6},arrow:{hs:3,kb:3},flame:{hs:6,kb:9},shock:{hs:6,kb:10},bounce:{hs:4,kb:5}}[ob.type]||{hs:3,kb:4};
                     en.hp-=(ob.dmg||1);en.inv=20;if(!ob.lv)ob.life=999;hitStop=Math.min(8,_hb.hs);en.knockX=(ob.vx>0?1:-1)*_hb.kb;
                     combo++;comboTimer=120;if(combo>comboMax)comboMax=combo;
-                    spark(ex+en.w/2,en.sy+en.h/2,'#8822ff',10);spark(ex+en.w/2,en.sy+en.h/2,'#ffffff',4);snd(180,.08,.6);
+                    spark(ex+en.w/2-scroll,en.sy+en.h/2,'#8822ff',10);spark(ex+en.w/2-scroll,en.sy+en.h/2,'#ffffff',4);snd(180,.08,.6);
                     if(ob.type==='bounce'&&ob.split&&!ob._didSplit){
                         ob._didSplit=true;
                         for(let i=0;i<2;i++){
@@ -2909,7 +2911,7 @@ function update(){
                         }
                     }
                 }
-                if(en.hp<=0){en.dead=true;sfx('kill');const pts6=100*(1+Math.floor(combo/3));score+=pts6;spark(ex+5,en.sy+4,'#6600cc',18);spark(ex+5,en.sy+4,'#ff88ff',8);popup(en.sx-scroll+en.w/2,en.sy-6,'+'+pts6,combo>=5?'#ff44ff':'#cc88ff');if(P.hp<=2&&Math.random()<.15)items.push({sx:en.sx,y:en.sy,w:8,h:8,type:'heart',life:400});}
+                if(en.hp<=0){en.dead=true;sfx('kill');const pts6=100*(1+Math.floor(combo/3));score+=pts6;spark(ex+5-scroll,en.sy+4,'#6600cc',18);spark(ex+5-scroll,en.sy+4,'#ff88ff',8);popup(en.sx-scroll+en.w/2,en.sy-6,'+'+pts6,combo>=5?'#ff44ff':'#cc88ff');if(P.hp<=2&&Math.random()<.15)items.push({sx:en.sx,y:en.sy,w:8,h:8,type:'heart',life:400});}
             }
         });
         if(boss&&!bossDefeated&&boss.inv<=0&&!boss.hidden){
@@ -2917,10 +2919,10 @@ function update(){
             if(ox<bx+boss.w&&ox+osz>bx&&ob.sy<boss.sy+boss.h&&ob.sy+osz>boss.sy){
                 if(ob.type==='poison'){
                     boss.hp-=(ob.dmg||1);boss.inv=20;
-                    spark(bx+11,boss.sy+10,'#66cc22',4);
+                    spark(bx+11-scroll,boss.sy+10,'#66cc22',4);
                 }else{
                     boss.hp-=(ob.dmg||1);boss.inv=16;boss.knockX=(ob.vx>0?1:-1)*4;if(!ob.lv)ob.life=999;
-                    spark(bx+11,boss.sy+10,'#8822ff',10);snd(180,.08,.7);
+                    spark(bx+11-scroll,boss.sy+10,'#8822ff',10);snd(180,.08,.7);
                 }
                 if(boss.hp<=0){
                     bossDefeated=true;boss=null;score+=1000;
@@ -2938,6 +2940,7 @@ function update(){
     // Particles
     parts.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.vy+=.08;p.life++;});
     parts=parts.filter(p=>p.life<p.maxLife);
+    if(parts.length>PARTS_MAX)parts.splice(0,parts.length-PARTS_MAX); // 低スペック端末対策：古いものから間引き
 
     if(skillCd>0)skillCd--;
     shake*=.85;if(shake<.4)shake=0;flash=Math.max(0,flash-1);
